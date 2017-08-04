@@ -221,7 +221,7 @@ class MathMLContentPrinter(MathMLPrinterBase):
             # think a coeff of 1 can remain
             return self._print(terms[0])
 
-        if self.order != 'old':
+        if self.order != 'none':
             terms = Mul._from_args(terms).as_ordered_factors()
 
         x = self.dom.createElement('apply')

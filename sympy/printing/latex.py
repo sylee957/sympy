@@ -488,7 +488,7 @@ class LatexPrinter(Printer):
             else:
                 _tex = last_term_tex = ""
 
-                if self.order not in ('old', 'none'):
+                if self.order != 'none':
                     args = expr.as_ordered_factors()
                 else:
                     args = list(expr.args)
