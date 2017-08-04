@@ -488,7 +488,7 @@ class LatexPrinter(Printer):
             else:
                 _tex = last_term_tex = ""
 
-                if self.order not in ('old', 'none'):
+                if self.order != 'none':
                     args = expr.as_ordered_factors()
                 else:
                     args = list(expr.args)
@@ -2597,11 +2597,10 @@ def latex(expr, fold_frac_powers=False, fold_func_brackets=False,
         The symbol to use for multiplication. Can be one of ``None``, ``ldot``,
         ``dot``, or ``times``.
     order: string, optional
-        Any of the supported monomial orderings (currently ``lex``, ``grlex``,
-        or ``grevlex``), ``old``, and ``none``. This parameter does nothing for
-        Mul objects. Setting order to ``old`` uses the compatibility ordering
-        for Add defined in Printer. For very large expressions, set the
-        ``order`` keyword to ``none`` if speed is a concern.
+        Any of the supported monomial orderings (currently "lex", "grlex",
+        or "grevlex"), and "none". This parameter does nothing for Mul objects.
+        For very large expressions, set the 'order' keyword to 'none' if speed is
+        a concern.
     symbol_names : dictionary of strings mapped to symbols, optional
         Dictionary of symbols and the custom strings they should be emitted as.
     root_notation : boolean, optional

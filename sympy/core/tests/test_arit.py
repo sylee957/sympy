@@ -1,7 +1,6 @@
-from sympy import (Basic, Symbol, sin, cos, atan, exp, sqrt, Rational,
-        Float, re, pi, sympify, Add, Mul, Pow, Mod, I, log, S, Max, symbols,
-        oo, zoo, Integer, sign, im, nan, Dummy, factorial, comp, floor
-)
+from sympy import (Symbol, sin, cos, exp, sqrt, Rational, Float, re, pi,
+    sympify, Add, Mul, Pow, Mod, I, log, S, Max, Min, symbols, oo,
+    Integer, sign, im, nan, Dummy, factorial, comp)
 from sympy.core.compatibility import long, range
 from sympy.core.parameters import distribute
 from sympy.core.expr import unchanged
@@ -1825,13 +1824,11 @@ def test_issue_6040():
 
 
 def test_issue_6082():
-    # Comparison is symmetric
-    assert Basic.compare(Max(x, 1), Max(x, 2)) == \
-      - Basic.compare(Max(x, 2), Max(x, 1))
-    # Equal expressions compare equal
-    assert Basic.compare(Max(x, 1), Max(x, 1)) == 0
-    # Basic subtypes (such as Max) compare different than standard types
-    assert Basic.compare(Max(1, x), frozenset((1, x))) != 0
+    # Original issue was with Basic.compare, which is gone. Test the original
+    # expression from the issue doesn't fail.
+    a = Symbol('a')
+    assert Max(a, 1)*Max(a, 2) == Max(a, 2)*Max(a, 1)
+    assert Min(a, 1)*Min(a, 2) == Min(a, 2)*Min(a, 1)
 
 
 def test_issue_6077():
