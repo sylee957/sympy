@@ -8,7 +8,6 @@ from sympy.physics.units import meter
 from sympy.testing.pytest import XFAIL
 
 from sympy.core.basic import Atom, Basic
-from sympy.core.core import BasicMeta
 from sympy.core.singleton import SingletonRegistry
 from sympy.core.symbol import Dummy, Symbol, Wild
 from sympy.core.numbers import (E, I, pi, oo, zoo, nan, Integer,
@@ -54,7 +53,7 @@ def check(a, exclude=[], check_attr=True):
             continue
 
         if callable(protocol):
-            if isinstance(a, BasicMeta):
+            if issubclass(a, Basic):
                 # Classes can't be copied, but that's okay.
                 continue
             b = protocol(a)
@@ -92,8 +91,6 @@ def check(a, exclude=[], check_attr=True):
 def test_core_basic():
     for c in (Atom, Atom(),
               Basic, Basic(),
-              # XXX: dynamically created types are not picklable
-              # BasicMeta, BasicMeta("test", (), {}),
               SingletonRegistry, S):
         check(c)
 

@@ -262,8 +262,8 @@ class Printer(object):
             # (Printer.printmethod) and the object knows for itself how it
             # should be printed, use that method.
             if (self.printmethod and hasattr(expr, self.printmethod)
-                    and not isinstance(expr, BasicMeta)):
-                return getattr(expr, self.printmethod)(self, **kwargs)
+                    and not issubclass(expr, Basic)):
+                return getattr(expr, self.printmethod)(self, *args, **kwargs)
 
             # See if the class of expr is known, or if one of its super
             # classes is known, and use that print function
