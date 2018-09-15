@@ -396,6 +396,8 @@ class MatrixDeterminant(MatrixCommon):
         """
 
         # sanitize `method`
+        if not isinstance(method, str):
+            raise TypeError("Determinant method should be in string format")
         method = method.lower()
         if method == "bareis":
             method = "bareiss"
