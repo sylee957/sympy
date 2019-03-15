@@ -76,6 +76,49 @@ matrix:
             - gfortran
             - python-scipy
 
+    - python: 3.4
+      env:
+        - TEST_ASCII="true"
+        - TEST_OPT_DEPENDENCY="numpy scipy gmpy2 matplotlib theano llvmlite autowrap cython wurlitzer python-symengine=0.3.* tensorflow numexpr ipython antlr-python-runtime>=4.7,<4.8 antlr>=4.7,<4.8 cloudpickle"
+        - TEST_SAGE="true"
+      addons:
+        apt:
+          packages:
+            # for theano
+            - libatlas-dev
+            - libatlas-base-dev
+            - liblapack-dev
+            - gfortran
+            - python-scipy
+    - python: 3.5
+      env:
+        - TEST_ASCII="true"
+        - TEST_OPT_DEPENDENCY="numpy scipy gmpy2 matplotlib theano llvmlite autowrap cython wurlitzer python-symengine=0.3.* tensorflow numexpr ipython antlr-python-runtime>=4.7,<4.8 antlr>=4.7,<4.8 cloudpickle"
+        - TEST_SAGE="true"
+      addons:
+        apt:
+          packages:
+            # for theano
+            - libatlas-dev
+            - libatlas-base-dev
+            - liblapack-dev
+            - gfortran
+            - python-scipy
+    - python: 3.7
+      env:
+        - TEST_ASCII="true"
+        - TEST_OPT_DEPENDENCY="numpy scipy gmpy2 matplotlib theano llvmlite autowrap cython wurlitzer python-symengine=0.3.* tensorflow numexpr ipython antlr-python-runtime>=4.7,<4.8 antlr>=4.7,<4.8 cloudpickle"
+        - TEST_SAGE="true"
+      addons:
+        apt:
+          packages:
+            # for theano
+            - libatlas-dev
+            - libatlas-base-dev
+            - liblapack-dev
+            - gfortran
+            - python-scipy
+
     - python: 3.7
       dist: xenial
       sudo: true
