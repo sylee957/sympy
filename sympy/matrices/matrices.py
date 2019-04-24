@@ -16,7 +16,7 @@ from sympy.core.numbers import Float, Integer, mod_inverse
 from sympy.core.power import Pow
 from sympy.core.singleton import S
 from sympy.core.symbol import Dummy, Symbol, _uniquely_named_symbol, symbols
-from sympy.core.sympify import sympify
+from sympy.core.sympify import sympify, _sympify
 from sympy.functions import exp, factorial
 from sympy.functions.elementary.miscellaneous import Max, Min, sqrt
 from sympy.polys import PurePoly, cancel, roots
@@ -2131,7 +2131,6 @@ class MatrixBase(MatrixDeprecated,
 
     is_Matrix = True
     _class_priority = 3
-    _sympify = staticmethod(sympify)
 
     __hash__ = None  # Mutable
 
@@ -2480,7 +2479,7 @@ class MatrixBase(MatrixDeprecated,
                 flat_list = []
                 for i in range(rows):
                     flat_list.extend(
-                        [cls._sympify(op(cls._sympify(i), cls._sympify(j)))
+                        [_sympify(op(i, j))
                          for j in range(cols)])
 
             # Matrix(2, 2, [1, 2, 3, 4])
@@ -2489,7 +2488,7 @@ class MatrixBase(MatrixDeprecated,
                 if len(flat_list) != rows * cols:
                     raise ValueError(
                         'List length should be equal to rows*columns')
-                flat_list = [cls._sympify(i) for i in flat_list]
+                flat_list = [_sympify(i) for i in flat_list]
 
 
         # Matrix()
