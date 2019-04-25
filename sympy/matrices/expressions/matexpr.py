@@ -49,7 +49,6 @@ class MatrixExpr(Expr):
 
     MatrixSymbol, MatAdd, MatMul, Transpose, Inverse
     """
-
     # Should not be considered iterable by the
     # sympy.core.compatibility.iterable function. Subclass that actually are
     # iterable (i.e., explicit matrices) should set this to True.
@@ -77,6 +76,7 @@ class MatrixExpr(Expr):
 
     # The following is adapted from the core Expr object
     def __neg__(self):
+        from .matmul import MatMul
         return MatMul(S.NegativeOne, self).doit()
 
     def __abs__(self):
@@ -85,46 +85,55 @@ class MatrixExpr(Expr):
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__radd__')
     def __add__(self, other):
+        from .matadd import MatAdd
         return MatAdd(self, other, check=True).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__add__')
     def __radd__(self, other):
+        from .matadd import MatAdd
         return MatAdd(other, self, check=True).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rsub__')
     def __sub__(self, other):
+        from .matadd import MatAdd
         return MatAdd(self, -other, check=True).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__sub__')
     def __rsub__(self, other):
+        from .matadd import MatAdd
         return MatAdd(other, -self, check=True).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmul__')
     def __mul__(self, other):
+        from .matmul import MatMul
         return MatMul(self, other).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmul__')
     def __matmul__(self, other):
+        from .matmul import MatMul
         return MatMul(self, other).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__mul__')
     def __rmul__(self, other):
+        from .matmul import MatMul
         return MatMul(other, self).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__mul__')
     def __rmatmul__(self, other):
+        from .matmul import MatMul
         return MatMul(other, self).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rpow__')
     def __pow__(self, other):
+        from .matpow import MatPow
         if not self.is_square:
             raise ShapeError("Power of non-square matrix %s" % self)
         elif self.is_Identity:
@@ -167,8 +176,8 @@ class MatrixExpr(Expr):
         return self.rows == self.cols
 
     def _eval_conjugate(self):
-        from sympy.matrices.expressions.adjoint import Adjoint
-        from sympy.matrices.expressions.transpose import Transpose
+        from .adjoint import Adjoint
+        from .transpose import Transpose
         return Adjoint(Transpose(self))
 
     def as_real_imag(self):
@@ -178,13 +187,15 @@ class MatrixExpr(Expr):
         return (real, im)
 
     def _eval_inverse(self):
-        from sympy.matrices.expressions.inverse import Inverse
+        from .inverse import Inverse
         return Inverse(self)
 
     def _eval_transpose(self):
+        from .transpose import Transpose
         return Transpose(self)
 
     def _eval_power(self, exp):
+        from .matpow import MatPow
         return MatPow(self, exp)
 
     def _eval_simplify(self, **kwargs):
@@ -242,7 +253,7 @@ class MatrixExpr(Expr):
         return conjugate(self)
 
     def transpose(self):
-        from sympy.matrices.expressions.transpose import transpose
+        from .transpose import transpose
         return transpose(self)
 
     T = property(transpose, None, None, 'Matrix transposition.')
@@ -376,6 +387,7 @@ class MatrixExpr(Expr):
         return self
 
     def as_coeff_mmul(self):
+        from .matmul import MatMul
         return 1, MatMul(self)
 
     @staticmethod
@@ -420,8 +432,9 @@ class MatrixExpr(Expr):
         >>> MatrixExpr.from_index_summation(expr)
         A*B.T*A.T
         """
-        from sympy import Sum, Mul, Add, MatMul, transpose, trace
+        from sympy import Sum, Mul, Add, transpose, trace
         from sympy.strategies.traverse import bottom_up
+        from .matmul import MatMul
 
         def remove_matelement(expr, i1, i2):
 
@@ -585,6 +598,8 @@ class MatrixExpr(Expr):
 def get_postprocessor(cls):
     def _postprocessor(expr):
         # To avoid circular imports, we can't have MatMul/MatAdd on the top level
+        from .matadd import MatAdd
+        from .matmul import MatMul
         mat_class = {Mul: MatMul, Add: MatAdd}[cls]
         nonmatrices = []
         matrices = []
@@ -701,6 +716,7 @@ class MatrixElement(Expr):
 
     def _eval_derivative(self, v):
         from sympy import Sum, symbols, Dummy
+        from .inverse import Inverse
 
         if not isinstance(v, MatrixElement):
             from sympy import MatrixBase
@@ -1183,10 +1199,3 @@ def _make_matrix(x):
     if isinstance(x, MatrixExpr):
         return x
     return ImmutableDenseMatrix([[x]])
-
-
-from .matmul import MatMul
-from .matadd import MatAdd
-from .matpow import MatPow
-from .transpose import Transpose
-from .inverse import Inverse
