@@ -6,7 +6,7 @@ from sympy.utilities.lambdify import lambdify
 
 
 def textplot(expr, a, b, W=55, H=18):
-    """
+    r"""
     Print a crude ASCII art plot of the SymPy expression 'expr' (which
     should contain a single symbol, e.g. x or something else) over the
     interval [a, b].
@@ -14,7 +14,52 @@ def textplot(expr, a, b, W=55, H=18):
     Examples
     ========
 
-    textplot(sin(t)*t, 0, 15)
+    >>> from sympy import Symbol, sin, cos
+    >>> from sympy.plotting.textplot import textplot
+    >>> t = Symbol('t')
+
+    >>> textplot(cos(t), 0, 15)
+          1 |  \                    ...                    ...
+            |   \                  /   \                  /   \
+            |    .                .     .                .     .
+            |
+            |     .              .       .                      .
+            |                                           .
+            |                                                    .
+            |      .            .         .            .
+    0.00363 | -------------------------------------------------------
+            |       .          .           .          .           .
+            |
+            |                               .                      .
+            |        .        .                      .
+            |
+            |         .      .               .      .               .
+            |                                 .
+            |          .    .                      .
+    -0.9927 |           ....                   ....
+              0                      7.5                        15
+
+    >>> textplot(sin(t)*t, 0, 15)
+    14.1677 |                                                    / \
+            |                                                   .   \
+            |
+            |                                                  .
+            |                             ...
+            |                            /   \                .
+            |                           /     \
+            |                          /       .             .
+    1.58962 | ------...---------------.------------------------------
+            |   ....   ...                      .
+            | ..          \          .           .          .
+            |              ..       /
+            |                \     /              .        .
+            |                 .....
+            |                                      .      .
+            |
+            |                                       .    .
+    -10.988 |                                        ....
+              0                      7.5                        15
+
     """
 
     free = expr.free_symbols
@@ -44,7 +89,6 @@ def textplot(expr, a, b, W=55, H=18):
     for x in range(W):
         y[x] = int(float(H)*(y[x] - mi)/(ma - mi))
     margin = 7
-    print
 
     for h in range(H - 1, -1, -1):
         s = [' '] * W
