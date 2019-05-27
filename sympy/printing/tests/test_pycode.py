@@ -9,7 +9,8 @@ from sympy.functions import acos, Piecewise, sign
 from sympy.logic import And, Or
 from sympy.matrices import SparseMatrix, MatrixSymbol
 from sympy.printing.pycode import (
-    MpmathPrinter, NumPyPrinter, PythonCodePrinter, pycode, SciPyPrinter
+    MpmathPrinter, NumPyPrinter, PythonCodePrinter, pycode, SciPyPrinter,
+    PythonMathPrinter
 )
 from sympy.utilities.pytest import raises
 from sympy.tensor import IndexedBase
@@ -24,18 +25,25 @@ def test_PythonCodePrinter():
     assert prntr.doprint(Mod(x, 2)) == 'x % 2'
     assert prntr.doprint(And(x, y)) == 'x and y'
     assert prntr.doprint(Or(x, y)) == 'x or y'
-    assert not prntr.module_imports
-    assert prntr.doprint(pi) == 'math.pi'
-    assert prntr.module_imports == {'math': {'pi'}}
-    assert prntr.doprint(acos(x)) == 'math.acos(x)'
     assert prntr.doprint(Assignment(x, 2)) == 'x = 2'
     assert prntr.doprint(Piecewise((1, Eq(x, 0)),
                         (2, x>6))) == '((1) if (x == 0) else (2) if (x > 6) else None)'
     assert prntr.doprint(Piecewise((2, Le(x, 0)),
                         (3, Gt(x, 0)), evaluate=False)) == '((2) if (x <= 0) else'\
                                                         ' (3) if (x > 0) else None)'
-    assert prntr.doprint(sign(x)) == '(0.0 if x == 0 else math.copysign(1, x))'
     assert prntr.doprint(p[0, 1]) == 'p[0, 1]'
+    assert not prntr.module_imports
+
+
+def test_PythonMathPrinter():
+    prntr = PythonMathPrinter()
+    assert not prntr.module_imports
+    assert prntr.doprint(pi) == 'math.pi'
+    assert prntr.module_imports == {'math': {'pi'}}
+    assert prntr.doprint(acos(x)) == 'math.acos(x)'
+    assert prntr.module_imports == {'math': {'pi', 'acos'}}
+    assert prntr.doprint(sign(x)) == '(0.0 if x == 0 else math.copysign(1, x))'
+    assert prntr.module_imports == {'math': {'pi', 'acos', 'copysign'}}
 
 
 def test_MpmathPrinter():
