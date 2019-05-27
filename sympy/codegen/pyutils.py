@@ -1,11 +1,11 @@
-from sympy.printing.pycode import PythonCodePrinter
+from sympy.printing.pycode import PythonMathPrinter
 
 """ This module collects utilities for rendering Python code. """
 
 
 def render_as_module(content):
     """ Renders python code as a module (with the required imports) """
-    printer = PythonCodePrinter()
+    printer = PythonMathPrinter()
     pystr = printer.doprint(content)
     if printer._settings['fully_qualified_modules']:
         module_imports_str = '\n'.join('import %s' % k for k in printer.module_imports)
