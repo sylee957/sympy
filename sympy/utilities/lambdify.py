@@ -714,6 +714,8 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True,
             from sympy.printing.tensorflow import TensorflowPrinter as Printer
         elif _module_present('sympy', namespaces):
             from sympy.printing.pycode import SymPyPrinter as Printer
+        elif _module_present('math', namespaces):
+            from sympy.printing.pycode import PythonMathPrinter as Printer
         else:
             from sympy.printing.pycode import PythonCodePrinter as Printer
         user_functions = {}
