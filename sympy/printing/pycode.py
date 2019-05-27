@@ -402,7 +402,7 @@ def pycode(expr, **settings):
     'math.tan(x) + 1'
 
     """
-    return PythonCodePrinter(settings).doprint(expr)
+    return PythonMathPrinter(settings).doprint(expr)
 
 
 _not_in_mpmath = 'log1p log2'.split()
