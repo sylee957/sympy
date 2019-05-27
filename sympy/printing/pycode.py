@@ -422,6 +422,7 @@ class MpmathPrinter(PythonCodePrinter):
     printmethod = "_mpmathcode"
 
     _kf = {k : 'mpmath.' + v for k, v in _known_functions_mpmath.items()}
+    _kc = {k : 'mpmath.' + v for k, v in _known_constants_mpmath.items()}
 
     def _print_Float(self, e):
         # XXX: This does not handle setting mpmath.mp.dps. It is assumed that
