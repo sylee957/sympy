@@ -304,7 +304,7 @@ class AbstractPythonCodePrinter(CodePrinter):
 class PythonCodePrinter(AbstractPythonCodePrinter):
 
     def _print_Abs(self, expr):
-        return 'abs({})'.format(expr)
+        return 'abs({})'.format(expr.args[0])
 
     def _print_sign(self, e):
         return '(0.0 if {e} == 0 else {f}(1, {e}))'.format(
