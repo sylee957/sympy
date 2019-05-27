@@ -20,49 +20,6 @@ _kw_py2and3 = {
 _kw_only_py2 = {'exec', 'print'}
 _kw_only_py3 = {'False', 'nonlocal', 'True'}
 
-_known_functions = {
-    'Abs': 'abs',
-}
-_known_functions_math = {
-    'acos': 'acos',
-    'acosh': 'acosh',
-    'asin': 'asin',
-    'asinh': 'asinh',
-    'atan': 'atan',
-    'atan2': 'atan2',
-    'atanh': 'atanh',
-    'ceiling': 'ceil',
-    'cos': 'cos',
-    'cosh': 'cosh',
-    'erf': 'erf',
-    'erfc': 'erfc',
-    'exp': 'exp',
-    'expm1': 'expm1',
-    'factorial': 'factorial',
-    'floor': 'floor',
-    'gamma': 'gamma',
-    'hypot': 'hypot',
-    'loggamma': 'lgamma',
-    'log': 'log',
-    'ln': 'log',
-    'log10': 'log10',
-    'log1p': 'log1p',
-    'log2': 'log2',
-    'sin': 'sin',
-    'sinh': 'sinh',
-    'Sqrt': 'sqrt',
-    'tan': 'tan',
-    'tanh': 'tanh'
-}  # Not used from ``math``: [copysign isclose isfinite isinf isnan ldexp frexp pow modf
-# radians trunc fmod fsum gcd degrees fabs]
-_known_constants_math = {
-    'Exp1': 'e',
-    'Pi': 'pi',
-    'E': 'e'
-    # Only in python >= 3.5:
-    # 'Infinity': 'inf',
-    # 'NaN': 'nan'
-}
 
 def _print_known_func(self, expr):
     known = self.known_functions[expr.__class__.__name__]
@@ -82,11 +39,8 @@ class AbstractPythonCodePrinter(CodePrinter):
     reserved_words = _kw_py2and3.union(_kw_only_py3)
     modules = None  # initialized to a set in __init__
     tab = '    '
-    _kf = dict(chain(
-        _known_functions.items(),
-        [(k, 'math.' + v) for k, v in _known_functions_math.items()]
-    ))
-    _kc = {k: 'math.'+v for k, v in _known_constants_math.items()}
+    _kf = dict()
+    _kc = dict()
     _operators = {'and': 'and', 'or': 'or', 'not': 'not'}
     _default_settings = dict(
         CodePrinter._default_settings,
@@ -349,6 +303,9 @@ class AbstractPythonCodePrinter(CodePrinter):
 
 class PythonCodePrinter(AbstractPythonCodePrinter):
 
+    def _print_Abs(self, expr):
+        return 'abs({})'.format(expr)
+
     def _print_sign(self, e):
         return '(0.0 if {e} == 0 else {f}(1, {e}))'.format(
             f=self._module_format('math.copysign'), e=self._print(e.args[0]))
@@ -366,8 +323,62 @@ class PythonCodePrinter(AbstractPythonCodePrinter):
 for k in PythonCodePrinter._kf:
     setattr(PythonCodePrinter, '_print_%s' % k, _print_known_func)
 
+
+_known_functions_math = {
+    'acos': 'acos',
+    'acosh': 'acosh',
+    'asin': 'asin',
+    'asinh': 'asinh',
+    'atan': 'atan',
+    'atan2': 'atan2',
+    'atanh': 'atanh',
+    'ceiling': 'ceil',
+    'cos': 'cos',
+    'cosh': 'cosh',
+    'erf': 'erf',
+    'erfc': 'erfc',
+    'exp': 'exp',
+    'expm1': 'expm1',
+    'factorial': 'factorial',
+    'floor': 'floor',
+    'gamma': 'gamma',
+    'hypot': 'hypot',
+    'loggamma': 'lgamma',
+    'log': 'log',
+    'ln': 'log',
+    'log10': 'log10',
+    'log1p': 'log1p',
+    'log2': 'log2',
+    'sin': 'sin',
+    'sinh': 'sinh',
+    'Sqrt': 'sqrt',
+    'tan': 'tan',
+    'tanh': 'tanh'
+# Not used from ``math``:
+#   [copysign isclose isfinite isinf isnan ldexp
+#    frexp pow modf radians trunc fmod fsum gcd degrees fabs]
+}
+
+_known_constants_math = {
+    'Exp1': 'e',
+    'Pi': 'pi',
+    'E': 'e'
+    # Only in python >= 3.5:
+    # 'Infinity': 'inf',
+    # 'NaN': 'nan'
+}
+
+class PythonMathPrinter(PythonCodePrinter):
+
+    _kf = {k : 'math.' + v for k, v in _known_functions_math.items()}
+    _kc = {k : 'math.' + v for k, v in _known_constants_math.items()}
+
+
+for k in PythonMathPrinter._kf:
+    setattr(PythonMathPrinter, '_print_%s' % k, _print_known_func)
+
 for k in _known_constants_math:
-    setattr(PythonCodePrinter, '_print_%s' % k, _print_known_const)
+    setattr(PythonMathPrinter, '_print_%s' % k, _print_known_const)
 
 
 def pycode(expr, **settings):
@@ -410,10 +421,7 @@ class MpmathPrinter(PythonCodePrinter):
     """
     printmethod = "_mpmathcode"
 
-    _kf = dict(chain(
-        _known_functions.items(),
-        [(k, 'mpmath.' + v) for k, v in _known_functions_mpmath.items()]
-    ))
+    _kf = {k : 'mpmath.' + v for k, v in _known_functions_mpmath.items()}
 
     def _print_Float(self, e):
         # XXX: This does not handle setting mpmath.mp.dps. It is assumed that
@@ -745,10 +753,7 @@ for k in SciPyPrinter._kc:
 
 class SymPyPrinter(PythonCodePrinter):
 
-    _kf = {k: 'sympy.' + v for k, v in chain(
-        _known_functions.items(),
-        _known_functions_math.items()
-    )}
+    _kf = {k: 'sympy.' + v for k, v in _known_functions_math.items()}
 
     def _print_Function(self, expr):
         mod = expr.func.__module__ or ''
