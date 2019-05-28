@@ -1208,6 +1208,29 @@ def _inverse_laplace_transform(F, s, t_, plane, simplify=True):
     return _simplify(f.subs(t, t_), simplify), cond
 
 
+def _inverse_laplace_transform_by_residue(expr, s, t):
+    """Subroutine for computing inverse laplace transformation using residues
+    """
+    numer, denom = expr.as_numer_denom()
+
+    numer_poly = Poly(numer, s)
+    denom_poly = Poly(denom, s)
+
+    if not numer_poly.is_univariate and denom_poly.is_univariate:
+        raise NotImplementedError("Both polynomials should be univariate")
+
+    if numer_poly.degree() >= denom_poly.degree():
+        raise NotImplementedError()
+
+    poles = denom_poly.all_roots()
+
+    if any(isinstance(arg, CRootOf) for arg in poles):
+        raise NotImplementedError()
+
+    residues = [residue(expr*exp(-s*t), s, pole) for pole in poles]
+    return sum(residues)*Heaviside(t)
+
+
 class InverseLaplaceTransform(IntegralTransform):
     """
     Class representing unevaluated inverse Laplace transforms.
