@@ -3,6 +3,7 @@
 from __future__ import print_function, division
 
 from sympy.core import S
+from sympy.core.add import Add
 from sympy.core.compatibility import reduce, range, iterable
 from sympy.core.function import Function
 from sympy.core.relational import _canonical, Ge, Gt
@@ -1099,6 +1100,17 @@ class LaplaceTransform(IntegralTransform):
             raise IntegralTransformError(
                 'Laplace', None, 'No combined convergence.')
         return plane, cond
+
+    def _eval_expand_laplace_transform(self, deep=True, doit=False, **hints):
+        expr = self.function
+
+        if isinstance(expr, Add):
+            t = self.function_variable
+            s = self.transform_variable
+            args = [LaplaceTransform(arg, t, s) for arg in expr.args]
+            return Add(*args)
+
+        return self
 
 
 def laplace_transform(f, t, s, **hints):
