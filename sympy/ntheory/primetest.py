@@ -87,13 +87,54 @@ def is_square(n, prep=True):
             return False
         if n in [0, 1]:
             return True
+
+    # start with mod 128 rejection
     m = n & 127
-    if not ((m*0x8bc40d7d) & (m*0xa1e2f5d1) & 0x14020a):
-        m = n % 63
-        if not ((m*0x3d491df7) & (m*0xc824a9f9) & 0x10f14008):
-            from sympy.ntheory import perfect_power
-            if perfect_power(n, [2]):
-                return True
+    if ((m*0x8bc40d7d) & (m*0xa1e2f5d1) & 0x14020a):
+        return False
+
+    # Other modulii share one big int modulus
+    largeMod = n % (63L*25*31*23*19*17*11)
+
+    # residues mod 63. 75% rejection
+    m = largeMod % 63
+    if ((m*0x3d491df7) & (m*0xc824a9f9) & 0x10f14008):
+        return False
+
+    # residues mod 25. 56% rejection
+    m = largeMod % 25
+    if ((m*0x1929fc1b) & (m*0x4c9ea3b2) & 0x51001005):
+        return False
+
+    # residues mod 31. 48.4% rejection
+    m = 0xd10d829a*(largeMod % 31)
+    if (m & (m+0x672a5354) & 0x21025115):
+        return False
+
+    # residues mod 23. 47.8% rejection
+    m = largeMod % 23
+    if ((m*0x7bd28629) & (m*0xe7180889) & 0xf8300):
+        return False
+
+    # residues mod 19. 47.3% rejection
+    m = largeMod % 19
+    if ((m*0x1b8bead3) & (m*0x4d75a124) & 0x4280082b):
+        return False
+
+    # residues mod 17. 47.1% rejection
+    m = largeMod % 17
+    if ((m*0x6736f323) & (m*0x9b1d499) & 0xc0000300):
+        return False
+
+    # residues mod 11. 45.5% rejection
+    m = largeMod % 11
+    if ((m*0xabf1a3a7) & (m*0x2612bf93) & 0x45854000):
+        return False
+
+    from sympy.ntheory import perfect_power
+    perfect_pwr = perfect_power(n, [2])
+    if perfect_pwr and perfect_pwr[-1] % 2 == 0:
+        return True
     return False
 
 
