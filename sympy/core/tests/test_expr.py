@@ -1576,6 +1576,11 @@ def test_is_constant():
 
     assert Poly(3,x).is_constant() is True
 
+    from sympy.matrices.expressions import MatrixSymbol
+    M = MatrixSymbol('M', 2, 2)
+    assert M[0, 0].is_constant(M) is False
+    assert (M[0, 0] * M[1, 1] - M[0, 1] * M[1, 0]).is_constant(M) is False
+
 
 def test_equals():
     assert (-3 - sqrt(5) + (-sqrt(10)/2 - sqrt(2)/2)**2).equals(0)
