@@ -716,6 +716,8 @@ class Expr(Basic, EvalfMixin):
         Examples
         ========
 
+        Numeric testing for scalar expressions:
+
         >>> from sympy import symbols, S
         >>> x, y = symbols('x y')
         >>> expr = x + y
@@ -725,11 +727,30 @@ class Expr(Basic, EvalfMixin):
         >>> expr = S.One
         >>> expr._eval_is_constant_numeric(x, y)
         (None, 1)
+
+        Numeric testing for matrix expressions:
+
+        >>> from sympy import MatrixSymbol
+        >>> A = MatrixSymbol('A', 2, 2)
+        >>> A[0, 0]._eval_is_constant_numeric(A)
+        (False, None)
         """
+        def _subs_constant(expr, number):
+            from sympy.matrices.expressions.matexpr import \
+                MatrixSymbol, OneMatrix
+
+            pairs = dict()
+            for x in wrt:
+                if isinstance(x, MatrixSymbol):
+                    pairs[x] = number * OneMatrix(x.rows, x.cols)
+                else:
+                    pairs[x] = number
+
+            return expr.subs(pairs)
+
         # try 0 (for a) and 1 (for b)
         try:
-            a = self.subs(list(zip(wrt, [0]*len(wrt))),
-                simultaneous=True)
+            a = _subs_constant(self, 0)
             if a is S.NaN:
                 # evaluation may succeed when substitution fails
                 a = self._random(None, 0, 0, 0, 0)
@@ -738,8 +759,7 @@ class Expr(Basic, EvalfMixin):
 
         if a is not None and a is not S.NaN:
             try:
-                b = self.subs(list(zip(wrt, [1]*len(wrt))),
-                    simultaneous=True)
+                b = _subs_constant(self, 1)
                 if b is S.NaN:
                     # evaluation may succeed when substitution fails
                     b = self._random(None, 1, 0, 1, 0)
