@@ -664,36 +664,9 @@ class Expr(Basic, EvalfMixin):
         # try numerical evaluation to see if we get two different values
         failing_number = None
         if wrt == free:
-            # try 0 (for a) and 1 (for b)
-            try:
-                a = expr.subs(list(zip(free, [0]*len(free))),
-                    simultaneous=True)
-                if a is S.NaN:
-                    # evaluation may succeed when substitution fails
-                    a = expr._random(None, 0, 0, 0, 0)
-            except ZeroDivisionError:
-                a = None
-            if a is not None and a is not S.NaN:
-                try:
-                    b = expr.subs(list(zip(free, [1]*len(free))),
-                        simultaneous=True)
-                    if b is S.NaN:
-                        # evaluation may succeed when substitution fails
-                        b = expr._random(None, 1, 0, 1, 0)
-                except ZeroDivisionError:
-                    b = None
-                if b is not None and b is not S.NaN and b.equals(a) is False:
-                    return False
-                # try random real
-                b = expr._random(None, -1, 0, 1, 0)
-                if b is not None and b is not S.NaN and b.equals(a) is False:
-                    return False
-                # try random complex
-                b = expr._random()
-                if b is not None and b is not S.NaN:
-                    if b.equals(a) is False:
-                        return False
-                    failing_number = a if a.is_number else b
+            status, failing_number = expr._eval_is_constant_numeric(*wrt)
+            if status is False:
+                return False
 
         # now we will test each wrt symbol (or all free symbols) to see if the
         # expression depends on them or not using differentiation. This is
@@ -712,6 +685,84 @@ class Expr(Basic, EvalfMixin):
                         return None
                 return False
         return True
+
+    def _eval_is_constant_numeric(self, *wrt):
+        """Helper function to test whether the expression is a constant
+
+        Parameters
+        ==========
+
+        wrt : list of symbols
+            The symbols which should be randomly substituted into
+            numeric values for the given expression.
+
+        Returns
+        =======
+
+        (status, failing_number) : (bool, number)
+            ``status`` is the logical result about whether the
+            expression had tested to be a constant or not.
+            However, it may only be able to give ``False`` or ``None``,
+            because it should not be strong enough to give ``True``,
+            even if hundreds of the random evaluation indicate the
+            same result.
+
+            ``failing_number`` is the evaluated numeric result that may
+            supposedly be the constant value of the given expression.
+            If the test gives a strong false that the test is failing,
+            it may give ``None``. And also, if the test fails due to the
+            exceptions, it may also give ``None``.
+
+        Examples
+        ========
+
+        >>> from sympy import symbols, S
+        >>> x, y = symbols('x y')
+        >>> expr = x + y
+        >>> expr._eval_is_constant_numeric(x, y)
+        (False, None)
+
+        >>> expr = S.One
+        >>> expr._eval_is_constant_numeric(x, y)
+        (None, 1)
+        """
+        # try 0 (for a) and 1 (for b)
+        try:
+            a = self.subs(list(zip(wrt, [0]*len(wrt))),
+                simultaneous=True)
+            if a is S.NaN:
+                # evaluation may succeed when substitution fails
+                a = self._random(None, 0, 0, 0, 0)
+        except ZeroDivisionError:
+            a = None
+
+        if a is not None and a is not S.NaN:
+            try:
+                b = self.subs(list(zip(wrt, [1]*len(wrt))),
+                    simultaneous=True)
+                if b is S.NaN:
+                    # evaluation may succeed when substitution fails
+                    b = self._random(None, 1, 0, 1, 0)
+            except ZeroDivisionError:
+                b = None
+
+            if b is not None and b is not S.NaN and b.equals(a) is False:
+                return False, None
+
+            # try random real
+            b = self._random(None, -1, 0, 1, 0)
+            if b is not None and b is not S.NaN and b.equals(a) is False:
+                return False, None
+
+            # try random complex
+            b = self._random()
+            if b is not None and b is not S.NaN:
+                if b.equals(a) is False:
+                    return False, None
+                failing_number = a if a.is_number else b
+                return None, failing_number
+
+        return None, None
 
     def equals(self, other, failing_expression=False):
         """Return True if self == other, False if it doesn't, or None. If
