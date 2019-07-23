@@ -2625,11 +2625,7 @@ class MatrixBase(MatrixDeprecated,
                         if evaluate and all(ismat(i) for i in row):
                             r, c, flatT = cls._handle_creation_inputs(
                                 [i.T for i in row])
-
-                            # XXX Temporary workaround to use python integer
-                            # types for c
-                            T = reshape(flatT, [as_int(c)])
-
+                            T = reshape(flatT, [c])
                             flat = [T[i][j] for j in range(c) for i in range(r)]
                             r, c = c, r
                         else:

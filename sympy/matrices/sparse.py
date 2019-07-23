@@ -208,10 +208,6 @@ class SparseMatrix(MatrixBase):
                         value = _list[self.cols*i + j]
                         if value:
                             self._smat[i, j] = value
-
-        self.rows = self._sympify(self.rows)
-        self.cols = self._sympify(self.cols)
-
         return self
 
     def __eq__(self, other):
