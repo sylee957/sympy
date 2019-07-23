@@ -54,6 +54,9 @@ class MatAdd(MatrixExpr, Add):
     def shape(self):
         return self.args[0].shape
 
+    def _canonicalize(self):
+        return canonicalize(self)
+
     def _entry(self, i, j, **kwargs):
         return Add(*[arg._entry(i, j, **kwargs) for arg in self.args])
 
@@ -73,7 +76,7 @@ class MatAdd(MatrixExpr, Add):
             args = [arg.doit(**kwargs) for arg in self.args]
         else:
             args = self.args
-        return canonicalize(MatAdd(*args))
+        return MatAdd(*args)._canonicalize()
 
     def _eval_derivative_matrix_lines(self, x):
         add_lines = [arg._eval_derivative_matrix_lines(x) for arg in self.args]

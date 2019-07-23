@@ -112,6 +112,9 @@ class MatMul(MatrixExpr, Mul):
         coeff, matrices = self.as_coeff_matrices()
         return coeff, MatMul(*matrices)
 
+    def _canonicalize(self):
+        return canonicalize(self)
+
     def _eval_transpose(self):
         """Transposition of matrix multiplication.
 
@@ -168,8 +171,7 @@ class MatMul(MatrixExpr, Mul):
         else:
             args = self.args
         # treat scalar*MatrixSymbol or scalar*MatPow separately
-        expr = canonicalize(MatMul(*args))
-        return expr
+        return MatMul(*args)._canonicalize()
 
     # Needed for partial compatibility with Mul
     def args_cnc(self, **kwargs):

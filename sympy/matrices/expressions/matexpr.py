@@ -85,42 +85,42 @@ class MatrixExpr(Expr):
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__radd__')
     def __add__(self, other):
-        return MatAdd(self, other, check=True).doit()
+        return MatAdd(self, other, check=True)._canonicalize()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__add__')
     def __radd__(self, other):
-        return MatAdd(other, self, check=True).doit()
+        return MatAdd(other, self, check=True)._canonicalize()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rsub__')
     def __sub__(self, other):
-        return MatAdd(self, -other, check=True).doit()
+        return MatAdd(self, -other, check=True)._canonicalize()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__sub__')
     def __rsub__(self, other):
-        return MatAdd(other, -self, check=True).doit()
+        return MatAdd(other, -self, check=True)._canonicalize()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmul__')
     def __mul__(self, other):
-        return MatMul(self, other).doit()
+        return MatMul(self, other)._canonicalize()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmul__')
     def __matmul__(self, other):
-        return MatMul(self, other).doit()
+        return MatMul(self, other)._canonicalize()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__mul__')
     def __rmul__(self, other):
-        return MatMul(other, self).doit()
+        return MatMul(other, self)._canonicalize()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__mul__')
     def __rmatmul__(self, other):
-        return MatMul(other, self).doit()
+        return MatMul(other, self)._canonicalize()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rpow__')
