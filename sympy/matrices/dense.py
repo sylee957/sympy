@@ -441,11 +441,12 @@ class MutableDenseMatrix(DenseMatrix, MatrixBase):
         else:
             rows, cols, flat_list = cls._handle_creation_inputs(*args, **kwargs)
             flat_list = list(flat_list) # create a shallow copy
-        self = object.__new__(cls)
-        self.rows = rows
-        self.cols = cols
-        self._mat = flat_list
-        return self
+
+        obj = object.__new__(cls)
+        obj.rows = cls._sympify(rows)
+        obj.cols = cls._sympify(cols)
+        obj._mat = flat_list
+        return obj
 
     def __setitem__(self, key, value):
         """

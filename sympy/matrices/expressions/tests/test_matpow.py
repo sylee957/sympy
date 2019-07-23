@@ -2,6 +2,7 @@ from sympy.utilities.pytest import raises
 from sympy.core import symbols, pi, S
 from sympy.matrices import Identity, MatrixSymbol, ImmutableMatrix, ZeroMatrix
 from sympy.matrices.expressions import MatPow, MatAdd, MatMul
+from sympy.matrices.expressions.inverse import Inverse
 from sympy.matrices.expressions.matexpr import ShapeError
 
 n, m, l, k = symbols('n m l k', integer=True)
@@ -14,7 +15,7 @@ E = MatrixSymbol('E', m, n)
 
 def test_entry():
     from sympy.concrete import Sum
-    assert MatPow(A, 1)[0, 0] == A[0, 0]
+    assert MatPow(A, 1)[0, 0] == MatPow(A, 1)[0, 0]
     assert MatPow(C, 0)[0, 0] == 1
     assert MatPow(C, 0)[0, 1] == 0
     assert isinstance(MatPow(C, 2)[0, 0], Sum)
@@ -29,8 +30,9 @@ def test_as_explicit_symbol():
 
 def test_as_explicit_nonsquare_symbol():
     X = MatrixSymbol('X', 2, 3)
-    assert MatPow(X, 1).as_explicit() == X.as_explicit()
-    for r in [0, 2, S.Half, S.Pi]:
+    assert MatPow(X, 1).as_explicit() == MatPow(X, 1)
+    assert MatPow(X, 0).as_explicit() == MatPow(X, 0)
+    for r in [2, S.Half, S.Pi]:
         raises(ShapeError, lambda: MatPow(X, r).as_explicit())
 
 
@@ -42,23 +44,25 @@ def test_as_explicit():
     assert MatPow(A, -1).as_explicit() == A.inv()
     assert MatPow(A, -2).as_explicit() == (A.inv())**2
     # less expensive than testing on a 2x2
-    A = ImmutableMatrix([4]);
+    A = ImmutableMatrix([4])
     assert MatPow(A, S.Half).as_explicit() == A**S.Half
 
 
 def test_as_explicit_nonsquare():
     A = ImmutableMatrix([[1, 2, 3], [4, 5, 6]])
-    assert MatPow(A, 1).as_explicit() == A
-    raises(ShapeError, lambda: MatPow(A, 0).as_explicit())
+    assert MatPow(A, 1).as_explicit() == MatPow(A, 1)
+    assert MatPow(A, 0).as_explicit() == MatPow(A, 0)
     raises(ShapeError, lambda: MatPow(A, 2).as_explicit())
     raises(ShapeError, lambda: MatPow(A, -1).as_explicit())
     raises(ValueError, lambda: MatPow(A, pi).as_explicit())
 
 
 def test_doit_nonsquare_MatrixSymbol():
-    assert MatPow(A, 1).doit() == A
-    for r in [0, 2, -1, pi]:
-        assert MatPow(A, r).doit() == MatPow(A, r)
+    assert MatPow(A, 0).doit() == MatPow(A, 0)
+    assert MatPow(A, 1).doit() == MatPow(A, 1)
+    assert MatPow(A, 2).doit() == MatPow(A, 2)
+    assert MatPow(A, -1).doit() == Inverse(A)
+    assert MatPow(A, pi).doit() == MatPow(A, pi)
 
 
 def test_doit_square_MatrixSymbol_symsize():
@@ -84,8 +88,8 @@ def test_doit_with_MatrixBase():
 
 def test_doit_nonsquare():
     X = ImmutableMatrix([[1, 2, 3], [4, 5, 6]])
-    assert MatPow(X, 1).doit() == X
-    raises(ShapeError, lambda: MatPow(X, 0).doit())
+    assert MatPow(X, 1).doit() == MatPow(X, 1)
+    assert MatPow(X, 0).doit() == MatPow(X, 0)
     raises(ShapeError, lambda: MatPow(X, 2).doit())
     raises(ShapeError, lambda: MatPow(X, -1).doit())
     raises(ShapeError, lambda: MatPow(X, pi).doit())
@@ -118,16 +122,21 @@ def test_identity_power():
 def test_zero_power():
     z1 = ZeroMatrix(n, n)
     assert MatPow(z1, 3).doit() == z1
+    raises(ValueError, lambda:MatPow(z1, -2).doit())
     raises(ValueError, lambda:MatPow(z1, -1).doit())
     assert MatPow(z1, 0).doit() == Identity(n)
-    assert MatPow(z1, n).doit() == z1
-    raises(ValueError, lambda:MatPow(z1, -2).doit())
+    assert MatPow(z1, n).doit() == MatPow(z1, n)
+
     z2 = ZeroMatrix(4, 4)
-    assert MatPow(z2, n).doit() == z2
+    assert MatPow(z2, n).doit() == MatPow(z2, n)
     raises(ValueError, lambda:MatPow(z2, -3).doit())
     assert MatPow(z2, 2).doit() == z2
     assert MatPow(z2, 0).doit() == Identity(4)
     raises(ValueError, lambda:MatPow(z2, -1).doit())
+
+    e = symbols('e', positive=True)
+    assert MatPow(z1, e).doit() == z1
+    assert MatPow(z2, e).doit() == z2
 
 
 def test_transpose_power():

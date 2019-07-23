@@ -9,11 +9,24 @@ from sympy.matrices import MatrixBase
 
 class MatPow(MatrixExpr):
 
-    def __new__(cls, base, exp):
+    def __new__(cls, base, exp, check=True):
         base = _sympify(base)
-        if not base.is_Matrix:
-            raise TypeError("Function parameter should be a matrix")
         exp = _sympify(exp)
+
+        if check:
+            if not base.is_Matrix:
+                raise TypeError("Function parameter should be a matrix")
+
+            if exp.is_number and exp not in (0, 1):
+                if isinstance(base, MatrixBase) and not base.is_square:
+                    raise ShapeError("Power of non-square matrix %s" % base)
+
+                if base.is_square == False:
+                    raise ShapeError("Power of non-square matrix %s" % base)
+
+            if isinstance(base, ZeroMatrix) and exp.is_negative:
+                raise ValueError("Matrix determinant is 0, not invertible.")
+
         return super(MatPow, cls).__new__(cls, base, exp)
 
     @property
@@ -26,16 +39,60 @@ class MatPow(MatrixExpr):
 
     @property
     def shape(self):
+        # XXX Make shape undefined for non-square matrix power
         return self.base.shape
+
+    def as_explicit(self):
+        if self.base.is_square:
+            return super(MatPow, self).as_explicit()
+        elif self.exp in (0, 1):
+            return self
+        raise ShapeError()
+
+    def _canonicalize(self, **kwargs):
+        from .inverse import Inverse
+
+        base, exp = self.args
+
+        if isinstance(base, MatrixBase):
+            return base ** exp
+
+        if isinstance(base, Identity):
+            return base
+
+        if isinstance(base, ZeroMatrix):
+            if base.is_square:
+                if exp.is_zero:
+                    return Identity(base.rows)
+                if exp.is_positive:
+                    return base
+
+        # combine all powers, e.g. (A**2)**3 = A**6
+        while isinstance(base, (MatPow, Inverse)):
+            exp *= base.exp
+            base = base.base
+
+        if base.is_square and exp == 1:
+            return base
+
+        if base.is_square and exp.is_zero:
+            return Identity(self.rows)
+
+        # Note: just evaluate cases we know, return unevaluated on others.
+        # E.g., MatrixSymbol('x', n, m) to power 0 is not an error.
+        if exp == -1:
+            return Inverse(base).doit(**kwargs)
+
+        return MatPow(base, exp, check=False)
 
     def _entry(self, i, j, **kwargs):
         from sympy.matrices.expressions import MatMul
         A = self.doit()
         if isinstance(A, MatPow):
             # We still have a MatPow, make an explicit MatMul out of it.
-            if not A.base.is_square:
+            if A.base.is_square == False:
                 raise ShapeError("Power of non-square matrix %s" % A.base)
-            elif A.exp.is_Integer and A.exp.is_positive:
+            elif A.base.is_square and A.exp.is_Integer and A.exp.is_positive:
                 A = MatMul(*[A.base for k in range(A.exp)])
             #elif A.exp.is_Integer and self.exp.is_negative:
             # Note: possible future improvement: in principle we can take
@@ -50,38 +107,13 @@ class MatPow(MatrixExpr):
         return A._entry(i, j)
 
     def doit(self, **kwargs):
-        from sympy.matrices.expressions import Inverse
         deep = kwargs.get('deep', True)
         if deep:
             args = [arg.doit(**kwargs) for arg in self.args]
         else:
             args = self.args
 
-        base, exp = args
-        # combine all powers, e.g. (A**2)**3 = A**6
-        while isinstance(base, MatPow):
-            exp = exp*base.args[1]
-            base = base.args[0]
-
-        if exp.is_zero and base.is_square:
-            if isinstance(base, MatrixBase):
-                return base.func(Identity(base.shape[0]))
-            return Identity(base.shape[0])
-        elif isinstance(base, ZeroMatrix) and exp.is_negative:
-            raise ValueError("Matrix determinant is 0, not invertible.")
-        elif isinstance(base, (Identity, ZeroMatrix)):
-            return base
-        elif isinstance(base, MatrixBase):
-            if exp is S.One:
-                return base
-            return base**exp
-        # Note: just evaluate cases we know, return unevaluated on others.
-        # E.g., MatrixSymbol('x', n, m) to power 0 is not an error.
-        elif exp is S.NegativeOne and base.is_square:
-            return Inverse(base).doit(**kwargs)
-        elif exp is S.One:
-            return base
-        return MatPow(base, exp)
+        return MatPow(*args)._canonicalize(**kwargs)
 
     def _eval_transpose(self):
         base, exp = self.args

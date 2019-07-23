@@ -2221,11 +2221,16 @@ class MatrixArithmetic(MatrixRequired):
 
     @call_highest_priority('__rpow__')
     def __pow__(self, exp):
-        if self.rows != self.cols:
-            raise NonSquareMatrixError()
+        from .expressions.matpow import MatPow
+
         a = self
         jordan_pow = getattr(a, '_matrix_pow_by_jordan_blocks', None)
         exp = sympify(exp)
+
+        if self.rows != self.cols:
+            if exp.is_number and exp not in (0, 1):
+                raise NonSquareMatrixError()
+            return MatPow(self, exp)
 
         if exp.is_zero:
             return a._new(a.rows, a.cols, lambda i, j: int(i == j))
@@ -2263,7 +2268,6 @@ class MatrixArithmetic(MatrixRequired):
                 if exp.is_integer is False or exp.is_nonnegative is False:
                     raise
 
-        from sympy.matrices.expressions import MatPow
         return MatPow(a, exp)
 
     @call_highest_priority('__add__')

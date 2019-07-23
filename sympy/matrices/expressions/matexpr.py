@@ -85,55 +85,47 @@ class MatrixExpr(Expr):
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__radd__')
     def __add__(self, other):
-        return MatAdd(self, other, check=True)._canonicalize()
+        return MatAdd(self, other, check=True).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__add__')
     def __radd__(self, other):
-        return MatAdd(other, self, check=True)._canonicalize()
+        return MatAdd(other, self, check=True).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rsub__')
     def __sub__(self, other):
-        return MatAdd(self, -other, check=True)._canonicalize()
+        return MatAdd(self, -other, check=True).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__sub__')
     def __rsub__(self, other):
-        return MatAdd(other, -self, check=True)._canonicalize()
+        return MatAdd(other, -self, check=True).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmul__')
     def __mul__(self, other):
-        return MatMul(self, other)._canonicalize()
+        return MatMul(self, other).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmul__')
     def __matmul__(self, other):
-        return MatMul(self, other)._canonicalize()
+        return MatMul(self, other).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__mul__')
     def __rmul__(self, other):
-        return MatMul(other, self)._canonicalize()
+        return MatMul(other, self).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__mul__')
     def __rmatmul__(self, other):
-        return MatMul(other, self)._canonicalize()
+        return MatMul(other, self).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rpow__')
     def __pow__(self, other):
-        if not self.is_square:
-            raise ShapeError("Power of non-square matrix %s" % self)
-        elif self.is_Identity:
-            return self
-        elif other == S.Zero:
-            return Identity(self.rows)
-        elif other == S.One:
-            return self
-        return MatPow(self, other).doit(deep=False)
+        return MatPow(self, other).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__pow__')
@@ -164,7 +156,11 @@ class MatrixExpr(Expr):
 
     @property
     def is_square(self):
-        return self.rows == self.cols
+        if self.rows.is_number and self.cols.is_number:
+            return self.rows == self.cols
+        elif self.rows == self.cols:
+            return True
+        return None
 
     def _eval_conjugate(self):
         from sympy.matrices.expressions.adjoint import Adjoint

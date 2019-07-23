@@ -156,13 +156,21 @@ class MatMul(MatrixExpr, Mul):
         return factor**self.rows * Mul(*list(map(Determinant, square_matrices)))
 
     def _eval_inverse(self):
-        try:
-            return MatMul(*[
-                arg.inverse() if isinstance(arg, MatrixExpr) else arg**-1
-                    for arg in self.args[::-1]]).doit()
-        except ShapeError:
-            from sympy.matrices.expressions.inverse import Inverse
-            return Inverse(self)
+        from .inverse import Inverse
+
+        for arg in self.args:
+            if isinstance(arg, (MatrixExpr, MatrixBase)) \
+                and not arg.is_square:
+                return Inverse(self)
+
+        new_args = []
+        for arg in self.args[::-1]:
+            if arg.is_Matrix:
+                new_args.append(Inverse(arg))
+            else:
+                new_args.append(1 / arg)
+
+        return MatMul(*new_args).doit()
 
     def doit(self, **kwargs):
         deep = kwargs.get('deep', True)

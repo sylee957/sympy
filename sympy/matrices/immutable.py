@@ -103,15 +103,15 @@ class ImmutableDenseMatrix(DenseMatrix, MatrixExpr):
 
     @property
     def cols(self):
-        return int(self.args[1])
+        return self.args[1]
 
     @property
     def rows(self):
-        return int(self.args[0])
+        return self.args[0]
 
     @property
     def shape(self):
-        return tuple(int(i) for i in self.args[:2])
+        return self.rows, self.cols
 
     def is_diagonalizable(self, reals_only=False, **kwargs):
         return super(ImmutableDenseMatrix, self).is_diagonalizable(

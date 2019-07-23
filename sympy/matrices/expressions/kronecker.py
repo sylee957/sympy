@@ -224,13 +224,16 @@ class KroneckerProduct(MatrixExpr):
         else:
             return self * other
 
+    def _canonicalize(self):
+        return canonicalize(self)
+
     def doit(self, **kwargs):
         deep = kwargs.get('deep', True)
         if deep:
             args = [arg.doit(**kwargs) for arg in self.args]
         else:
             args = self.args
-        return canonicalize(KroneckerProduct(*args))
+        return KroneckerProduct(*args)._canonicalize()
 
 
 def validate(*args):

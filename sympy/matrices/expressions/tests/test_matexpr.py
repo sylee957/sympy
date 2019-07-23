@@ -157,10 +157,8 @@ def test_OneMatrix():
     assert U.conjugate() == U
 
     assert OneMatrix(n, n) ** 0 == Identity(n)
-    with raises(ShapeError):
-        U ** 0
-    with raises(ShapeError):
-        U ** 2
+    assert U ** 0 == MatPow(U, 0)
+    assert U ** 2 == MatPow(U, 2)
     with raises(ShapeError):
         a + U
 
