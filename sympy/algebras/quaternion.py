@@ -654,9 +654,6 @@ class Quaternion(Expr):
         Generates a 4x4 transformation matrix (used for rotation about a point
         other than the origin) if the point(v) is passed as an argument.
 
-        Examples
-        ========
-
         >>> from sympy.algebras.quaternion import Quaternion
         >>> from sympy import symbols, trigsimp, cos, sin
         >>> x = symbols('x')

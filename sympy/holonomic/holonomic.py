@@ -853,7 +853,7 @@ class HolonomicFunction(object):
         See Also
         ========
 
-        .integrate()
+        .integrate
         """
         kwargs.setdefault('evaluate', True)
         if args:
@@ -1189,7 +1189,7 @@ class HolonomicFunction(object):
         See Also
         ========
 
-        from_hyper()
+        from_hyper
         """
 
         R = self.annihilator.parent
@@ -1271,7 +1271,7 @@ class HolonomicFunction(object):
         See Also
         ========
 
-        HolonomicFunction.series()
+        HolonomicFunction.series
 
         References
         ==========
@@ -1659,7 +1659,7 @@ class HolonomicFunction(object):
         See Also
         ========
 
-        HolonomicFunction.to_sequence()
+        HolonomicFunction.to_sequence
         """
 
         if _recur is None:
@@ -2122,7 +2122,7 @@ class HolonomicFunction(object):
         See Also
         ========
 
-        to_hyper()
+        to_hyper
         """
 
         # convert to hypergeometric first

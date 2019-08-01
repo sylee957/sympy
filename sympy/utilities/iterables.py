@@ -997,7 +997,7 @@ def strongly_connected_components(G):
     See Also
     ========
 
-    utilities.iterables.connected_components()
+    utilities.iterables.connected_components
 
     """
     # Map from a vertex to its neighbours
@@ -1111,7 +1111,7 @@ def connected_components(G):
     See Also
     ========
 
-    utilities.iterables.strongly_connected_components()
+    utilities.iterables.strongly_connected_components
 
     """
     # Duplicate edges both ways so that the graph is effectively undirected

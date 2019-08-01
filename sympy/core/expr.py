@@ -1833,8 +1833,13 @@ class Expr(Basic, EvalfMixin):
 
         See Also
         ========
-        .separatevars(), .expand(log=True), Add.as_two_terms(),
-        Mul.as_two_terms(), .as_coeff_add(), .as_coeff_mul()
+
+        sympy.simplify.simplify.separatevars
+        sympy.core.function.expand
+        sympy.core.add.Add.as_two_terms
+        sympy.core.mul.Mul.as_two_terms
+        as_coeff_add
+        as_coeff_mul
         """
         from .symbol import Symbol
         from .add import _unevaluated_Add
@@ -2711,7 +2716,8 @@ class Expr(Basic, EvalfMixin):
 
         See Also
         ========
-        is_rational_function()
+
+        is_rational_function
 
         References
         ==========

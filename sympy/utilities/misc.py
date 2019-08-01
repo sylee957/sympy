@@ -302,7 +302,7 @@ def func_name(x, short=False):
 
     See Also
     ========
-    sympy.core.compatibility get_function_name
+    sympy.core.compatibility.get_function_name
     """
     alias = {
     'GreaterThan': 'Ge',

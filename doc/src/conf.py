@@ -206,3 +206,5 @@ texinfo_documents = [
 # Use svg for graphviz
 
 graphviz_output_format = 'svg'
+
+numpydoc_show_class_members = False

@@ -218,11 +218,6 @@ class LinearEntity(GeometrySet):
 
         angle : angle in radians
 
-        See Also
-        ========
-
-        angle_between, is_perpendicular, Ray2D.closing_angle
-
         Examples
         ========
 
@@ -234,7 +229,8 @@ class LinearEntity(GeometrySet):
 
         See Also
         ========
-        angle_between, Ray2D.closing_angle
+
+        angle_between, is_perpendicular, Ray2D.closing_angle
         """
         if not isinstance(l1, LinearEntity) and not isinstance(l2, LinearEntity):
             raise TypeError('Must pass only LinearEntity objects')

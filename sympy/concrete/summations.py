@@ -380,8 +380,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         See Also
         ========
 
-        Sum.is_absolutely_convergent()
-        Product.is_convergent()
+        Sum.is_absolutely_convergent
+        Product.is_convergent
         """
         from sympy import Interval, Integral, log, symbols, simplify
         p, q, r = symbols('p q r', cls=Wild)
@@ -615,7 +615,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         See Also
         ========
 
-        Sum.is_convergent()
+        Sum.is_convergent
         """
         return Sum(abs(self.function), self.limits).is_convergent()
 

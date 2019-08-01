@@ -155,7 +155,7 @@ def diophantine(eq, param=symbols("t", integer=True), syms=None,
     See Also
     ========
 
-    diop_solve()
+    diop_solve
     sympy.utilities.iterables.permute_signs
     sympy.utilities.iterables.signed_permutations
     """
@@ -420,7 +420,7 @@ def diop_solve(eq, param=symbols("t", integer=True)):
     See Also
     ========
 
-    diophantine()
+    diophantine
     """
     var, coeff, eq_type = classify_diop(eq, _dict=False)
 
@@ -623,8 +623,10 @@ def diop_linear(eq, param=symbols("t", integer=True)):
     See Also
     ========
 
-    diop_quadratic(), diop_ternary_quadratic(), diop_general_pythagorean(),
-    diop_general_sum_of_squares()
+    diop_quadratic
+    diop_ternary_quadratic
+    diop_general_pythagorean
+    diop_general_sum_of_squares
     """
     from sympy.core.function import count_ops
     var, coeff, diop_type = classify_diop(eq, _dict=False)
@@ -911,8 +913,10 @@ def diop_quadratic(eq, param=symbols("t", integer=True)):
     See Also
     ========
 
-    diop_linear(), diop_ternary_quadratic(), diop_general_sum_of_squares(),
-    diop_general_pythagorean()
+    diop_linear
+    diop_ternary_quadratic
+    diop_general_sum_of_squares
+    diop_general_pythagorean
     """
     var, coeff, diop_type = classify_diop(eq, _dict=False)
 
@@ -1157,7 +1161,7 @@ def diop_DN(D, N, t=symbols("t", integer=True)):
     See Also
     ========
 
-    find_DN(), diop_bf_DN()
+    find_DN, diop_bf_DN
 
     References
     ==========
@@ -1349,7 +1353,7 @@ def _special_diop_DN(D, N):
     See Also
     ========
 
-    diop_DN()
+    diop_DN
 
     References
     ==========
@@ -1562,7 +1566,7 @@ def diop_bf_DN(D, N, t=symbols("t", integer=True)):
     See Also
     ========
 
-    diop_DN()
+    diop_DN
 
     References
     ==========
@@ -1765,7 +1769,7 @@ def transformation_to_DN(eq):
     See Also
     ========
 
-    find_DN()
+    find_DN
 
     References
     ==========
@@ -1861,7 +1865,7 @@ def find_DN(eq):
     See Also
     ========
 
-    transformation_to_DN()
+    transformation_to_DN
 
     References
     ==========
@@ -2366,7 +2370,7 @@ def sqf_normal(a, b, c, steps=False):
     See Also
     ========
 
-    reconstruct()
+    reconstruct
     """
     ABC = _remove_gcd(a, b, c)
     sq = tuple(square_factor(i) for i in ABC)
@@ -2834,7 +2838,7 @@ def diop_general_sum_of_even_powers(eq, limit=1):
 
     See Also
     ========
-    power_representation()
+    power_representation
     """
     var, coeff, diop_type = classify_diop(eq, _dict=False)
 
@@ -2949,7 +2953,7 @@ def prime_as_sum_of_two_squares(p):
 
     See Also
     ========
-    sum_of_squares()
+    sum_of_squares
     """
     if not p % 4 == 1:
         return
@@ -2999,7 +3003,7 @@ def sum_of_three_squares(n):
 
     See Also
     ========
-    sum_of_squares()
+    sum_of_squares
     """
     special = {1:(1, 0, 0), 2:(1, 1, 0), 3:(1, 1, 1), 10: (1, 3, 0), 34: (3, 3, 4), 58:(3, 7, 0),
         85:(6, 7, 0), 130:(3, 11, 0), 214:(3, 6, 13), 226:(8, 9, 9), 370:(8, 9, 15),
@@ -3078,7 +3082,7 @@ def sum_of_four_squares(n):
 
     See Also
     ========
-    sum_of_squares()
+    sum_of_squares
     """
     if n == 0:
         return (0, 0, 0, 0)

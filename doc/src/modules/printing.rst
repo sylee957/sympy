@@ -572,22 +572,22 @@ Precedence
 
 .. module:: sympy.printing.precedence
 
+Default precedence values for some basic types.
+
 .. autodata:: PRECEDENCE
 
-   Default precedence values for some basic types.
+A dictionary assigning precedence values to certain classes. These values
+are treated like they were inherited, so not every single class has to be
+named here.
 
 .. autodata:: PRECEDENCE_VALUES
 
-   A dictionary assigning precedence values to certain classes. These values
-   are treated like they were inherited, so not every single class has to be
-   named here.
+Sometimes it's not enough to assign a fixed precedence value to a
+class. Then a function can be inserted in this dictionary that takes an
+instance of this class as argument and returns the appropriate precedence
+value.
 
 .. autodata:: PRECEDENCE_FUNCTIONS
-
-   Sometimes it's not enough to assign a fixed precedence value to a
-   class. Then a function can be inserted in this dictionary that takes an
-   instance of this class as argument and returns the appropriate precedence
-   value.
 
 .. autofunction:: precedence
 

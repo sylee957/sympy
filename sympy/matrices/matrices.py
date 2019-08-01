@@ -3467,24 +3467,26 @@ class MatrixBase(MatrixDeprecated,
         """
         Return the inverse of a matrix.
 
-        CASE 1: If the matrix is a dense matrix.
-
-        Return the matrix inverse using the method indicated (default
-        is Gauss elimination).
-
         Parameters
         ==========
 
-        method : ('GE', 'LU', or 'ADJ')
+        method : 'GE', 'LU', 'ADJ', 'CH', 'LDL'
+            'GE', 'LU', 'ADJ' are supported for dense matrices with 'GE'
+            as default.
+
+            'CH', 'LDL' are supported for sparse matrices with 'CH'
+            as default
 
         Notes
         =====
 
         According to the ``method`` keyword, it calls the appropriate method:
 
-          GE .... inverse_GE(); default
+          GE .... inverse_GE()
           LU .... inverse_LU()
           ADJ ... inverse_ADJ()
+          LDL ... inverse_LDL()
+          CH .... inverse_CH()
 
         See Also
         ========
@@ -3495,31 +3497,9 @@ class MatrixBase(MatrixDeprecated,
 
         Raises
         ------
+
         ValueError
             If the determinant of the matrix is zero.
-
-        CASE 2: If the matrix is a sparse matrix.
-
-        Return the matrix inverse using Cholesky or LDL (default).
-
-        kwargs
-        ======
-
-        method : ('CH', 'LDL')
-
-        Notes
-        =====
-
-        According to the ``method`` keyword, it calls the appropriate method:
-
-          LDL ... inverse_LDL(); default
-          CH .... inverse_CH()
-
-        Raises
-        ------
-        ValueError
-            If the determinant of the matrix is zero.
-
         """
         if not self.is_square:
             raise NonSquareMatrixError()

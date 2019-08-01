@@ -563,7 +563,13 @@ def gauss_lobatto(n, n_digits):
     See Also
     ========
 
-    gauss_legendre,gauss_laguerre, gauss_gen_laguerre, gauss_hermite, gauss_chebyshev_t, gauss_chebyshev_u, gauss_jacobi
+    gauss_legendre
+    gauss_laguerre
+    gauss_gen_laguerre
+    gauss_hermite
+    gauss_chebyshev_t
+    gauss_chebyshev_u
+    gauss_jacobi
 
     References
     ==========
