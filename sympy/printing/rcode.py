@@ -107,6 +107,12 @@ class RCodePrinter(CodePrinter):
         self._dereference = set(settings.get('dereference', []))
         self.reserved_words = set(reserved_words)
 
+    def _print_BooleanTrue(self, expr):
+        return 'TRUE'
+
+    def _print_BooleanFalse(self, expr):
+        return 'FALSE'
+
     def _rate_index_position(self, p):
         return p*5
 
@@ -234,6 +240,24 @@ class RCodePrinter(CodePrinter):
     def _print_MatrixElement(self, expr):
         return "{0}[{1}]".format(self.parenthesize(expr.parent, PRECEDENCE["Atom"],
             strict=True), expr.j + expr.i*expr.parent.shape[1])
+
+    def _print_MatAdd(self, expr):
+        return super(RCodePrinter, self)._print_Add(expr)
+
+    def _print_MatMul(self, expr):
+        if len(expr.args) == 2:
+            A, B = expr.args
+
+            scalar, matrix = None, None
+            if A.is_scalar and B.is_Matrix:
+                scalar, matrix = A, B
+            elif A.is_Matrix and B.is_scalar:
+                scalar, matrix = B, A
+
+            if scalar == -1:
+                return "-{}".format(self._print(matrix))
+
+        raise NotImplementedError()
 
     def _print_Symbol(self, expr):
         name = super(RCodePrinter, self)._print_Symbol(expr)

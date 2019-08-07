@@ -17,6 +17,7 @@ from sympy.core.compatibility import string_types, range
 from sympy.core.mul import _keep_coeff
 from sympy.printing.codeprinter import CodePrinter
 from sympy.printing.precedence import precedence, PRECEDENCE
+from sympy.printing.str import MatMulPrinter
 from re import search
 
 # List of known functions.  First, those that have the same name in
@@ -61,7 +62,7 @@ known_fcns_src2 = {
 }
 
 
-class OctaveCodePrinter(CodePrinter):
+class OctaveCodePrinter(MatMulPrinter, CodePrinter):
     """
     A printer to convert expressions to strings of Octave/Matlab code.
     """
@@ -133,6 +134,16 @@ class OctaveCodePrinter(CodePrinter):
             open_lines.append("for %s = %s:%s" % (var, start, stop))
             close_lines.append("end")
         return open_lines, close_lines
+
+
+    def _print_Half(self, expr):
+        return '1/2'
+
+
+    def _print_Rational(self, expr):
+        if expr.q == 1:
+            return str(expr.p)
+        return "%s/%s" % (expr.p, expr.q)
 
 
     def _print_Mul(self, expr):
@@ -235,10 +246,20 @@ class OctaveCodePrinter(CodePrinter):
                            self.parenthesize(expr.exp, PREC))
 
 
+    def _print_MatAdd(self, expr):
+        return super(OctaveCodePrinter, self)._print_Add(expr)
+
+
     def _print_MatPow(self, expr):
         PREC = precedence(expr)
         return '%s^%s' % (self.parenthesize(expr.base, PREC),
                           self.parenthesize(expr.exp, PREC))
+
+
+    def _print_HadamardProduct(self, expr):
+        return '.*'.join([self.parenthesize(arg, precedence(expr))
+            for arg in expr.args])
+
 
     def _print_MatrixSolve(self, expr):
         PREC = precedence(expr)

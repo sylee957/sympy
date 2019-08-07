@@ -124,10 +124,10 @@ def test_rcode_user_functions():
 
 
 def test_rcode_boolean():
-    assert rcode(True) == "True"
-    assert rcode(S.true) == "True"
-    assert rcode(False) == "False"
-    assert rcode(S.false) == "False"
+    assert rcode(True) == "TRUE"
+    assert rcode(S.true) == "TRUE"
+    assert rcode(False) == "FALSE"
+    assert rcode(S.false) == "FALSE"
     assert rcode(x & y) == "x & y"
     assert rcode(x | y) == "x | y"
     assert rcode(~x) == "!x"

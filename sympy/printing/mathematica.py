@@ -216,6 +216,10 @@ class MCodePrinter(CodePrinter):
         return 'Catalan'
 
 
+    def _print_Rational(self, expr):
+        return '{}/{}'.format(self._print(expr.p), self._print(expr.q))
+
+
     def _print_list(self, expr):
         return '{' + ', '.join(self.doprint(a) for a in expr) + '}'
     _print_tuple = _print_list

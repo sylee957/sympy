@@ -10,6 +10,7 @@ from itertools import chain
 from sympy.core import S
 from .precedence import precedence
 from .codeprinter import CodePrinter
+from .str import PowPrinter
 
 _kw_py2and3 = {
     'and', 'as', 'assert', 'break', 'class', 'continue', 'def', 'del', 'elif',
@@ -75,7 +76,7 @@ def _print_known_const(self, expr):
     return self._module_format(known)
 
 
-class AbstractPythonCodePrinter(CodePrinter):
+class AbstractPythonCodePrinter(PowPrinter, CodePrinter):
     printmethod = "_pythoncode"
     language = "Python"
     reserved_words = _kw_py2and3.union(_kw_only_py3)
@@ -222,6 +223,12 @@ class AbstractPythonCodePrinter(CodePrinter):
             contraction_string += ","
         contraction_string = contraction_string[:-1]
         return contraction_string, letters_free, letters_dum
+
+    def _print_BooleanTrue(self, expr):
+        return "True"
+
+    def _print_BooleanFalse(self, expr):
+        return "False"
 
     def _print_NaN(self, expr):
         return "float('nan')"
@@ -595,6 +602,9 @@ class NumPyPrinter(PythonCodePrinter):
         #     tuples in nopython mode.
         delimiter=', '
         return '({},)'.format(delimiter.join(self._print(item) for item in seq))
+
+    def _print_MatAdd(self, expr):
+        return super(NumPyPrinter, self)._print_Add(expr)
 
     def _print_MatMul(self, expr):
         "Matrix multiplication printer"

@@ -8,11 +8,14 @@ from sympy.core.compatibility import default_sort_key, string_types
 from sympy.core.function import Lambda
 from sympy.core.mul import _keep_coeff
 from sympy.core.symbol import Symbol
-from sympy.printing.str import StrPrinter
 from sympy.printing.precedence import precedence
 
 # Backwards compatibility
 from sympy.codegen.ast import Assignment
+
+from .str import \
+    NumeralPrinter, AddMulPrinter, PrinterCommon, SymbolPrinter
+from .printer import Printer
 
 
 class requires(object):
@@ -35,7 +38,9 @@ class AssignmentError(Exception):
     pass
 
 
-class CodePrinter(StrPrinter):
+class CodePrinter(
+    SymbolPrinter, NumeralPrinter, AddMulPrinter, PrinterCommon,
+    Printer):
     """
     The base class for code-printing subclasses.
     """
@@ -62,6 +67,9 @@ class CodePrinter(StrPrinter):
             'erf2': 'erf',
             'Li': 'li',
     }
+
+    # Subclass should implement this
+    known_functions = dict()
 
     def __init__(self, settings=None):
 
@@ -146,10 +154,10 @@ class CodePrinter(StrPrinter):
 
         # terms with no summations first
         if None in dummies:
-            text = StrPrinter.doprint(self, Add(*dummies[None]))
+            text = super(CodePrinter, self).doprint(Add(*dummies[None]))
         else:
             # If all terms have summations we must initialize array to Zero
-            text = StrPrinter.doprint(self, 0)
+            text = super(CodePrinter, self).doprint(0)
 
         # skip redundant assignments (where lhs == rhs)
         lhs_printed = self._print(assign_to)
@@ -198,8 +206,9 @@ class CodePrinter(StrPrinter):
 
                         lines.extend(openloop)
                         lines.extend(openloop_d)
-                        text = "%s = %s" % (lhs_printed, StrPrinter.doprint(
-                            self, assign_to + term))
+                        text = "%s = %s" % (
+                            lhs_printed,
+                            super(CodePrinter, self).doprint(assign_to + term))
                         lines.append(self._get_statement(text))
                         lines.extend(closeloop_d)
                         lines.extend(closeloop)
@@ -366,6 +375,9 @@ class CodePrinter(StrPrinter):
             return name + self._settings['reserved_word_suffix']
         else:
             return name
+
+    def _print_UnevaluatedExpr(self, expr):
+        return self._print(expr.args[0])
 
     def _print_Function(self, expr):
         if expr.func.__name__ in self.known_functions:

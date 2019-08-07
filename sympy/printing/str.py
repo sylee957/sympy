@@ -15,23 +15,10 @@ from mpmath.libmp import prec_to_dps, to_str as mlib_to_str
 from sympy.utilities import default_sort_key
 
 
-class StrPrinter(Printer):
-    printmethod = "_sympystr"
-    _default_settings = {
-        "order": None,
-        "full_prec": "auto",
-        "sympy_integers": False,
-        "abbrev": False,
-    }
-
-    _relationals = dict()
-
-    def parenthesize(self, item, level, strict=False):
-        if (precedence(item) < level) or ((not strict) and precedence(item) <= level):
-            return "(%s)" % self._print(item)
-        else:
-            return self._print(item)
-
+class PrinterCommon(Printer):
+    """A mixin class for providing miscellaneous printing methods, and
+    parenthesis manager.
+    """
     def stringify(self, args, sep, level=0):
         return sep.join([self.parenthesize(item, level) for item in args])
 
@@ -43,6 +30,29 @@ class StrPrinter(Printer):
         else:
             return str(expr)
 
+    def parenthesize(self, item, level, strict=False):
+        if (precedence(item) < level) or \
+            ((not strict) and precedence(item) <= level):
+            return "(%s)" % self._print(item)
+        else:
+            return self._print(item)
+
+
+class AddMulPrinter(PrinterCommon, Printer):
+    """A mixin class for providing printing methods for addition and
+    mutliplication operator shared by almost every programming
+    languages.
+
+    Notes
+    =====
+
+    ``MatAdd`` and ``MatMul`` may false-positively look up ``Add``
+    and ``Mul`` printer in the current SymPy object inheritance system.
+
+    This class is also providing stub methods to prevent the wrong
+    printings. So you must override ``_print_MatAdd`` and
+    ``_print_MatMul`` with the correct printing method.
+    """
     def _print_Add(self, expr, order=None):
         if self.order == 'none':
             terms = list(expr.args)
@@ -66,6 +76,220 @@ class StrPrinter(Printer):
         if sign == '+':
             sign = ""
         return sign + ' '.join(l)
+
+    def _print_Mul(self, expr):
+        prec = precedence(expr)
+
+        c, e = expr.as_coeff_Mul()
+        if c < 0:
+            expr = _keep_coeff(-c, e)
+            sign = "-"
+        else:
+            sign = ""
+
+        a = []  # items in the numerator
+        b = []  # items that are in the denominator (if any)
+
+        # Will collect all pow with more than one base element and exp = -1
+        pow_paren = []
+
+        if self.order not in ('old', 'none'):
+            args = expr.as_ordered_factors()
+        else:
+            # use make_args in case expr was something like -x -> x
+            args = Mul.make_args(expr)
+
+        # Gather args for numerator/denominator
+        for item in args:
+            if item.is_commutative and item.is_Pow and \
+                item.exp.is_Rational and item.exp.is_negative:
+                if item.exp != -1:
+                    b.append(Pow(item.base, -item.exp, evaluate=False))
+                else:
+                    # To avoid situations like #14160
+                    if len(item.args[0].args) != 1 and isinstance(item.base, Mul):
+                        pow_paren.append(item)
+                    b.append(Pow(item.base, -item.exp))
+            elif item.is_Rational and item is not S.Infinity:
+                if item.p != 1:
+                    a.append(Rational(item.p))
+                if item.q != 1:
+                    b.append(Rational(item.q))
+            else:
+                a.append(item)
+
+        a = a or [S.One]
+
+        a_str = [self.parenthesize(x, prec, strict=False) for x in a]
+        b_str = [self.parenthesize(x, prec, strict=False) for x in b]
+
+        # To parenthesize Pow with exp = -1 and having more than one Symbol
+        for item in pow_paren:
+            if item.base in b:
+                b_str[b.index(item.base)] = "(%s)" % b_str[b.index(item.base)]
+
+        if not b:
+            return sign + '*'.join(a_str)
+        elif len(b) == 1:
+            return sign + '*'.join(a_str) + "/" + b_str[0]
+        else:
+            return sign + '*'.join(a_str) + "/(%s)" % '*'.join(b_str)
+
+    def _print_MatAdd(self, expr):
+        raise NotImplementedError()
+
+    def _print_MatMul(self, expr):
+        raise NotImplementedError()
+
+
+class PowPrinter(PrinterCommon, Printer):
+    """A mixin class for providing printing methods for python-like
+    power operator (``**``).
+    """
+    def _print_Pow(self, expr, rational=False):
+        """Printing helper function for ``Pow``
+
+        Parameters
+        ==========
+
+        rational : bool, optional
+            If ``True``, it will not attempt printing ``sqrt(x)`` or
+            ``x**S.Half`` as ``sqrt``, and will use ``x**(1/2)``
+            instead.
+
+            See examples for additional details
+
+        Examples
+        ========
+
+        >>> from sympy.functions import sqrt
+        >>> from sympy.printing.str import StrPrinter
+        >>> from sympy.abc import x
+
+        How ``rational`` keyword works with ``sqrt``:
+
+        >>> printer = StrPrinter()
+        >>> printer._print_Pow(sqrt(x), rational=True)
+        'x**(1/2)'
+        >>> printer._print_Pow(sqrt(x), rational=False)
+        'sqrt(x)'
+        >>> printer._print_Pow(1/sqrt(x), rational=True)
+        'x**(-1/2)'
+        >>> printer._print_Pow(1/sqrt(x), rational=False)
+        '1/sqrt(x)'
+
+        Notes
+        =====
+
+        ``sqrt(x)`` is canonicalized as ``Pow(x, S.Half)`` in SymPy,
+        so there is no need of defining a separate printer for ``sqrt``.
+        Instead, it should be handled here as well.
+        """
+        PREC = precedence(expr)
+
+        if expr.exp is S.Half and not rational:
+            return "sqrt(%s)" % self._print(expr.base)
+
+        if expr.is_commutative:
+            if -expr.exp is S.Half and not rational:
+                # Note: Don't test "expr.exp == -S.Half" here, because that will
+                # match -0.5, which we don't want.
+                return "%s/sqrt(%s)" % tuple(map(lambda arg: self._print(arg), (S.One, expr.base)))
+            if expr.exp is -S.One:
+                # Similarly to the S.Half case, don't test with "==" here.
+                return '%s/%s' % (self._print(S.One),
+                                  self.parenthesize(expr.base, PREC, strict=False))
+
+        e = self.parenthesize(expr.exp, PREC, strict=False)
+        if self.printmethod == '_sympyrepr' and expr.exp.is_Rational and expr.exp.q != 1:
+            # the parenthesized exp should be '(Rational(a, b))' so strip parens,
+            # but just check to be sure.
+            if e.startswith('(Rational'):
+                return '%s**%s' % (self.parenthesize(expr.base, PREC, strict=False), e[1:-1])
+        return '%s**%s' % (self.parenthesize(expr.base, PREC, strict=False), e)
+
+
+class MatMulPrinter(PrinterCommon, Printer):
+    """A mixin class for providing printing methods for MATLAB-Octave
+    style matrix multiplication operation.
+    """
+    def _print_MatMul(self, expr):
+        c, m = expr.as_coeff_mmul()
+        if c.is_number and c < 0:
+            expr = _keep_coeff(-c, m)
+            sign = "-"
+        else:
+            sign = ""
+
+        return sign + '*'.join(
+            [self.parenthesize(arg, precedence(expr)) for arg in expr.args]
+        )
+
+
+class NumeralPrinter(Printer):
+    """A mixin class for providing printing methods for programming
+    languages using standard numerals for integers and floating points.
+    """
+    def _print_Integer(self, expr):
+        return str(expr.p)
+
+    def _print_Zero(self, expr):
+        return "0"
+
+    def _print_One(self, expr):
+        return "1"
+
+    def _print_NegativeOne(self, expr):
+        return "-1"
+
+    def _print_Float(self, expr):
+        prec = expr._prec
+        if prec < 5:
+            dps = 0
+        else:
+            dps = prec_to_dps(expr._prec)
+        if self._settings["full_prec"] is True:
+            strip = False
+        elif self._settings["full_prec"] is False:
+            strip = True
+        elif self._settings["full_prec"] == "auto":
+            strip = self._print_level > 1
+        rv = mlib_to_str(expr._mpf_, dps, strip_zeros=strip)
+        if rv.startswith('-.0'):
+            rv = '-0.' + rv[3:]
+        elif rv.startswith('.0'):
+            rv = '0.' + rv[2:]
+        if rv.startswith('+'):
+            # e.g., +inf -> inf
+            rv = rv[1:]
+        return rv
+
+
+class SymbolPrinter(Printer):
+    """A mixin class for printing the symbols as literals.
+
+    Symbols may be used to represent 'variables' used in various
+    programming languages for code generation purposes, even if they do
+    not have any CAS.
+    """
+    def _print_Symbol(self, expr):
+        return expr.name
+    _print_MatrixSymbol = _print_Symbol
+    _print_RandomSymbol = _print_Symbol
+
+
+class StrPrinter(
+    SymbolPrinter, NumeralPrinter, MatMulPrinter, AddMulPrinter, PowPrinter,
+    PrinterCommon, Printer):
+    printmethod = "_sympystr"
+    _default_settings = {
+        "order": None,
+        "full_prec": "auto",
+        "sympy_integers": False,
+        "abbrev": False,
+    }
+
+    _relationals = dict()
 
     def _print_BooleanTrue(self, expr):
         return "True"
@@ -263,73 +487,8 @@ class StrPrinter(Printer):
     def _print_DeferredVector(self, expr):
         return expr.name
 
-    def _print_Mul(self, expr):
-
-        prec = precedence(expr)
-
-        c, e = expr.as_coeff_Mul()
-        if c < 0:
-            expr = _keep_coeff(-c, e)
-            sign = "-"
-        else:
-            sign = ""
-
-        a = []  # items in the numerator
-        b = []  # items that are in the denominator (if any)
-
-        pow_paren = []  # Will collect all pow with more than one base element and exp = -1
-
-        if self.order not in ('old', 'none'):
-            args = expr.as_ordered_factors()
-        else:
-            # use make_args in case expr was something like -x -> x
-            args = Mul.make_args(expr)
-
-        # Gather args for numerator/denominator
-        for item in args:
-            if item.is_commutative and item.is_Pow and item.exp.is_Rational and item.exp.is_negative:
-                if item.exp != -1:
-                    b.append(Pow(item.base, -item.exp, evaluate=False))
-                else:
-                    if len(item.args[0].args) != 1 and isinstance(item.base, Mul):   # To avoid situations like #14160
-                        pow_paren.append(item)
-                    b.append(Pow(item.base, -item.exp))
-            elif item.is_Rational and item is not S.Infinity:
-                if item.p != 1:
-                    a.append(Rational(item.p))
-                if item.q != 1:
-                    b.append(Rational(item.q))
-            else:
-                a.append(item)
-
-        a = a or [S.One]
-
-        a_str = [self.parenthesize(x, prec, strict=False) for x in a]
-        b_str = [self.parenthesize(x, prec, strict=False) for x in b]
-
-        # To parenthesize Pow with exp = -1 and having more than one Symbol
-        for item in pow_paren:
-            if item.base in b:
-                b_str[b.index(item.base)] = "(%s)" % b_str[b.index(item.base)]
-
-        if not b:
-            return sign + '*'.join(a_str)
-        elif len(b) == 1:
-            return sign + '*'.join(a_str) + "/" + b_str[0]
-        else:
-            return sign + '*'.join(a_str) + "/(%s)" % '*'.join(b_str)
-
-    def _print_MatMul(self, expr):
-        c, m = expr.as_coeff_mmul()
-        if c.is_number and c < 0:
-            expr = _keep_coeff(-c, m)
-            sign = "-"
-        else:
-            sign = ""
-
-        return sign + '*'.join(
-            [self.parenthesize(arg, precedence(expr)) for arg in expr.args]
-        )
+    def _print_MatAdd(self, expr):
+        return super(StrPrinter, self)._print_Add(expr)
 
     def _print_HadamardProduct(self, expr):
         return '.*'.join([self.parenthesize(arg, precedence(expr))
@@ -530,68 +689,6 @@ class StrPrinter(Printer):
         else:
             return self._print(expr.as_expr())
 
-    def _print_Pow(self, expr, rational=False):
-        """Printing helper function for ``Pow``
-
-        Parameters
-        ==========
-
-        rational : bool, optional
-            If ``True``, it will not attempt printing ``sqrt(x)`` or
-            ``x**S.Half`` as ``sqrt``, and will use ``x**(1/2)``
-            instead.
-
-            See examples for additional details
-
-        Examples
-        ========
-
-        >>> from sympy.functions import sqrt
-        >>> from sympy.printing.str import StrPrinter
-        >>> from sympy.abc import x
-
-        How ``rational`` keyword works with ``sqrt``:
-
-        >>> printer = StrPrinter()
-        >>> printer._print_Pow(sqrt(x), rational=True)
-        'x**(1/2)'
-        >>> printer._print_Pow(sqrt(x), rational=False)
-        'sqrt(x)'
-        >>> printer._print_Pow(1/sqrt(x), rational=True)
-        'x**(-1/2)'
-        >>> printer._print_Pow(1/sqrt(x), rational=False)
-        '1/sqrt(x)'
-
-        Notes
-        =====
-
-        ``sqrt(x)`` is canonicalized as ``Pow(x, S.Half)`` in SymPy,
-        so there is no need of defining a separate printer for ``sqrt``.
-        Instead, it should be handled here as well.
-        """
-        PREC = precedence(expr)
-
-        if expr.exp is S.Half and not rational:
-            return "sqrt(%s)" % self._print(expr.base)
-
-        if expr.is_commutative:
-            if -expr.exp is S.Half and not rational:
-                # Note: Don't test "expr.exp == -S.Half" here, because that will
-                # match -0.5, which we don't want.
-                return "%s/sqrt(%s)" % tuple(map(lambda arg: self._print(arg), (S.One, expr.base)))
-            if expr.exp is -S.One:
-                # Similarly to the S.Half case, don't test with "==" here.
-                return '%s/%s' % (self._print(S.One),
-                                  self.parenthesize(expr.base, PREC, strict=False))
-
-        e = self.parenthesize(expr.exp, PREC, strict=False)
-        if self.printmethod == '_sympyrepr' and expr.exp.is_Rational and expr.exp.q != 1:
-            # the parenthesized exp should be '(Rational(a, b))' so strip parens,
-            # but just check to be sure.
-            if e.startswith('(Rational'):
-                return '%s**%s' % (self.parenthesize(expr.base, PREC, strict=False), e[1:-1])
-        return '%s**%s' % (self.parenthesize(expr.base, PREC, strict=False), e)
-
     def _print_UnevaluatedExpr(self, expr):
         return self._print(expr.args[0])
 
@@ -657,28 +754,6 @@ class StrPrinter(Printer):
             return str(expr.numerator)
         else:
             return "%s/%s" % (expr.numerator, expr.denominator)
-
-    def _print_Float(self, expr):
-        prec = expr._prec
-        if prec < 5:
-            dps = 0
-        else:
-            dps = prec_to_dps(expr._prec)
-        if self._settings["full_prec"] is True:
-            strip = False
-        elif self._settings["full_prec"] is False:
-            strip = True
-        elif self._settings["full_prec"] == "auto":
-            strip = self._print_level > 1
-        rv = mlib_to_str(expr._mpf_, dps, strip_zeros=strip)
-        if rv.startswith('-.0'):
-            rv = '-0.' + rv[3:]
-        elif rv.startswith('.0'):
-            rv = '0.' + rv[2:]
-        if rv.startswith('+'):
-            # e.g., +inf -> inf
-            rv = rv[1:]
-        return rv
 
     def _print_Relational(self, expr):
 

@@ -3,8 +3,10 @@ from distutils.version import LooseVersion as V
 from sympy import Mul
 from sympy.core.compatibility import Iterable
 from sympy.external import import_module
-from sympy.printing.precedence import PRECEDENCE
-from sympy.printing.pycode import AbstractPythonCodePrinter
+
+from .precedence import PRECEDENCE
+from .pycode import AbstractPythonCodePrinter
+
 import sympy
 
 
@@ -78,6 +80,7 @@ class TensorflowPrinter(AbstractPythonCodePrinter):
     _print_Expr = _print_Function
     _print_Application = _print_Function
     _print_MatrixExpr = _print_Function
+    _print_MatAdd = _print_Function
     # TODO: a better class structure would avoid this mess:
     _print_Not = _print_Function
     _print_And = _print_Function
@@ -143,6 +146,10 @@ class TensorflowPrinter(AbstractPythonCodePrinter):
 
     def _print_MatPow(self, expr):
         return self._expand_fold_binary_op("tensorflow.matmul", [expr.base]*expr.exp)
+
+    def _print_MatrixElement(self, expr):
+        return self.parenthesize(expr.parent, PRECEDENCE["Atom"], strict=True) \
+            + '[%s, %s]' % (self._print(expr.i), self._print(expr.j))
 
     def _print_Assignment(self, expr):
         # TODO: is this necessary?

@@ -41,6 +41,8 @@ from sympy.printing.codeprinter import CodePrinter
 from sympy.printing.precedence import precedence, PRECEDENCE
 from sympy.printing.printer import printer_context
 
+from .str import PowPrinter
+
 
 known_functions = {
     "sin": "sin",
@@ -63,7 +65,7 @@ known_functions = {
 }
 
 
-class FCodePrinter(CodePrinter):
+class FCodePrinter(PowPrinter, CodePrinter):
     """A printer to convert sympy expressions to strings of Fortran code"""
     printmethod = "_fcode"
     language = "Fortran"
@@ -352,7 +354,14 @@ class FCodePrinter(CodePrinter):
             else:
                 return 'sqrt(%s)' % self._print(expr.base)
         else:
-            return CodePrinter._print_Pow(self, expr)
+            return super(FCodePrinter, self)._print_Pow(expr)
+
+
+    def _print_MatAdd(self, expr):
+        if self._settings['standard'] in (66, 77):
+            raise NotImplementedError()
+        return self._print_Add(expr)
+
 
     def _print_Rational(self, expr):
         p, q = int(expr.p), int(expr.q)
