@@ -110,7 +110,9 @@ class AppliedFunction(object):
 
 class ParenthesisGroup(list):
     """List of tokens representing an expression in parentheses."""
-    pass
+    def __repr__(self):
+        return "ParenthesisGroup({})".format(
+            super(ParenthesisGroup, self).__repr__())
 
 
 def _flatten(result):
@@ -260,11 +262,12 @@ def _implicit_application(tokens, local_dict, global_dict):
     """Adds parentheses as needed after functions."""
     result = []
     appendParen = 0  # number of closing parentheses to add
-    skip = 0  # number of tokens to delay before adding a ')' (to
-              # capture **, ^, etc.)
     exponentSkip = False  # skipping tokens before inserting parentheses to
                           # work with function exponentiation
-    for tok, nextTok in zip(tokens, tokens[1:]):
+
+    for i in range(len(tokens) - 1):
+        tok, nextTok = tokens[i], tokens[i+1]
+
         result.append(tok)
         if (tok[0] == NAME and nextTok[0] not in [OP, ENDMARKER, NEWLINE]):
             if _token_callable(tok, local_dict, global_dict, nextTok):
@@ -290,14 +293,9 @@ def _implicit_application(tokens, local_dict, global_dict):
                         appendParen += 1
                     exponentSkip = False
         elif appendParen:
-            if nextTok[0] == OP and nextTok[1] in ('^', '**', '*'):
-                skip = 1
-                continue
-            if skip:
-                skip -= 1
-                continue
-            result.append((OP, ')'))
-            appendParen -= 1
+            if nextTok[0] in (NEWLINE, ENDMARKER):
+                result.extend([(OP, ')')] * appendParen)
+                appendParen = 0
 
     if tokens:
         result.append(tokens[-1])

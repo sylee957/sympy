@@ -4,17 +4,18 @@
 import sys
 
 
-from sympy.core import Symbol, Function, Float, Rational, Integer, I, Mul, Pow, Eq
+from sympy.core import \
+    S, Symbol, Function, Float, Rational, Integer, I, Mul, Pow, Eq, symbols
 from sympy.core.compatibility import PY3
-from sympy.functions import exp, factorial, factorial2, sin
+from sympy.functions import exp, factorial, factorial2, sin, sqrt
 from sympy.logic import And
 from sympy.series import Limit
 from sympy.utilities.pytest import raises, skip
 
 from sympy.parsing.sympy_parser import (
     parse_expr, standard_transformations, rationalize, TokenError,
-    split_symbols, implicit_multiplication, convert_equals_signs,
-    convert_xor, function_exponentiation,
+    split_symbols, implicit_application, implicit_multiplication,
+    convert_equals_signs, convert_xor, function_exponentiation,
     implicit_multiplication_application,
     )
 
@@ -272,3 +273,13 @@ def test_python3_features():
     assert parse_expr('.[3_4]') == parse_expr('.[34]') == Rational(34, 99)
     assert parse_expr('.1[3_4]') == parse_expr('.1[34]') == Rational(133, 990)
     assert parse_expr('123_123.123_123[3_4]') == parse_expr('123123.123123[34]') == Rational(12189189189211, 99000000)
+
+
+def test_implicit_application():
+    transformations = standard_transformations + (implicit_application,)
+    x, y, z = symbols('x y z')
+    assert parse_expr('Add 1, 2', transformations=transformations) == 3
+    assert parse_expr('sqrt x + y', transformations=transformations) == \
+        sqrt(x + y)
+    assert parse_expr('sqrt x*(y*z)', transformations=transformations) == \
+        sqrt(x*y*z)
