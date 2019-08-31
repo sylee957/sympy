@@ -7,7 +7,7 @@ import sys
 from sympy.core import \
     S, Symbol, Function, Float, Rational, Integer, I, Mul, Pow, Eq, symbols
 from sympy.core.compatibility import PY3
-from sympy.functions import exp, factorial, factorial2, sin, sqrt
+from sympy.functions import exp, factorial, factorial2, sin, cos, sqrt
 from sympy.logic import And
 from sympy.series import Limit
 from sympy.utilities.pytest import raises, skip
@@ -277,9 +277,11 @@ def test_python3_features():
 
 def test_implicit_application():
     transformations = standard_transformations + (implicit_application,)
+    parser = lambda x: parse_expr(x, transformations=transformations)
     x, y, z = symbols('x y z')
-    assert parse_expr('Add 1, 2', transformations=transformations) == 3
-    assert parse_expr('sqrt x + y', transformations=transformations) == \
-        sqrt(x + y)
-    assert parse_expr('sqrt x*(y*z)', transformations=transformations) == \
-        sqrt(x*y*z)
+    assert parser('Add 1, 2') == 3
+    assert parser('sqrt x + y') == sqrt(x + y)
+    assert parser('sqrt x*(y*z)') == sqrt(x * y * z)
+    assert parser('cos sin x') == cos(sin(x))
+    assert parser('cos sin x+y') == cos(sin(x + y))
+    assert parser('sin x + cos y') == sin(x + cos(y))
