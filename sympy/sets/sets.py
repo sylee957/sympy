@@ -1580,6 +1580,9 @@ class EmptySet(with_metaclass(Singleton, Set)):
     def _symmetric_difference(self, other):
         return other
 
+    def _eval_cardinality(self):
+        return S.Zero
+
 
 class UniversalSet(with_metaclass(Singleton, Set)):
     """
@@ -1789,6 +1792,27 @@ class FiniteSet(Set, EvalfMixin):
 
     def _eval_evalf(self, prec):
         return FiniteSet(*[elem._eval_evalf(prec) for elem in self])
+
+    def _eval_cardinality(self):
+        from sympy.functions.elementary.piecewise import Piecewise
+        def multeq(*args):
+            """Helper function to create equality for multiple arguments"""
+            l = len(args)
+            args = [Eq(args[i], args[i+1]) for i in range(l-1)]
+            return And(*args)
+
+        args = self.args
+        length = len(self.args)
+
+        expr_cond_pairs = []
+        for k in range(length-1):
+            expr = k + 1
+            cond = Or(*[multeq(*s) for s in subsets(args, length-k)])
+            expr_cond_pairs.append((expr, cond))
+        expr_cond_pairs.append((length, True))
+
+        return Piecewise(*expr_cond_pairs)
+
 
     @property
     def _sorted_args(self):
