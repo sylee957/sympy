@@ -17,8 +17,9 @@ class Cardinality(Expr):
             raise ValueError('{} must be a valid sympy Set object'.format(a))
 
         if evaluate:
-            return a._eval_cardinality()
+            if hasattr(a, '_eval_cardinality'):
+                return a._eval_cardinality()
 
-        return super(Cardinality, cls).__new__(a, evaluate=evaluate)
+        return super(Cardinality, cls).__new__(cls, a)
 
 
