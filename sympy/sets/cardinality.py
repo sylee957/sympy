@@ -18,7 +18,9 @@ class Cardinality(Expr):
 
         if evaluate:
             if hasattr(a, '_eval_cardinality'):
-                return a._eval_cardinality()
+                result = a._eval_cardinality()
+                if isinstance(result, Cardinality) or result != None:
+                    return result
 
         return super(Cardinality, cls).__new__(cls, a)
 

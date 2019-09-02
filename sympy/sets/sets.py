@@ -1459,6 +1459,16 @@ class Intersection(Set, LatticeOp):
         """Rewrite an Intersection in terms of equalities and logic operators"""
         return And(*[set.as_relational(symbol) for set in self.args])
 
+    def _eval_rewrite_as_Piecewise(self):
+        if not all(isinstance(arg, FiniteSet) for arg in args):
+            return None
+
+    def _eval_cardinality(self):
+        from .cardinality import Cardinality
+        args = self.args
+        if not all(isinstance(arg, FiniteSet) for arg in args):
+            return None
+
 
 class Complement(Set, EvalfMixin):
     r"""Represents the set difference or relative complement of a set with
