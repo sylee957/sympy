@@ -3530,6 +3530,9 @@ class Expr(Basic, EvalfMixin):
             if hints.get('log', False):
                 expr, _ = Expr._expand_hint(
                     expr, '_eval_expand_log', deep=deep, **hints)
+            if hints.get('contains', False):
+                expr, _ = Expr._expand_hint(
+                    expr, '_eval_expand_contains', deep=deep, **hints)
             if expr == was:
                 break
 
