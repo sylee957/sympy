@@ -669,13 +669,13 @@ class And(LatticeOp, BooleanFunction):
         args = BooleanFunction.binary_check_and_simplify(*args)
         for x in reversed(args):
             if x.is_Relational:
-                c = x.canonical
-                if c in rel:
+                x = x.canonical
+                if x in rel:
                     continue
-                nc = c.negated.canonical
-                if any(r == nc for r in rel):
+                nc = x.negated.canonical
+                if nc in rel:
                     return [S.false]
-                rel.append(c)
+                rel.append(x)
             newargs.append(x)
         return LatticeOp._new_args_filter(newargs, And)
 
