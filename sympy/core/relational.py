@@ -217,18 +217,24 @@ class Relational(Boolean, Expr, EvalfMixin):
             r = r.reversed
 
         # Check if first value has negative sign
-        if not isinstance(r.lhs, BooleanAtom) and \
-                r.lhs.could_extract_minus_sign():
-            r = r.reversedsign
+        LHS_CEMS = \
+            getattr(r.lhs, 'could_extract_minus_sign', None)
+        RHS_CEMS = \
+            getattr(r.rhs, 'could_extract_minus_sign', None)
+
+        if not isinstance(r.lhs, BooleanAtom) and LHS_CEMS:
+            if LHS_CEMS():
+                r = r.reversedsign
         elif not isinstance(r.rhs, BooleanAtom) and not r.rhs.is_number and \
-                r.rhs.could_extract_minus_sign():
+                RHS_CEMS:
             # Right hand side has a minus, but not lhs.
             # How does the expression with reversed signs behave?
             # This is so that expressions of the type Eq(x, -y) and Eq(-x, y)
             # have the same canonical representation
-            expr1, _ = ordered([r.lhs, -r.rhs])
-            if expr1 != r.lhs:
-                r = r.reversed.reversedsign
+            if RHS_CEMS():
+                expr1, _ = ordered([r.lhs, -r.rhs])
+                if expr1 != r.lhs:
+                    r = r.reversed.reversedsign
         return r
 
     def equals(self, other, failing_expression=False):
@@ -608,6 +614,24 @@ class Equality(Relational):
                 pass
         return e.canonical
 
+    def _eval_expand_tuple(self, **kwargs):
+        from sympy.core.containers import Tuple
+        from sympy.logic.boolalg import And
+
+        lhs, rhs = self.lhs, self.rhs
+
+        is_LHS_Tuple = isinstance(lhs, Tuple)
+        is_RHS_Tuple = isinstance(rhs, Tuple)
+
+        if is_LHS_Tuple and is_RHS_Tuple:
+            if len(lhs) == len(rhs):
+                new_args = []
+                for a, b in zip(lhs, rhs):
+                    new_args.append(self.func(a, b))
+                return And(*new_args)
+
+        return self
+
 
 Eq = Equality
 
@@ -679,6 +703,8 @@ class Unequality(Relational):
             # send back Ne with the new args
             return self.func(*eq.args)
         return eq.negated  # result of Ne is the negated Eq
+
+    _eval_expand_tuple = Equality._eval_expand_tuple
 
 
 Ne = Unequality
