@@ -879,8 +879,20 @@ class UndefinedFunction(FunctionClass):
     """
     The (meta)class of undefined functions.
     """
-    def __new__(mcl, name, bases=(AppliedUndef,), __dict__=None, **kwargs):
+    def __new__(
+        mcl, name, bases=(AppliedUndef,), __dict__=None,
+        domain=None, codomain=None, rel_set=None,
+        **kwargs):
         from .symbol import _filter_assumptions
+        from sympy.sets.sets import ProductSet
+
+        if domain is None:
+            domain = S.UniversalSet
+        if codomain is None:
+            codomain = S.UniversalSet
+        if rel_set is None:
+            rel_set = ProductSet(S.UniversalSet, S.UniversalSet)
+
         # Allow Function('f', real=True)
         # and/or Function(Symbol('f', real=True))
         assumptions, kwargs = _filter_assumptions(kwargs)
@@ -907,6 +919,11 @@ class UndefinedFunction(FunctionClass):
         __dict__.update({'_kwargs': kwargs})
         # do this for pickling
         __dict__['__module__'] = None
+
+        __dict__['_domain'] = domain
+        __dict__['_codomain'] = codomain
+        __dict__['_rel_set'] = rel_set
+
         obj = super(UndefinedFunction, mcl).__new__(mcl, name, bases, __dict__)
         obj.name = name
         return obj
