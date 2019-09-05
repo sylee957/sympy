@@ -1805,6 +1805,9 @@ class LatexPrinter(Printer):
     def _print_Tuple(self, expr):
         return self._print_tuple(expr)
 
+    def _print_OrderedPair(self, expr):
+        return r"%s_{2}" % self._print_tuple(expr)
+
     def _print_list(self, expr):
         if self._settings['decimal_separator'] == 'comma':
             return r"\left[ %s\right]" % \

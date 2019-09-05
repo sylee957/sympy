@@ -12,6 +12,7 @@ from collections import OrderedDict, defaultdict
 
 from sympy.core.basic import Basic
 from sympy.core.compatibility import as_int, range, MutableSet
+from sympy.core.singleton import S
 from sympy.core.sympify import sympify, converter
 from sympy.utilities.iterables import iterable
 
@@ -142,6 +143,51 @@ class Tuple(Basic):
             return self.args.index(value, start)
         else:
             return self.args.index(value, start, stop)
+
+    def _eval_rewrite_as_OrderedPair(self, *args, **kwargs):
+        from sympy.sets.ordered_pairs import OrderedPair
+
+        deep = kwargs.get('deep', True)
+        reverse = kwargs.get('reverse', False)
+        two = kwargs.get('two', False)
+
+        if deep:
+            args = [arg.rewrite(OrderedPair, **kwargs) for arg in args]
+
+        if two:
+            if len(args) < 2:
+                return self
+            elif len(args) == 2:
+                return OrderedPair(*args)
+            else:
+                if reverse:
+                    A = Tuple(*args[:-1])
+                    if deep:
+                        A = A.rewrite(OrderedPair, **kwargs)
+                    B = args[-1]
+                else:
+                    A = args[0]
+                    B = Tuple(*args[1:])
+                    if deep:
+                        B = B.rewrite(OrderedPair, **kwargs)
+                return OrderedPair(A, B)
+        else:
+            if not args:
+                return self
+
+            if reverse:
+                A = Tuple(*args[:-1])
+                if deep:
+                    A = A.rewrite(OrderedPair, **kwargs)
+                B = args[-1]
+            else:
+                A = args[0]
+                B = Tuple(*args[1:])
+                if deep:
+                    B = B.rewrite(OrderedPair, **kwargs)
+
+            return OrderedPair(A, B)
+
 
 converter[tuple] = lambda tup: Tuple(*tup)
 

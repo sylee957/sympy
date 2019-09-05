@@ -4,6 +4,7 @@ from .fancysets import ImageSet, Range, ComplexRegion, Reals
 from .contains import Contains
 from .conditionset import ConditionSet
 from .ordinals import Ordinal, OmegaPower, ord0
+from .ordered_pairs import OrderedPair
 from ..core.singleton import S
 Reals = S.Reals
 Naturals = S.Naturals
