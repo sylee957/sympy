@@ -148,45 +148,29 @@ class Tuple(Basic):
         from sympy.sets.ordered_pairs import OrderedPair
 
         deep = kwargs.get('deep', True)
-        reverse = kwargs.get('reverse', False)
-        two = kwargs.get('two', False)
+        left = kwargs.get('left', True)
+        base = kwargs.get('base', None)
 
-        if deep:
-            args = [arg.rewrite(OrderedPair, **kwargs) for arg in args]
+        if base is None:
+            return self
 
-        if two:
-            if len(args) < 2:
-                return self
-            elif len(args) == 2:
+        l = len(args)
+        if l <= base:
+            if l == 2:
                 return OrderedPair(*args)
-            else:
-                if reverse:
-                    A = Tuple(*args[:-1])
-                    if deep:
-                        A = A.rewrite(OrderedPair, **kwargs)
-                    B = args[-1]
-                else:
-                    A = args[0]
-                    B = Tuple(*args[1:])
-                    if deep:
-                        B = B.rewrite(OrderedPair, **kwargs)
-                return OrderedPair(A, B)
-        else:
-            if not args:
-                return self
+            return self
 
-            if reverse:
-                A = Tuple(*args[:-1])
-                if deep:
-                    A = A.rewrite(OrderedPair, **kwargs)
-                B = args[-1]
-            else:
-                A = args[0]
-                B = Tuple(*args[1:])
-                if deep:
-                    B = B.rewrite(OrderedPair, **kwargs)
-
+        if left:
+            A = Tuple(*args[:-1])
+            if deep:
+                A = A.rewrite(OrderedPair, **kwargs)
+            B = args[-1]
             return OrderedPair(A, B)
+        A = args[0]
+        B = Tuple(*args[1:])
+        if deep:
+            B = B.rewrite(OrderedPair, **kwargs)
+        return OrderedPair(A, B)
 
 
 converter[tuple] = lambda tup: Tuple(*tup)
