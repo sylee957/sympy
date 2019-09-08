@@ -1147,6 +1147,9 @@ class MatrixProperties(MatrixRequired):
                    for i in range(2, self.rows)
                    for j in range(min(self.cols, (i - 1))))
 
+    def _eval_is_real_matrix(self):
+        return all(arg.is_real for arg in self)
+
     def _eval_values(self):
         return [i for i in self if not i.is_zero]
 
@@ -1648,6 +1651,10 @@ class MatrixProperties(MatrixRequired):
         >>> e.is_zero
         """
         return self._eval_is_zero()
+
+    @property
+    def is_real_matrix(self):
+        return self._eval_is_real_matrix()
 
     def values(self):
         """Return non-zero values of self."""

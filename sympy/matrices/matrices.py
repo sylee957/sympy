@@ -4905,19 +4905,29 @@ class MatrixBase(MatrixDeprecated,
 
         return (C, F)
 
-    def schur_decomposition(self, real=False):
+    def schur_decomposition(self, real_schur=False):
         """Return the complex schur decomposition of ``self``.
+
+        Parameters
+        ==========
+
+        real_schur : bool, optional
+            Whether to compute the real schur decomposition, or not.
+
+            Real schur decomposition can only be computed for real
+            matrices.
 
         Returns
         =======
 
         Q, U : Matrix, Matrix
-            `Q` is an unitary matrix.
-            `U` is an upper-triangular matrix containing the eigenvalues
-            of ``self`` in its diagonal entries.
+            `Q` is an unitary matrix if ``real_schur`` is ``False``,
+            and an orthogonal matrix if ``real_schur`` is ``True``.
 
-            Considering `A` is ``self``, the decomposition satisfies the
-            formula `A = Q U Q^H`
+            `U` is an upper-triangular matrix containing the eigenvalues
+            of ``self`` in its diagonal entries if ``real_schur`` is
+            ``False``, and an quasi upper-triangular matrix if
+            ``real_schur`` is ``True``.
 
         Notes
         =====
@@ -4937,17 +4947,22 @@ class MatrixBase(MatrixDeprecated,
 
         .. [2] http://web.math.ucsb.edu/~padraic/ucsb_2013_14/
             math108b_w2014/math108b_w2014_lecture5.pdf
+
+        .. [3] http://people.inf.ethz.ch/arbenz/ewp/Lnotes/chapter2.pdf
         """
         if not self.is_square:
-            raise NonSquareMatrixError('{} must be a square matrix.')
+            raise NonSquareMatrixError(
+                '{} must be a square matrix.'.format(self))
 
-        if real:
-            return self._real_schur_decomposition()
-        return self._schur_decomposition()
+        if real_schur and not self.is_real_matrix:
+            raise ValueError(
+                '{} must be a real matrix to compute real schur '
+                'decomposition.'.format(self))
 
-    def _schur_decomposition(self):
+        return self._eval_schur_decomposition(real_schur=real_schur)
+
+    def _eval_schur_decomposition(self, real_schur=False):
         from .expressions.blockmatrix import BlockDiagMatrix
-        from .expressions.matexpr import Identity
 
         size = self.rows
         U = self
@@ -4965,10 +4980,13 @@ class MatrixBase(MatrixDeprecated,
                     'Report this issue to the SymPy issue tracker.'
                     .format(U_block))
 
-            _, algebraic_multiplicity, eigenvects = eigenvects_return[0]
+            eigenval, _, eigenvects = eigenvects_return[0]
+            if real_schur and eigenval.is_real or not real_schur:
+                independent_vectors = [eigenvects[0]]
+            else:
+                independent_vectors = list(eigenvects[0].as_real_imag())
 
-            independent_vectors = eigenvects
-            span_basis = [vect.H for vect in eigenvects]
+            span_basis = [vect.H for vect in independent_vectors]
             span_basis_matrix = self.vstack(*span_basis)
 
             while len(independent_vectors) < size:
@@ -4986,95 +5004,17 @@ class MatrixBase(MatrixDeprecated,
 
             schur_vectors = \
                 self.orthogonalize(*independent_vectors, normalize=True)
+
             Q_new = BlockDiagMatrix(
                 self.eye(self.rows - size),
                 self.hstack(*schur_vectors))
 
             Q = Q * self.__class__(Q_new)
             U = Q.H * self * Q
-            size -= algebraic_multiplicity
 
-        return Q, U
-
-    def _real_schur_decomposition(self):
-        from .expressions.blockmatrix import BlockDiagMatrix
-        from .expressions.matexpr import Identity
-
-        size = self.rows
-        U = self
-        Q = self.eye(size)
-
-        while size != 0:
-            U_block = U[-size:, -size:]
-            try:
-                eigenvects_return = U_block.eigenvects()
-            except NotImplementedError:
-                raise ValueError(
-                    'Failed to compute the schur decomposition of {} '
-                    'because of the failing to compute the eigenvalues or '
-                    'eigenvectors. '
-                    'Report this issue to the SymPy issue tracker.'
-                    .format(U_block))
-
-            eigenval, algebraic_multiplicity, eigenvects = \
-                eigenvects_return[0]
-
-            if eigenval.is_real:
-                independent_vectors = eigenvects
-                span_basis = [vect.H for vect in eigenvects]
-                span_basis_matrix = self.vstack(*span_basis)
-
-                while len(independent_vectors) < size:
-                    candidates = span_basis_matrix.nullspace()
-                    if not candidates:
-                        raise ValueError(
-                            'Candidates for orthogonal vectors had not been '
-                            'found in the nullspace of {}. '
-                            'Report this issue to the SymPy issue tracker.'
-                            .format(span_basis_matrix))
-
-                    independent_vectors.extend(candidates)
-                    span_basis.extend([vect.H for vect in candidates])
-                    span_basis_matrix = self.vstack(*span_basis)
-
-                schur_vectors = \
-                    self.orthogonalize(*independent_vectors, normalize=True)
-
-                Q_new = BlockDiagMatrix(
-                    self.eye(self.rows - size),
-                    self.hstack(*schur_vectors))
-
-                Q = Q * self.__class__(Q_new)
-                U = Q.H * self * Q
-                size -= algebraic_multiplicity
-
+            if real_schur and eigenval.is_real or not real_schur:
+                size -= 1
             else:
-                independent_vectors = list(eigenvects[0].as_real_imag())
-                span_basis = [vect.T for vect in independent_vectors]
-                span_basis_matrix = self.vstack(*span_basis)
-
-                while len(independent_vectors) < size:
-                    candidates = span_basis_matrix.nullspace()
-                    if not candidates:
-                        raise ValueError(
-                            'Candidates for orthogonal vectors had not been '
-                            'found in the nullspace of {}. '
-                            'Report this issue to the SymPy issue tracker.'
-                            .format(span_basis_matrix))
-
-                    independent_vectors.extend(candidates)
-                    span_basis.extend([vect.T for vect in candidates])
-                    span_basis_matrix = self.vstack(*span_basis)
-
-                schur_vectors = \
-                    self.orthogonalize(*independent_vectors, normalize=True)
-
-                Q_new = BlockDiagMatrix(
-                    self.eye(self.rows - size),
-                    self.hstack(*schur_vectors))
-
-                Q = Q * self.__class__(Q_new)
-                U = Q.H * self * Q
                 size -= 2
 
         return Q, U
