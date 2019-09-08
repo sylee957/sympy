@@ -2,7 +2,8 @@ from sympy.core.symbol import Symbol, symbols
 from sympy.matrices import Matrix
 from sympy.matrices.common import _MinimalMatrix, NonSquareMatrixError
 from sympy.matrices.determinant import MatrixDeterminant
-from sympy.polys import Poly
+from sympy.matrices.dense import eye
+from sympy.polys import Poly, PurePoly
 from sympy.utilities.pytest import raises
 
 
@@ -47,6 +48,23 @@ def test_det():
     assert e.det(method='bareiss') == 4*x - 24
     assert e.det(method='berkowitz') == 4*x - 24
     raises(ValueError, lambda: e.det(iszerofunc="test"))
+
+
+def test_errors():
+    raises(NonSquareMatrixError, lambda: Matrix([1, 2]).det())
+    raises(ValueError,
+        lambda: Matrix([[1, 2], [3, 4]]).det(method='Not a real method'))
+    raises(ValueError,
+        lambda: Matrix([[1, 2, 3, 4], [5, 6, 7, 8],
+        [9, 10, 11, 12], [13, 14, 15, 16]]).det(iszerofunc="Not function"))
+    raises(ValueError,
+        lambda: Matrix([[1, 2, 3, 4], [5, 6, 7, 8],
+        [9, 10, 11, 12], [13, 14, 15, 16]]).det(iszerofunc=False))
+    M = Matrix(
+        ((1, 2, 3, 4), (5, 6, 7, 8), (9, 10, 11, 12), (13, 14, 15, 16)))
+    raises(ValueError, lambda: M.det('method=LU_decomposition()'))
+    raises(ValueError, lambda: Matrix([[1, 2], [3, 4]]).minor(4, 5))
+    raises(ValueError, lambda: Matrix([[1, 2], [3, 4]]).minor_submatrix(4, 5))
 
 
 def test_adjugate():
@@ -279,3 +297,38 @@ def test_legacy_det():
     assert M.det(method="bareis") == 123
     assert M.det(method="det_lu") == 123
     assert M.det(method="LU") == 123
+
+
+def test_charpoly():
+    x, y = symbols('x y')
+    assert eye(3).charpoly(x) == Poly((x - 1)**3, x)
+    assert eye(3).charpoly(y) == Poly((y - 1)**3, y)
+
+    UA, K_i, K_w = symbols('UA K_i K_w')
+    A = Matrix([[-K_i - UA + K_i**2/(K_i + K_w),       K_i*K_w/(K_i + K_w)],
+                [           K_i*K_w/(K_i + K_w), -K_w + K_w**2/(K_i + K_w)]])
+    charpoly = A.charpoly(x)
+
+    assert charpoly == \
+        Poly(x**2 + (K_i*UA + K_w*UA + 2*K_i*K_w)/(K_i + K_w)*x +
+        K_i*K_w*UA/(K_i + K_w), x, domain='ZZ(K_i,K_w,UA)')
+
+    assert type(charpoly) is PurePoly
+
+    A = Matrix([[1, 3], [2, 0]])
+    assert A.charpoly() == A.charpoly(x) == PurePoly(x**2 - x - 6)
+
+    A = Matrix([[1, 2], [x, 0]])
+    p = A.charpoly(x)
+    assert p.gen != x
+    assert p.as_expr().subs(p.gen, x) == x**2 - 3*x
+
+
+def test_cofactor_matrix():
+    assert eye(3) == eye(3).cofactor_matrix()
+    test = Matrix([[1, 3, 2], [2, 6, 3], [2, 3, 6]])
+    assert test.cofactor_matrix() == \
+        Matrix([[27, -6, -6], [-12, 2, 3], [-3, 1, 0]])
+    test = Matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    assert test.cofactor_matrix() == \
+        Matrix([[-3, 6, -3], [6, -12, 6], [-3, 6, -3]])

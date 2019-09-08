@@ -764,14 +764,6 @@ def test_util():
     assert Matrix.zeros(1, 2) == Matrix(1, 2, [0, 0])
     assert ones(1, 2) == Matrix(1, 2, [1, 1])
     assert v1.copy() == v1
-    # cofactor
-    assert eye(3) == eye(3).cofactor_matrix()
-    test = Matrix([[1, 3, 2], [2, 6, 3], [2, 3, 6]])
-    assert test.cofactor_matrix() == \
-        Matrix([[27, -6, -6], [-12, 2, 3], [-3, 1, 0]])
-    test = Matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    assert test.cofactor_matrix() == \
-        Matrix([[-3, 6, -3], [6, -12, 6], [-3, 6, -3]])
 
 
 def test_jacobian_hessian():
@@ -1012,10 +1004,6 @@ def test_wronskian():
 
 def test_eigen():
     R = Rational
-
-    assert eye(3).charpoly(x) == Poly((x - 1)**3, x)
-    assert eye(3).charpoly(y) == Poly((y - 1)**3, y)
-
     M = Matrix([[1, 0, 0],
                 [0, 1, 0],
                 [0, 0, 1]])
@@ -1971,28 +1959,6 @@ def test_jordan_form_issue_15858():
         [0, 0, I, 1],
         [0, 0, 0, I]])
 
-def test_Matrix_berkowitz_charpoly():
-    UA, K_i, K_w = symbols('UA K_i K_w')
-
-    A = Matrix([[-K_i - UA + K_i**2/(K_i + K_w),       K_i*K_w/(K_i + K_w)],
-                [           K_i*K_w/(K_i + K_w), -K_w + K_w**2/(K_i + K_w)]])
-
-    charpoly = A.charpoly(x)
-
-    assert charpoly == \
-        Poly(x**2 + (K_i*UA + K_w*UA + 2*K_i*K_w)/(K_i + K_w)*x +
-        K_i*K_w*UA/(K_i + K_w), x, domain='ZZ(K_i,K_w,UA)')
-
-    assert type(charpoly) is PurePoly
-
-    A = Matrix([[1, 3], [2, 0]])
-    assert A.charpoly() == A.charpoly(x) == PurePoly(x**2 - x - 6)
-
-    A = Matrix([[1, 2], [x, 0]])
-    p = A.charpoly(x)
-    assert p.gen != x
-    assert p.as_expr().subs(p.gen, x) == x**2 - 3*x
-
 
 def test_exp_jordan_block():
     l = Symbol('lamda')
@@ -2153,8 +2119,6 @@ def test_errors():
     raises(NonSquareMatrixError, lambda: Matrix([1, 2]).trace())
     raises(TypeError, lambda: Matrix([1]).applyfunc(1))
     raises(ShapeError, lambda: Matrix([1]).LUsolve(Matrix([[1, 2], [3, 4]])))
-    raises(ValueError, lambda: Matrix([[1, 2], [3, 4]]).minor(4, 5))
-    raises(ValueError, lambda: Matrix([[1, 2], [3, 4]]).minor_submatrix(4, 5))
     raises(TypeError, lambda: Matrix([1, 2, 3]).cross(1))
     raises(TypeError, lambda: Matrix([1, 2, 3]).dot(1))
     raises(ShapeError, lambda: Matrix([1, 2, 3]).dot(Matrix([1, 2])))
@@ -2172,23 +2136,12 @@ def test_errors():
     raises(ValueError, lambda: Matrix([[1, 2], [1, 2]]).inverse_ADJ())
     raises(NonSquareMatrixError, lambda: Matrix([1, 2]).inverse_LU())
     raises(NonSquareMatrixError, lambda: Matrix([1, 2]).is_nilpotent())
-    raises(NonSquareMatrixError, lambda: Matrix([1, 2]).det())
-    raises(ValueError,
-        lambda: Matrix([[1, 2], [3, 4]]).det(method='Not a real method'))
-    raises(ValueError,
-        lambda: Matrix([[1, 2, 3, 4], [5, 6, 7, 8],
-        [9, 10, 11, 12], [13, 14, 15, 16]]).det(iszerofunc="Not function"))
-    raises(ValueError,
-        lambda: Matrix([[1, 2, 3, 4], [5, 6, 7, 8],
-        [9, 10, 11, 12], [13, 14, 15, 16]]).det(iszerofunc=False))
     raises(ValueError,
         lambda: hessian(Matrix([[1, 2], [3, 4]]), Matrix([[1, 2], [2, 1]])))
     raises(ValueError, lambda: hessian(Matrix([[1, 2], [3, 4]]), []))
     raises(ValueError, lambda: hessian(Symbol('x')**2, 'a'))
     raises(IndexError, lambda: eye(3)[5, 2])
     raises(IndexError, lambda: eye(3)[2, 5])
-    M = Matrix(((1, 2, 3, 4), (5, 6, 7, 8), (9, 10, 11, 12), (13, 14, 15, 16)))
-    raises(ValueError, lambda: M.det('method=LU_decomposition()'))
     V = Matrix([[10, 10, 10]])
     M = Matrix([[1, 2, 3], [2, 3, 4], [3, 4, 5]])
     raises(ValueError, lambda: M.row_insert(4.7, V))
