@@ -2457,6 +2457,43 @@ class LatexPrinter(Printer):
                 (self._print(expr.args[0]), self._print(exp))
         return r'\Omega\left(%s\right)' % self._print(expr.args[0])
 
+    def _print_Tetration(self, expr):
+        a, n = expr.args
+        a = self.parenthesize(a, PRECEDENCE['Pow'])
+        n = self._print(n)
+        return '{^{%s} %s}' % (n, a)
+
+    def _print_KnuthUpArrow(self, expr):
+        a, b, n = expr.args
+        if n == 1:
+            return r"%s \uparrow %s" % (
+                self.parenthesize(a, PRECEDENCE['Add']),
+                self.parenthesize(b, PRECEDENCE['Add']),
+            )
+        elif n == 2:
+            return r"%s \uparrow \uparrow %s" % (
+                self.parenthesize(a, PRECEDENCE['Add']),
+                self.parenthesize(b, PRECEDENCE['Add']),
+            )
+        elif n == 3:
+            return r"%s \uparrow \uparrow \uparrow %s" % (
+                self.parenthesize(a, PRECEDENCE['Add']),
+                self.parenthesize(b, PRECEDENCE['Add']),
+            )
+        return r"%s \uparrow^{%s} %s" % (
+            self.parenthesize(a, PRECEDENCE['Add']),
+            self.parenthesize(n, PRECEDENCE['Pow']),
+            self.parenthesize(b, PRECEDENCE['Add']),
+        )
+
+    def _print_HyperoperationSequence(self, expr):
+        a, b, n = expr.args
+        return "{} [{}] {}".format(
+            self.parenthesize(a, PRECEDENCE['Add']),
+            self._print(n),
+            self.parenthesize(b, PRECEDENCE['Add'])
+        )
+
 
 def translate(s):
     r'''
