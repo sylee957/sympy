@@ -2457,6 +2457,34 @@ class LatexPrinter(Printer):
                 (self._print(expr.args[0]), self._print(exp))
         return r'\Omega\left(%s\right)' % self._print(expr.args[0])
 
+    def _print_GroupMultiplicationTable(self, expr):
+        rows = expr.rows
+        cols = expr.cols
+        data = expr.data
+
+        rows_print = [self._print(i) for i in rows]
+        cols_print = [self._print(i) for i in cols]
+
+        row_len = data.rows
+        col_len = data.cols
+        data_print = \
+            [[self._print(data[i, j]) for j in range(col_len)]
+             for i in range(row_len)]
+
+        begin_str = r"\begin{array}{%s}" % ("| c |" + " c " * col_len + ' |')
+        first_row = \
+            r" \hline & " + " & ".join(cols_print) + r" \\ \hline "
+        other_rows = ""
+        for i in range(row_len):
+            other_rows += rows_print[i]
+            for j in range(col_len):
+                other_rows += " & " + data_print[i][j]
+            other_rows += r" \\"
+        other_rows += r" \hline "
+
+        end_str = r"\end{array}"
+        return begin_str + first_row + other_rows + end_str
+
 
 def translate(s):
     r'''
