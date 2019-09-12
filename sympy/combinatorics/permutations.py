@@ -448,9 +448,7 @@ class Cycle(dict):
                 for k, v in args[0].items():
                     self[k] = v
                 return
-        args = [as_int(a) for a in args]
-        if any(i < 0 for i in args):
-            raise ValueError('negative integers are not allowed in a cycle.')
+
         if has_dups(args):
             raise ValueError('All elements must be unique in a cycle.')
         for i in range(-len(args), 0):

@@ -2458,12 +2458,12 @@ class LatexPrinter(Printer):
         return r'\Omega\left(%s\right)' % self._print(expr.args[0])
 
     def _print_GroupMultiplicationTable(self, expr):
-        rows = expr.rows
-        cols = expr.cols
+        index = expr.index
+        columns = expr.columns
         data = expr.data
 
-        rows_print = [self._print(i) for i in rows]
-        cols_print = [self._print(i) for i in cols]
+        index_print = [self._print(i) for i in index]
+        columns_print = [self._print(i) for i in columns]
 
         row_len = data.rows
         col_len = data.cols
@@ -2473,10 +2473,10 @@ class LatexPrinter(Printer):
 
         begin_str = r"\begin{array}{%s}" % ("| c |" + " c " * col_len + ' |')
         first_row = \
-            r" \hline & " + " & ".join(cols_print) + r" \\ \hline "
+            r" \hline & " + " & ".join(columns_print) + r" \\ \hline "
         other_rows = ""
         for i in range(row_len):
-            other_rows += rows_print[i]
+            other_rows += index_print[i]
             for j in range(col_len):
                 other_rows += " & " + data_print[i][j]
             other_rows += r" \\"
