@@ -2084,6 +2084,42 @@ class LatexPrinter(Printer):
     def _print_Contains(self, e):
         return r"%s \in %s" % tuple(self._print(a) for a in e.args)
 
+    def _print_IsSubsetOf(self, expr):
+        PREC = precedence_traditional(expr)
+        A, B = expr.args
+        return "{} \\subseteq {}".format(
+            self.parenthesize(A, PREC), self.parenthesize(B, PREC))
+
+    def _print_IsSupersetOf(self, expr):
+        PREC = precedence_traditional(expr)
+        A, B = expr.args
+        return "{} \\supseteq {}".format(
+            self.parenthesize(A, PREC), self.parenthesize(B, PREC))
+
+    def _print_IsProperSubsetOf(self, expr):
+        PREC = precedence_traditional(expr)
+        A, B = expr.args
+        return "{} \\subsetneq {}".format(
+            self.parenthesize(A, PREC), self.parenthesize(B, PREC))
+
+    def _print_IsProperSupersetOf(self, expr):
+        PREC = precedence_traditional(expr)
+        A, B = expr.args
+        return "{} \\supsetneq {}".format(
+            self.parenthesize(A, PREC), self.parenthesize(B, PREC))
+
+    def _print_IsNonEmptySubsetOf(self, expr):
+        PREC = precedence_traditional(expr)
+        A, B = expr.args
+        return "\\varnothing \\subsetneq {} \\subseteq {}".format(
+            self.parenthesize(A, PREC), self.parenthesize(B, PREC))
+
+    def _print_IsNonEmptyProperSubsetOf(self, expr):
+        PREC = precedence_traditional(expr)
+        A, B = expr.args
+        return "\\varnothing \\subsetneq {} \\subsetneq {}".format(
+            self.parenthesize(A, PREC), self.parenthesize(B, PREC))
+
     def _print_FourierSeries(self, s):
         return self._print_Add(s.truncate()) + self._print(r' + \ldots')
 

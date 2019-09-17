@@ -1046,6 +1046,30 @@ def test_latex_Contains():
     assert latex(Contains(x, S.Naturals)) == r"x \in \mathbb{N}"
 
 
+def test_latex_subset_of():
+    from sympy.sets.contains import \
+        IsSubsetOf, IsSupersetOf, IsProperSubsetOf, IsProperSupersetOf, \
+        IsNonEmptySubsetOf, IsNonEmptyProperSubsetOf
+
+    x, y, z = symbols('x:z')
+    A = FiniteSet(1, 2, 3)
+    B = FiniteSet(x, y, z)
+    assert latex(IsSubsetOf(A, B)) == \
+        r'\left\{1, 2, 3\right\} \subseteq \left\{x, y, z\right\}'
+    assert latex(IsSupersetOf(A, B, evaluate=False)) == \
+        r'\left\{1, 2, 3\right\} \supseteq \left\{x, y, z\right\}'
+    assert latex(IsProperSubsetOf(A, B, evaluate=False)) == \
+        r'\left\{1, 2, 3\right\} \subsetneq \left\{x, y, z\right\}'
+    assert latex(IsProperSupersetOf(A, B, evaluate=False)) == \
+        r'\left\{1, 2, 3\right\} \supsetneq \left\{x, y, z\right\}'
+    assert latex(IsNonEmptySubsetOf(A, B, evaluate=False)) == \
+        r'\varnothing \subsetneq ' + \
+        r'\left\{1, 2, 3\right\} \subseteq \left\{x, y, z\right\}'
+    assert latex(IsNonEmptyProperSubsetOf(A, B, evaluate=False)) == \
+        r'\varnothing \subsetneq ' + \
+        r'\left\{1, 2, 3\right\} \subsetneq \left\{x, y, z\right\}'
+
+
 def test_latex_sum():
     assert latex(Sum(x*y**2, (x, -2, 2), (y, -5, 5))) == \
         r"\sum_{\substack{-2 \leq x \leq 2\\-5 \leq y \leq 5}} x y^{2}"
