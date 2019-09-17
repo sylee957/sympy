@@ -376,6 +376,22 @@ class LatexPrinter(Printer):
 
     _print_Permutation = _print_Cycle
 
+    def _print_LeftCoset(self, expr):
+        PREC = PRECEDENCE['Mul']
+        g, H, _ = expr.args
+        return "{} {}".format(
+            self.parenthesize(g, PREC),
+            self.parenthesize(H, PREC)
+        )
+
+    def _print_RightCoset(self, expr):
+        PREC = PRECEDENCE['Mul']
+        g, H, _ = expr.args
+        return "{} {}".format(
+            self.parenthesize(H, PREC),
+            self.parenthesize(g, PREC)
+        )
+
     def _print_Float(self, expr):
         # Based off of that in StrPrinter
         dps = prec_to_dps(expr._prec)
