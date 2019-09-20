@@ -938,8 +938,10 @@ class PermutationGroup(Basic):
 
     def _eval_conjugacy_class(self, g, all_elems=None):
         """Internal subroutine to find a conjugacy class wrt `g`"""
-        conjugacy_class = {g}
+        if g.is_identity or self._is_abelian:
+            return {g}
 
+        conjugacy_class = {g}
         if all_elems == None:
             all_elems = set(self.generate())
 
@@ -970,18 +972,16 @@ class PermutationGroup(Basic):
         If a conjugacy class contains exactly one element `g`, the
         element `g` also belongs to the centralizer of a group.
         """
-        all_elems_orig = set(self.generate())
-        all_elems = all_elems_orig.copy()
+        all_elems = set(self.generate())
         found = set()
         conjugacy_classes = list()
 
-        for g in all_elems_orig:
+        for g in all_elems:
             if g in found:
                 continue
             conjugacy_class = \
                 self._eval_conjugacy_class(g, all_elems=all_elems)
             found.update(conjugacy_class)
-            all_elems.difference_update(conjugacy_class)
             conjugacy_classes.append(conjugacy_class)
 
         return FiniteSet(*(FiniteSet(*c) for c in conjugacy_classes))
