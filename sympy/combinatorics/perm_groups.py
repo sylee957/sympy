@@ -937,7 +937,7 @@ class PermutationGroup(Basic):
         return self.centralizer(self)
 
     def _eval_conjugacy_class(self, g, all_elems=None):
-        """Internal subroutine to find a conjugacy class wrt `g`
+        r"""Internal subroutine to find a conjugacy class wrt `g`
 
         Notes
         =====
