@@ -937,15 +937,38 @@ class PermutationGroup(Basic):
         return self.centralizer(self)
 
     def _eval_conjugacy_class(self, g, all_elems=None):
-        """Internal subroutine to find a conjugacy class wrt `g`"""
+        """Internal subroutine to find a conjugacy class wrt `g`
+
+        Notes
+        =====
+
+        Some properties used are
+
+        1. If `g` is identity permutation, the conjugacy class simply
+        becomes `left{ g right}`
+
+        2. If `G` is an abelian group, the conjugacy class simply
+        becomes `left{ g right}`
+
+        3. If `G` is a symmetric group, `g \in G, h \in G` belongs to
+        the same conjugacy class if `g` and `h` has the same cycle
+        structure in their canonical cycle representations.
+        """
         if g.is_identity or self._is_abelian:
             return {g}
+
+        is_sym = self._is_sym
 
         conjugacy_class = {g}
         if all_elems == None:
             all_elems = set(self.generate())
 
         for h in all_elems:
+            if is_sym:
+                if g.cycle_structure == h.cycle_structure:
+                    conjugacy_class.add(h)
+                else:
+                    continue
             conjugacy_class.add(h * g * h ** -1)
 
         return conjugacy_class
