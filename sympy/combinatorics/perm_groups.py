@@ -4,6 +4,7 @@ from random import randrange, choice
 from math import log
 from sympy.ntheory import primefactors
 from sympy import multiplicity, factorint
+from sympy.core.sympify import sympify
 
 from sympy.combinatorics import Permutation
 from sympy.combinatorics.permutations import (_af_commutes_with, _af_invert,
@@ -16,6 +17,7 @@ from sympy.core import Basic
 from sympy.core.compatibility import range
 from sympy.functions.combinatorial.factorials import factorial
 from sympy.ntheory import sieve
+from sympy.sets.sets import FiniteSet
 from sympy.utilities.iterables import has_variety, is_sequence, uniq
 from sympy.utilities.randtest import _randrange
 from itertools import islice
@@ -933,6 +935,93 @@ class PermutationGroup(Basic):
 
         """
         return self.centralizer(self)
+
+    def _eval_conjugacy_class(self, g, all_elems=None):
+        """Internal subroutine to find a conjugacy class wrt `g`"""
+        conjugacy_class = {g}
+
+        if all_elems == None:
+            all_elems = set(self.generate())
+
+        for h in all_elems:
+            conjugacy_class.add(h * g * h ** -1)
+
+        return conjugacy_class
+
+    def conjugacy_classes(self):
+        """Find all conjugacy classes of the group.
+
+        Returns
+        =======
+
+        FiniteSet[FiniteSet[Permutation]]
+            A finite set containing conjugacy classes represented as
+            finite sets.
+
+        Examples
+        ========
+
+        >>> from sympy.combinatorics import DihedralGroup
+        >>> DihedralGroup(3).conjugacy_classes()
+
+        Notes
+        =====
+
+        If a conjugacy class contains exactly one element `g`, the
+        element `g` also belongs to the centralizer of a group.
+        """
+        all_elems_orig = set(self.generate())
+        all_elems = all_elems_orig.copy()
+        found = set()
+        conjugacy_classes = list()
+
+        for g in all_elems_orig:
+            if g in found:
+                continue
+            conjugacy_class = \
+                self._eval_conjugacy_class(g, all_elems=all_elems)
+            found.update(conjugacy_class)
+            all_elems.difference_update(conjugacy_class)
+            conjugacy_classes.append(conjugacy_class)
+
+        return FiniteSet(*(FiniteSet(*c) for c in conjugacy_classes))
+
+    def conjugacy_class(self, g):
+        """Find a conjugacy class with respect to a group element `g`
+
+        Parameters
+        ==========
+
+        g : Permutation
+            A representitve element of the conjugacy class.
+
+        Returns
+        =======
+
+        FiniteSet
+            A conjugacy class of `g` represented as a finite set.
+
+        Raises
+        ======
+
+        ValueError
+            If ``self`` does not contain `g` as an element.
+            Note that the test is strict about the size of the
+            permutation.
+
+        Examples
+        ========
+
+        >>> from sympy.combinatorics import DihedralGroup, Permutation
+        >>> DihedralGroup(3).conjugacy_class(Permutation(0, 1, 2))
+        """
+        g = sympify(g)
+        if not self.contains(g):
+            raise ValueError(
+                "{} does not contain {} as an element".format(self, g))
+
+        conjugacy_class = self._eval_conjugacy_class(g)
+        return FiniteSet(*conjugacy_class)
 
     def centralizer(self, other):
         r"""
