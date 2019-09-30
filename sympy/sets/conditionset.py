@@ -3,6 +3,7 @@ from __future__ import print_function, division
 from sympy import S
 from sympy.core.basic import Basic
 from sympy.core.containers import Tuple
+from sympy.core.evaluate import global_evaluate
 from sympy.core.expr import Expr
 from sympy.core.function import Lambda
 from sympy.core.logic import fuzzy_bool
@@ -114,7 +115,9 @@ class ConditionSet(Set):
     >>> _.subs(_.sym, Symbol('_x'))
     ConditionSet(_x, (_x < y) & (_x + x < 2), Integers)
     """
-    def __new__(cls, sym, condition, base_set=S.UniversalSet):
+    def __new__(
+        cls, sym, condition, base_set=S.UniversalSet,
+        evaluate=global_evaluate[0]):
         # nonlinsolve uses ConditionSet to return an unsolved system
         # of equations (see _return_conditionset in solveset) so until
         # that is changed we do minimal checking of the args
@@ -135,8 +138,17 @@ class ConditionSet(Set):
 
         condition = as_Boolean(condition)
 
+        if not evaluate:
+            return Basic.__new__(cls, sym, condition, base_set)
+
         if isinstance(sym, Tuple):  # unsolved eqns syntax
             return Basic.__new__(cls, sym, condition, base_set)
+
+        if not isinstance(sym, Symbol):
+            s = Dummy('lambda')
+            if s not in condition.xreplace({sym: s}).free_symbols:
+                raise ValueError(
+                    'non-symbol dummy not recognized in condition')
 
         if not isinstance(base_set, Set):
             raise TypeError('expecting set for base_set')
@@ -148,17 +160,24 @@ class ConditionSet(Set):
         if isinstance(base_set, EmptySet):
             return base_set
 
-        know = None
-        if isinstance(base_set, FiniteSet):
-            sifted = sift(
-                base_set, lambda _: fuzzy_bool(condition.subs(sym, _)))
-            if sifted[None]:
-                know = FiniteSet(*sifted[True])
-                base_set = FiniteSet(*sifted[None])
-            else:
-                return FiniteSet(*sifted[True])
+        obj = Basic.__new__(cls, sym, condition, base_set)
+        if isinstance(obj.base_set, ConditionSet):
+            obj = obj._conditionset_fold(evaluate=False)
+        if isinstance(obj.base_set, FiniteSet):
+            obj = obj.rewrite(FiniteSet, evaluate=False)
+        return obj
 
-        if isinstance(base_set, cls):
+    sym = property(lambda self: self.args[0])
+    condition = property(lambda self: self.args[1])
+    base_set = property(lambda self: self.args[2])
+
+    def _conditionset_fold(self, deep=True, evaluate=global_evaluate[0]):
+        """Fold down nested condition set found in the base set."""
+        sym, condition, base_set = self.args
+        if isinstance(base_set, ConditionSet):
+            if deep:
+                base_set = base_set._conditionset_fold(deep=deep)
+
             s, c, base_set = base_set.args
             if sym == s:
                 condition = And(condition, c)
@@ -170,26 +189,32 @@ class ConditionSet(Set):
             else:
                 # user will have to use cls.sym to get symbol
                 dum = Symbol('lambda')
-                if dum in condition.free_symbols or \
-                        dum in c.free_symbols:
+                if dum in condition.free_symbols or dum in c.free_symbols:
                     dum = Dummy(str(dum))
                 condition = And(
                     condition.xreplace({sym: dum}),
                     c.xreplace({s: dum}))
                 sym = dum
+            return ConditionSet(sym, condition, base_set, evaluate=evaluate)
+        return self
 
-        if not isinstance(sym, Symbol):
-            s = Dummy('lambda')
-            if s not in condition.xreplace({sym: s}).free_symbols:
-                raise ValueError(
-                    'non-symbol dummy not recognized in condition')
+    def _eval_rewrite_as_FiniteSet(self, *args, **kwargs):
+        """Rewrite a condition set as a finite set."""
+        sym, condition, base_set = self.args
+        evaluate = kwargs.get('evaluate', global_evaluate[0])
 
-        rv = Basic.__new__(cls, sym, condition, base_set)
-        return rv if know is None else Union(know, rv)
+        if isinstance(base_set, FiniteSet):
+            sifted = sift(
+                base_set, lambda _: fuzzy_bool(condition.subs(sym, _)))
 
-    sym = property(lambda self: self.args[0])
-    condition = property(lambda self: self.args[1])
-    base_set = property(lambda self: self.args[2])
+            determined = FiniteSet(*sifted[True])
+            if sifted[None]:
+                undetermined = \
+                    ConditionSet(
+                        sym, condition, FiniteSet(*sifted[None]),
+                        evaluate=evaluate)
+                return Union(determined, undetermined)
+            return determined
 
     @property
     def free_symbols(self):
