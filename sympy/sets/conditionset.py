@@ -216,6 +216,28 @@ class ConditionSet(Set):
                 return Union(determined, undetermined)
             return determined
 
+    def __iter__(self):
+        sym, condition, base_set = self.args
+        if not isinstance(sym, Symbol):
+            dum = Symbol('lambda')
+            condition = condition.xreplace({sym: dum})
+            if dum not in condition.free_symbols:
+                raise ValueError(
+                    'non-symbol dummy not recognized in condition')
+            sym = dum
+
+        for item in base_set:
+            subs = condition.xreplace({sym: item})
+            if subs == S.true:
+                yield item
+            elif subs == S.false:
+                continue
+            else:
+                raise TypeError(
+                    'Undeterminable predicate {} found while evaluating '
+                    'the condition {} with the item {}.'
+                    .format(subs, condition, item))
+
     @property
     def free_symbols(self):
         s, c, b = self.args
