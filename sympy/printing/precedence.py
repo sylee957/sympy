@@ -13,10 +13,9 @@ PRECEDENCE = {
     "Relational": 35,
     "Add": 40,
     "Mul": 50,
+    "Mod": 50,
     "Pow": 60,
     "Func": 70,
-    # Mod defined in StrPrinter as Mod(a,b) and therefore doesn't need parenthesis
-    "Mod": 71,
     "Not": 100,
     "Atom": 1000,
     "BitwiseOr": 36,

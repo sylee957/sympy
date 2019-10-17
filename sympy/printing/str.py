@@ -325,6 +325,13 @@ class StrPrinter(Printer):
         else:
             return sign + '*'.join(a_str) + "/(%s)" % '*'.join(b_str)
 
+    def _print_Mod(self, expr):
+        PREC =  PRECEDENCE['Mod']
+        return '{} % {}'.format(
+            self.parenthesize(expr.args[0], PREC),
+            self.parenthesize(expr.args[1], PREC)
+        )
+
     def _print_MatMul(self, expr):
         c, m = expr.as_coeff_mmul()
         if c.is_number and c < 0:

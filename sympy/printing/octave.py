@@ -52,7 +52,6 @@ known_fcns_src2 = {
     "loggamma": "gammaln",
     "Max": "max",
     "Min": "min",
-    "Mod": "mod",
     "polygamma": "psi",
     "re": "real",
     "RisingFactorial": "pochhammer",
@@ -208,6 +207,12 @@ class OctaveCodePrinter(CodePrinter):
             divsym = '/' if all([bi.is_number for bi in b]) else './'
             return (sign + multjoin(a, a_str) +
                     divsym + "(%s)" % multjoin(b, b_str))
+
+    def _print_Mod(self, expr):
+        return 'mod({}, {})'.format(
+            self._print(expr.args[0]),
+            self._print(expr.args[1])
+        )
 
     def _print_Relational(self, expr):
         lhs_code = self._print(expr.lhs)

@@ -239,10 +239,6 @@ class AbstractPythonCodePrinter(CodePrinter):
     def _print_ComplexInfinity(self, expr):
         return self._print_NaN(expr)
 
-    def _print_Mod(self, expr):
-        PREC = precedence(expr, self._def_prec)
-        return ('{0} % {1}'.format(*map(lambda x: self.parenthesize(x, PREC), expr.args)))
-
     def _print_Piecewise(self, expr):
         result = []
         i = 0
