@@ -2,8 +2,7 @@ from sympy.utilities.pytest import warns_deprecated_sympy
 
 from sympy import Rational, S
 from sympy.physics.units.definitions import c, kg, m, s
-from sympy.physics.units.dimensions import (
-    Dimension, DimensionSystem, action, current, length, mass, time, velocity)
+from sympy.physics.units.dimensions import action, current, length, velocity
 from sympy.physics.units.quantities import Quantity
 from sympy.physics.units.unitsystem import UnitSystem
 from sympy.utilities.pytest import raises

@@ -83,7 +83,7 @@ class Quantity(AtomicExpr):
     SI_quantity_scale_factors = {}
 
     def set_dimension(self, dimension, unit_system="SI"):
-        from sympy.physics.units.dimensions import dimsys_default, DimensionSystem
+        from sympy.physics.units.dimensions import dimsys_default
 
         if unit_system != "SI":
             # TODO: add support for more units and dimension systems:
