@@ -1765,15 +1765,14 @@ class PermutationGroup(Basic):
         if self._is_abelian is not None:
             return self._is_abelian
 
-        self._is_abelian = True
         gens = [p._array_form for p in self.generators]
-        for x in gens:
-            for y in gens:
-                if y <= x:
-                    continue
-                if not _af_commutes_with(x, y):
+        l = len(gens)
+        for i in range(l):
+            for j in range(i+1, l):
+                if not _af_commutes_with(gens[i], gens[j]):
                     self._is_abelian = False
                     return False
+        self._is_abelian = True
         return True
 
     def abelian_invariants(self):
