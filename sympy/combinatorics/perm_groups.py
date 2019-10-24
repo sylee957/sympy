@@ -2,8 +2,6 @@ from __future__ import print_function, division
 
 from random import randrange, choice
 from math import log
-from sympy.ntheory import primefactors
-from sympy import multiplicity, factorint
 
 from sympy.combinatorics import Permutation
 from sympy.combinatorics.permutations import (_af_commutes_with, _af_invert,
@@ -15,7 +13,9 @@ from sympy.combinatorics.util import (_check_cycles_alt_sym,
 from sympy.core import Basic
 from sympy.core.compatibility import range
 from sympy.functions.combinatorial.factorials import factorial
-from sympy.ntheory import sieve
+from sympy.ntheory import \
+    divisors, factorint, isprime, multiplicity, perfect_power, \
+    primefactors, sieve
 from sympy.utilities.iterables import has_variety, is_sequence, uniq
 from sympy.utilities.randtest import _randrange
 from itertools import islice
@@ -1741,9 +1741,34 @@ class PermutationGroup(Basic):
             self._is_perfect = self == self.derived_subgroup()
         return self._is_perfect
 
+    def _eval_is_abelian(self, pairs):
+        """Test if a group is abelian from evaluating the elements from
+        given list of pairs.
+        """
+        for a, b in pairs:
+            if not _af_commutes_with(a, b):
+                return False
+        return True
+
+    def _pairs_naive(self):
+        gens = [p._array_form for p in self.generators]
+        l = len(gens)
+        for i in range(l):
+            for j in range(i+1, l):
+                yield gens[i], gens[j]
+
+    @classmethod
+    def _pairs_chosen(self, pairs, n):
+        """Choose $n$ most pairs from the given generator."""
+        count = 0
+        for a, b in pairs:
+            if count < n:
+                yield a, b
+            count += 1
+
     @property
     def is_abelian(self):
-        """Test if the group is Abelian.
+        r"""Test if the group is Abelian.
 
         Examples
         ========
@@ -1761,19 +1786,64 @@ class PermutationGroup(Basic):
         >>> G.is_abelian
         True
 
+        Notes
+        =====
+
+        When the order of the group is already computed, there are some
+        useful lemmas to use.
+
+        - A group of order less than $6$ is abelian, and even cyclic
+          except for the order of $4$.
+        - A group of prime order is cyclic and abelian.
+        - A group of prime square order is abelian.
+
+        And also, if there two least integer divisors $p, q$ of the
+        order of the nonabelian group $G$ that $q > p > 1$,
+        there are at least $\frac{(p-1) (q-1) n^2}{p q}$ numbers of the
+        noncommutative pairs $(a, b) \in G \times G$. [1]_
+        This theorem can be useful for setting up the upper bound of the
+        numbers of pairs to test.
+
+        References
+        ==========
+
+        .. [1] Fu, Bin. “Testing Group Commutativity in Constant Time.”
+            (2009). https://pdfs.semanticscholar.org/1c2d/83c0299ff95c09
+            c7dbea64c3fa796589c9bd.pdf?_ga=2.237921408.1828686259.157190
+            6826-924791344.1570606592
         """
         if self._is_abelian is not None:
             return self._is_abelian
 
-        gens = [p._array_form for p in self.generators]
-        l = len(gens)
-        for i in range(l):
-            for j in range(i+1, l):
-                if not _af_commutes_with(gens[i], gens[j]):
-                    self._is_abelian = False
-                    return False
-        self._is_abelian = True
-        return True
+        n = self._order
+        if n is not None:
+            if n < 6:
+                self._is_abelian = True
+                if self != 4:
+                    self._is_cyclic = True
+                return True
+
+            if isprime(n):
+                self._is_abelian = True
+                self._is_cyclic = True
+                return True
+
+            pp = perfect_power(n)
+            if pp is not False and isprime(pp[0]) and pp[1] == 2:
+                self._is_abelian = True
+                return True
+
+            p, q = divisors(n)[1:3]
+            nc_count_min = ((p-1) * (q-1) * (n//p) * (n//q)) // 2
+            nc_count_max = n * (n-1) // 2 - nc_count_min
+            pairs = self._pairs_naive()
+            pairs = self._pairs_chosen(pairs, nc_count_max)
+        else:
+            pairs = self._pairs_naive()
+
+        ret = self._eval_is_abelian(pairs)
+        self._is_abelian = ret
+        return ret
 
     def abelian_invariants(self):
         """
