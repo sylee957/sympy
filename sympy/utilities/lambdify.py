@@ -15,10 +15,14 @@ from types import FunctionType
 
 from sympy.core.compatibility import (exec_, is_sequence, iterable,
     NotIterable, string_types, range, builtins, PY3)
+from sympy.external.importtools import import_module
 from sympy.utilities.misc import filldedent
 from sympy.utilities.decorator import doctest_depends_on
 
 __doctest_requires__ = {('lambdify',): ['numpy', 'tensorflow']}
+
+numpy = import_module('numpy')
+scipy = import_module('scipy')
 
 # Default namespaces, letting us define translations that can't be defined
 # by simple variable maps, like I => 1j
@@ -684,20 +688,15 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True,
 
     # If the user hasn't specified any modules, use what is available.
     if modules is None:
-        try:
-            _import("scipy")
-        except ImportError:
-            try:
-                _import("numpy")
-            except ImportError:
-                # Use either numpy (if available) or python.math where possible.
-                # XXX: This leads to different behaviour on different systems and
-                #      might be the reason for irreproducible errors.
-                modules = ["math", "mpmath", "sympy"]
-            else:
-                modules = ["numpy"]
-        else:
+        if scipy:
             modules = ["scipy", "numpy"]
+        elif numpy:
+            modules = ["numpy"]
+        else:
+            modules = ["math", "mpmath", "sympy"]
+
+    if not hasattr(modules, '__iter__'):
+        modules = [modules]
 
     # Get the needed namespaces.
     namespaces = []
@@ -715,6 +714,8 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True,
     # fill namespace with first having highest priority
     namespace = {}
     for m in namespaces[::-1]:
+        if isinstance(m, string_types) and m != 'sympy':
+            continue
         buf = _get_namespace(m)
         namespace.update(buf)
 
@@ -726,17 +727,17 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True,
             namespace.update({str(term): term})
 
     if printer is None:
-        if _module_present('mpmath', namespaces):
+        if _module_present('mpmath', modules):
             from sympy.printing.pycode import MpmathPrinter as Printer
-        elif _module_present('scipy', namespaces):
+        elif _module_present('scipy', modules):
             from sympy.printing.pycode import SciPyPrinter as Printer
-        elif _module_present('numpy', namespaces):
+        elif _module_present('numpy', modules):
             from sympy.printing.pycode import NumPyPrinter as Printer
-        elif _module_present('numexpr', namespaces):
+        elif _module_present('numexpr', modules):
             from sympy.printing.lambdarepr import NumExprPrinter as Printer
-        elif _module_present('tensorflow', namespaces):
+        elif _module_present('tensorflow', modules):
             from sympy.printing.tensorflow import TensorflowPrinter as Printer
-        elif _module_present('sympy', namespaces):
+        elif _module_present('sympy', modules):
             from sympy.printing.pycode import SymPyPrinter as Printer
         else:
             from sympy.printing.pycode import PythonCodePrinter as Printer
@@ -770,7 +771,7 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True,
 
     # Create the function definition code and execute it
     funcname = '_lambdifygenerated'
-    if _module_present('tensorflow', namespaces):
+    if _module_present('tensorflow', modules):
         funcprinter = _TensorflowEvaluatorPrinter(printer, dummify)
     else:
         funcprinter = _EvaluatorPrinter(printer, dummify)
