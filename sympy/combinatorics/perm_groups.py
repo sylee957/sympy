@@ -1808,9 +1808,12 @@ class PermutationGroup(Basic):
         ==========
 
         .. [1] Fu, Bin. “Testing Group Commutativity in Constant Time.”
-            (2009). https://pdfs.semanticscholar.org/1c2d/83c0299ff95c09
-            c7dbea64c3fa796589c9bd.pdf?_ga=2.237921408.1828686259.157190
-            6826-924791344.1570606592
+            (2009).
+
+        .. [2] Pakianathan, Jonathan, and Krishnan Shankar.
+            "Nilpotent Numbers." The American Mathematical Monthly 107,
+            no. 7 (2000): 631-34. doi:10.2307/2589118.
+            https://www.jstor.org/stable/2589118
         """
         if self._is_abelian is not None:
             return self._is_abelian
@@ -1830,6 +1833,12 @@ class PermutationGroup(Basic):
 
             pp = perfect_power(n)
             if pp is not False and isprime(pp[0]) and pp[1] == 2:
+                self._is_abelian = True
+                return True
+
+            factors = factorint(n)
+            if all(v < 3 for v in factors.values()) and \
+                self._nilpotent_order_lemma(factors):
                 self._is_abelian = True
                 return True
 
@@ -2095,21 +2104,29 @@ class PermutationGroup(Basic):
         lower_central_series, is_solvable
 
         """
-        if self._is_nilpotent is None:
-            lcs = self.lower_central_series()
-            terminator = lcs[len(lcs) - 1]
-            gens = terminator.generators
-            degree = self.degree
-            identity = _af_new(list(range(degree)))
-            if all(g == identity for g in gens):
+        if self._is_nilpotent is not None:
+            self._is_nilpotent
+
+        order = self._order
+        if order is not None:
+            factors = factorint(order)
+            if self._nilpotent_order_lemma(factors):
                 self._is_solvable = True
                 self._is_nilpotent = True
                 return True
-            else:
-                self._is_nilpotent = False
-                return False
+
+        lcs = self.lower_central_series()
+        terminator = lcs[-1]
+        gens = terminator.generators
+        degree = self.degree
+        identity = _af_new(list(range(degree)))
+        if all(g == identity for g in gens):
+            self._is_solvable = True
+            self._is_nilpotent = True
+            return True
         else:
-            return self._is_nilpotent
+            self._is_nilpotent = False
+            return False
 
     def is_normal(self, gr, strict=True):
         """Test if ``G=self`` is a normal subgroup of ``gr``.
@@ -3070,6 +3087,17 @@ class PermutationGroup(Basic):
             for j in range(i+1, l):
                 if primes[j] % primes[i] == 1:
                     return None
+        return True
+
+    @classmethod
+    def _nilpotent_order_lemma(cls, factors):
+        for p1, a in factors.items():
+            for p2 in factors.keys():
+                if p1 == p2:
+                    continue
+                for i in range(1, a+1):
+                    if p1 ** i % p2 == 1:
+                        return None
         return True
 
     @property
