@@ -6,6 +6,7 @@ from sympy.core.compatibility import range
 from sympy.functions import adjoint
 from sympy.strategies import (rm_id, unpack, typed, flatten, exhaust,
         do_one, new)
+from sympy.matrices.common import ShapeError, NonSquareMatrixError
 from sympy.matrices.matrices import MatrixBase
 
 from .inverse import Inverse
@@ -153,13 +154,20 @@ class MatMul(MatrixExpr, Mul):
         return factor**self.rows * Mul(*list(map(Determinant, square_matrices)))
 
     def _eval_inverse(self):
-        try:
-            return MatMul(*[
-                arg.inverse() if isinstance(arg, MatrixExpr) else arg**-1
-                    for arg in self.args[::-1]]).doit()
-        except ShapeError:
-            from sympy.matrices.expressions.inverse import Inverse
-            return Inverse(self)
+        if self.is_square is False:
+            raise NonSquareMatrixError
+
+        scalars = [x for x in self.args if not x.is_Matrix]
+        matrices = [x for x in self.args if x.is_Matrix]
+
+        coeff = Mul(*scalars)**-1
+
+        if all(mat.is_square for mat in matrices):
+            matrices = [mat.inverse() for mat in matrices]
+            matrices = list(reversed(matrices))
+            return MatMul(coeff, *matrices).doit(deep=False)
+
+        return MatMul(coeff, Inverse(MatMul(*matrices))).doit(deep=False)
 
     def doit(self, **kwargs):
         deep = kwargs.get('deep', True)

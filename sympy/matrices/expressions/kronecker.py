@@ -5,6 +5,7 @@ from __future__ import division, print_function
 from sympy.core import Mul, prod, sympify
 from sympy.core.compatibility import range
 from sympy.functions import adjoint
+from sympy.matrices.common import NonSquareMatrixError
 from sympy.matrices.expressions.matexpr import MatrixExpr, ShapeError, Identity
 from sympy.matrices.expressions.transpose import transpose
 from sympy.matrices.matrices import MatrixBase
@@ -156,11 +157,13 @@ class KroneckerProduct(MatrixExpr):
         return prod(det(a)**(m/a.rows) for a in self.args)
 
     def _eval_inverse(self):
-        try:
+        if self.is_square is False:
+            raise NonSquareMatrixError
+
+        if all(a.is_square for a in self.args):
             return KroneckerProduct(*[a.inverse() for a in self.args])
-        except ShapeError:
-            from sympy.matrices.expressions.inverse import Inverse
-            return Inverse(self)
+        from sympy.matrices.expressions.inverse import Inverse
+        return Inverse(self)
 
     def structurally_equal(self, other):
         '''Determine whether two matrices have the same Kronecker product structure

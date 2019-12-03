@@ -1,10 +1,12 @@
 from sympy import I, symbols, Matrix, eye, Mod, floor
 from sympy.matrices import MatrixSymbol, Identity
+from sympy.matrices.common import NonSquareMatrixError
 from sympy.matrices.expressions import det, trace
-
+from sympy.matrices.expressions.inverse import Inverse
 from sympy.matrices.expressions.kronecker import (KroneckerProduct,
                                                   kronecker_product,
                                                   combine_kronecker)
+from sympy.utilities.pytest import raises
 
 
 mat1 = Matrix([[1, 2 * I], [1 + I, 3]])
@@ -102,6 +104,10 @@ def test_KroneckerProduct_extracts_commutative_part():
 def test_KroneckerProduct_inverse():
     kp = kronecker_product(W, Z)
     assert kp.inverse() == kronecker_product(W.inverse(), Z.inverse())
+    kp = kronecker_product(A, B)
+    assert kp.inverse() == Inverse(kp)
+    kp = kp.subs({n:2, m:3})
+    raises(NonSquareMatrixError, lambda: kp.inverse())
 
 
 def test_KroneckerProduct_combine_add():

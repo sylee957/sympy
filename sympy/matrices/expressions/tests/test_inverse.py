@@ -1,4 +1,5 @@
 from sympy.core import symbols, S
+from sympy.core.expr import unchanged
 from sympy.matrices.expressions import MatrixSymbol, Inverse, MatPow
 from sympy.matrices import eye, Identity, ShapeError
 from sympy.utilities.pytest import raises
@@ -13,8 +14,8 @@ E = MatrixSymbol('E', m, n)
 
 
 def test_inverse():
-    raises(ShapeError, lambda: Inverse(A))
-    raises(ShapeError, lambda: Inverse(A*B))
+    assert unchanged(Inverse, A, -1)
+    assert unchanged(Inverse, A*B, -1)
 
     assert Inverse(C).args == (C, S.NegativeOne)
     assert Inverse(C).shape == (n, n)
@@ -25,6 +26,7 @@ def test_inverse():
 
     assert Inverse(*Inverse(E*A).args) == Inverse(E*A)
 
+    assert A.inverse().inverse() == Inverse(Inverse(A))
     assert C.inverse().inverse() == C
 
     assert C.inverse()*C == Identity(C.rows)

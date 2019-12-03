@@ -3,6 +3,7 @@ from __future__ import print_function, division
 from sympy.core.sympify import _sympify
 from sympy.core import S, Basic
 
+from sympy.matrices.common import NonSquareMatrixError
 from sympy.matrices.expressions.matexpr import ShapeError
 from sympy.matrices.expressions.matpow import MatPow
 
@@ -38,10 +39,12 @@ class Inverse(MatPow):
         # exp is there to make it consistent with
         # inverse.func(*inverse.args) == inverse
         mat = _sympify(mat)
+        exp = _sympify(exp)
+
         if not mat.is_Matrix:
             raise TypeError("mat should be a matrix")
-        if not mat.is_square:
-            raise ShapeError("Inverse of non-square matrix %s" % mat)
+        if mat.is_square is False:
+            raise NonSquareMatrixError("Inverse of non-square matrix %s" % mat)
         return Basic.__new__(cls, mat, exp)
 
     @property
@@ -53,7 +56,9 @@ class Inverse(MatPow):
         return self.arg.shape
 
     def _eval_inverse(self):
-        return self.arg
+        if self.is_square:
+            return self.arg
+        return Inverse(self)
 
     def _eval_determinant(self):
         from sympy.matrices.expressions.determinant import det

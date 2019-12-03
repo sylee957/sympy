@@ -10,7 +10,7 @@ from sympy.core.logic import fuzzy_bool
 from sympy.core.sympify import SympifyError, _sympify
 from sympy.functions import conjugate, adjoint
 from sympy.functions.special.tensor_functions import KroneckerDelta
-from sympy.matrices import ShapeError
+from sympy.matrices.common import NonSquareMatrixError, ShapeError
 from sympy.simplify import simplify
 from sympy.utilities.misc import filldedent
 
@@ -179,6 +179,8 @@ class MatrixExpr(Expr):
         return (real, im)
 
     def _eval_inverse(self):
+        if self.is_square is False:
+            raise NonSquareMatrixError
         from sympy.matrices.expressions.inverse import Inverse
         return Inverse(self)
 
