@@ -1,7 +1,9 @@
 from sympy.core import Lambda, S, symbols
+from sympy.core.expr import unchanged
 from sympy.concrete import Sum
 from sympy.functions import adjoint, conjugate, transpose
-from sympy.matrices import eye, Matrix, ShapeError, ImmutableMatrix
+from sympy.matrices import eye, Matrix, ImmutableMatrix
+from sympy.matrices.common import NonSquareMatrixError
 from sympy.matrices.expressions import (
     Adjoint, Identity, FunctionMatrix, MatrixExpr, MatrixSymbol, Trace,
     ZeroMatrix, trace, MatPow, MatAdd, MatMul
@@ -9,16 +11,18 @@ from sympy.matrices.expressions import (
 from sympy.matrices.expressions.matexpr import OneMatrix
 from sympy.utilities.pytest import raises
 
-n = symbols('n', integer=True)
+m, n = symbols('m n', integer=True)
 A = MatrixSymbol('A', n, n)
 B = MatrixSymbol('B', n, n)
 C = MatrixSymbol('C', 3, 4)
+D = MatrixSymbol('D', m, n)
 
 
 def test_Trace():
-    assert isinstance(Trace(A), Trace)
+    assert unchanged(Trace, A)
     assert not isinstance(Trace(A), MatrixExpr)
-    raises(ShapeError, lambda: Trace(C))
+    raises(NonSquareMatrixError, lambda: Trace(C))
+    assert unchanged(Trace, D)
     assert trace(eye(3)) == 3
     assert trace(Matrix(3, 3, [1, 2, 3, 4, 5, 6, 7, 8, 9])) == 15
 
