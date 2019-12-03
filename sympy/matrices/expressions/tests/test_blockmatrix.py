@@ -133,7 +133,7 @@ def test_squareBlockMatrix():
     X = BlockMatrix([[A, B], [C, D]])
     Y = BlockMatrix([[A]])
 
-    assert X.is_square
+    assert X.is_square is True
 
     Q = X + Identity(m + n)
     assert (block_collapse(Q) ==

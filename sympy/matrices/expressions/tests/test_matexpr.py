@@ -643,3 +643,7 @@ def test_matrixsymbol_from_symbol():
     A_2 = A.subs(2, 3)
     assert A_1.args == A.args
     assert A_2.args[0] == A.args[0]
+
+def test_fuzzy_is_square():
+    assert A.is_square is None
+    assert C.is_square is True

@@ -309,7 +309,7 @@ def combine_powers(mul):
 
     for B in args[1:]:
         A = new_args[-1]
-        if A.is_square == False or B.is_square == False:
+        if A.is_square is not True or B.is_square is not True:
             new_args.append(B)
             continue
 

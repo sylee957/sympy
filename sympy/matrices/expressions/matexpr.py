@@ -6,6 +6,7 @@ import collections
 from sympy.core import S, Symbol, Tuple, Integer, Basic, Expr, Eq, Mul, Add
 from sympy.core.decorators import call_highest_priority
 from sympy.core.compatibility import range, SYMPY_INTS, default_sort_key, string_types
+from sympy.core.logic import fuzzy_bool
 from sympy.core.sympify import SympifyError, _sympify
 from sympy.functions import conjugate, adjoint
 from sympy.functions.special.tensor_functions import KroneckerDelta
@@ -164,7 +165,7 @@ class MatrixExpr(Expr):
 
     @property
     def is_square(self):
-        return self.rows == self.cols
+        return fuzzy_bool(Eq(self.rows, self.cols))
 
     def _eval_conjugate(self):
         from sympy.matrices.expressions.adjoint import Adjoint
