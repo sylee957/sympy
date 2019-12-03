@@ -126,14 +126,8 @@ class MatrixExpr(Expr):
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rpow__')
     def __pow__(self, other):
-        if not self.is_square:
+        if self.is_square is False:
             raise ShapeError("Power of non-square matrix %s" % self)
-        elif self.is_Identity:
-            return self
-        elif other == S.Zero:
-            return Identity(self.rows)
-        elif other == S.One:
-            return self
         return MatPow(self, other).doit(deep=False)
 
     @_sympifyit('other', NotImplemented)
@@ -960,17 +954,6 @@ class ZeroMatrix(MatrixExpr):
     @property
     def shape(self):
         return (self.args[0], self.args[1])
-
-    @_sympifyit('other', NotImplemented)
-    @call_highest_priority('__rpow__')
-    def __pow__(self, other):
-        if other != 1 and not self.is_square:
-            raise ShapeError("Power of non-square matrix %s" % self)
-        if other == 0:
-            return Identity(self.rows)
-        if other < 1:
-            raise ValueError("Matrix det == 0; not invertible.")
-        return self
 
     def _eval_transpose(self):
         return ZeroMatrix(self.cols, self.rows)

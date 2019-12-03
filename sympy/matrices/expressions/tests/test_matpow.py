@@ -1,8 +1,11 @@
 from sympy.utilities.pytest import raises
 from sympy.core import symbols, pi, S
 from sympy.matrices import Identity, MatrixSymbol, ImmutableMatrix, ZeroMatrix
+from sympy.matrices.common import NonSquareMatrixError, ShapeError
 from sympy.matrices.expressions import MatPow, MatAdd, MatMul
-from sympy.matrices.expressions.matexpr import ShapeError
+from sympy.matrices.expressions.matexpr import MatrixElement
+from sympy.utilities.pytest import raises
+
 
 n, m, l, k = symbols('n m l k', integer=True)
 A = MatrixSymbol('A', n, m)
@@ -14,7 +17,7 @@ E = MatrixSymbol('E', m, n)
 
 def test_entry():
     from sympy.concrete import Sum
-    assert MatPow(A, 1)[0, 0] == A[0, 0]
+    assert MatPow(A, 1)[0, 0] == MatrixElement(MatPow(A, 1), 0, 0)
     assert MatPow(C, 0)[0, 0] == 1
     assert MatPow(C, 0)[0, 1] == 0
     assert isinstance(MatPow(C, 2)[0, 0], Sum)
@@ -29,7 +32,7 @@ def test_as_explicit_symbol():
 
 def test_as_explicit_nonsquare_symbol():
     X = MatrixSymbol('X', 2, 3)
-    assert MatPow(X, 1).as_explicit() == X.as_explicit()
+    raises(NonSquareMatrixError, lambda: MatPow(X, 1).as_explicit())
     for r in [0, 2, S.Half, S.Pi]:
         raises(ShapeError, lambda: MatPow(X, r).as_explicit())
 
@@ -48,7 +51,7 @@ def test_as_explicit():
 
 def test_as_explicit_nonsquare():
     A = ImmutableMatrix([[1, 2, 3], [4, 5, 6]])
-    assert MatPow(A, 1).as_explicit() == A
+    raises(NonSquareMatrixError, lambda: MatPow(A, 1).as_explicit())
     raises(ShapeError, lambda: MatPow(A, 0).as_explicit())
     raises(ShapeError, lambda: MatPow(A, 2).as_explicit())
     raises(ShapeError, lambda: MatPow(A, -1).as_explicit())
@@ -56,7 +59,7 @@ def test_as_explicit_nonsquare():
 
 
 def test_doit_nonsquare_MatrixSymbol():
-    assert MatPow(A, 1).doit() == A
+    assert MatPow(A, 1).doit() == MatPow(A, 1)
     for r in [0, 2, -1, pi]:
         assert MatPow(A, r).doit() == MatPow(A, r)
 
@@ -84,7 +87,7 @@ def test_doit_with_MatrixBase():
 
 def test_doit_nonsquare():
     X = ImmutableMatrix([[1, 2, 3], [4, 5, 6]])
-    assert MatPow(X, 1).doit() == X
+    raises(NonSquareMatrixError, lambda: MatPow(X, 1).doit())
     raises(ShapeError, lambda: MatPow(X, 0).doit())
     raises(ShapeError, lambda: MatPow(X, 2).doit())
     raises(ShapeError, lambda: MatPow(X, -1).doit())

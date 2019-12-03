@@ -133,10 +133,9 @@ def test_ZeroMatrix():
     assert Z.conjugate() == Z
 
     assert ZeroMatrix(n, n)**0 == Identity(n)
-    with raises(ShapeError):
-        Z**0
-    with raises(ShapeError):
-        Z**2
+    assert Z**0 == MatPow(Z, 0)
+    assert Z**1 == MatPow(Z, 1)
+    assert Z**2 == MatPow(Z, 2)
 
 
 def test_ZeroMatrix_doit():
@@ -157,10 +156,9 @@ def test_OneMatrix():
     assert U.conjugate() == U
 
     assert OneMatrix(n, n) ** 0 == Identity(n)
-    with raises(ShapeError):
-        U ** 0
-    with raises(ShapeError):
-        U ** 2
+    assert U ** 0 == MatPow(U, 0)
+    assert U ** 1 == MatPow(U, 1)
+    assert U ** 2 == MatPow(U, 2)
     with raises(ShapeError):
         a + U
 
