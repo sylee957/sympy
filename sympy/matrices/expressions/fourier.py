@@ -14,7 +14,9 @@ class DFT(MatrixExpr):
         return obj
 
     n = property(lambda self: self.args[0])
-    shape = property(lambda self: (self.n, self.n))
+
+    def _eval_matrix_shape(self):
+        return self.n, self.n
 
     def _entry(self, i, j, **kwargs):
         w = exp(-2*S.Pi*I/self.n)

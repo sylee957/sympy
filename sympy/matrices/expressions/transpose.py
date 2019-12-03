@@ -48,9 +48,10 @@ class Transpose(MatrixExpr):
     def arg(self):
         return self.args[0]
 
-    @property
-    def shape(self):
-        return self.arg.shape[::-1]
+    def _eval_matrix_shape(self):
+        ret = self.arg._eval_matrix_shape()
+        if ret is not None:
+            return ret[::-1]
 
     def _entry(self, i, j, expand=False, **kwargs):
         return self.arg._entry(j, i, expand=expand, **kwargs)

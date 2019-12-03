@@ -119,6 +119,9 @@ class ImmutableDenseMatrix(DenseMatrix, MatrixExpr):
     is_diagonalizable.__doc__ = DenseMatrix.is_diagonalizable.__doc__
     is_diagonalizable = cacheit(is_diagonalizable)
 
+    def _eval_matrix_shape(self):
+        return self.shape
+
 
 # This is included after the class definition as a workaround for issue 7213.
 # See https://github.com/sympy/sympy/issues/7213
@@ -183,3 +186,6 @@ class ImmutableSparseMatrix(SparseMatrix, Basic):
             reals_only=reals_only, **kwargs)
     is_diagonalizable.__doc__ = SparseMatrix.is_diagonalizable.__doc__
     is_diagonalizable = cacheit(is_diagonalizable)
+
+    def _eval_matrix_shape(self):
+        return self.shape

@@ -18,9 +18,11 @@ class MatrixRows(Expr):
         if isinstance(mat, MatrixBase):
             return Integer(mat.rows)
 
-        ret = mat.rows
-        if not isinstance(ret, MatrixRows):
-            return ret
+        dispatch = getattr(mat, '_eval_matrix_shape', None)
+        if dispatch:
+            ret = dispatch()
+            if ret is not None:
+                return ret[0]
 
         return Expr.__new__(cls, mat)
 
@@ -37,9 +39,11 @@ class MatrixCols(Expr):
         if isinstance(mat, MatrixBase):
             return Integer(mat.cols)
 
-        ret = mat.cols
-        if not isinstance(ret, MatrixCols):
-            return ret
+        dispatch = getattr(mat, '_eval_matrix_shape', None)
+        if dispatch:
+            ret = dispatch()
+            if ret is not None:
+                return ret[1]
 
         return Expr.__new__(cls, mat)
 

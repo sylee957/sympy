@@ -95,9 +95,8 @@ class FunctionMatrix(MatrixExpr):
 
         return super(FunctionMatrix, cls).__new__(cls, rows, cols, lamda)
 
-    @property
-    def shape(self):
-        return self.args[0:2]
+    def _eval_matrix_shape(self):
+        return self.args[0], self.args[1]
 
     @property
     def lamda(self):

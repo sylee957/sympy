@@ -2,8 +2,10 @@ from __future__ import print_function, division
 
 from sympy.core import Basic
 from sympy.functions import adjoint, conjugate
-from sympy.matrices.expressions.transpose import transpose
-from sympy.matrices.expressions.matexpr import MatrixExpr
+
+from .matexpr import MatrixExpr, MatrixElement
+from .shape import MatrixShape
+from .transpose import transpose, Transpose
 
 
 class Adjoint(MatrixExpr):
@@ -43,22 +45,33 @@ class Adjoint(MatrixExpr):
     def arg(self):
         return self.args[0]
 
-    @property
-    def shape(self):
-        return self.arg.shape[::-1]
+    def _eval_matrix_shape(self):
+        ret = self.arg._eval_matrix_shape()
+        if ret is not None:
+            return ret[::-1]
 
     def _entry(self, i, j, **kwargs):
-        return conjugate(self.arg._entry(j, i, **kwargs))
+        if self._eval_matrix_shape() is not None:
+            return conjugate(self.arg._entry(j, i, **kwargs))
+        return MatrixElement(self, i, j)
 
     def _eval_adjoint(self):
-        return self.arg
+        if self._eval_matrix_shape() is not None:
+            return self.arg
+        return Adjoint(self)
 
     def _eval_conjugate(self):
-        return transpose(self.arg)
+        if self._eval_matrix_shape() is not None:
+            return transpose(self.arg)
+        return Adjoint(Transpose(self))
 
     def _eval_trace(self):
         from sympy.matrices.expressions.trace import Trace
-        return conjugate(Trace(self.arg))
+        if self._eval_matrix_shape() is not None:
+            return conjugate(Trace(self.arg))
+        return Trace(self)
 
     def _eval_transpose(self):
-        return conjugate(self.arg)
+        if self._eval_matrix_shape() is not None:
+            return conjugate(self.arg)
+        return Transpose(self)

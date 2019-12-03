@@ -26,8 +26,7 @@ class MatPow(MatrixExpr):
     def exp(self):
         return self.args[1]
 
-    @property
-    def shape(self):
+    def _eval_matrix_shape(self):
         return self.base.shape
 
     def _entry(self, i, j, **kwargs):

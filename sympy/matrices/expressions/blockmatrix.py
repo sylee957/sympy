@@ -128,8 +128,7 @@ class BlockMatrix(MatrixExpr):
         obj = Basic.__new__(cls, mat)
         return obj
 
-    @property
-    def shape(self):
+    def _eval_matrix_shape(self):
         numrows = numcols = 0
         M = self.blocks
         for i in range(M.shape[0]):
@@ -304,10 +303,17 @@ class BlockDiagMatrix(BlockMatrix):
                         for i in range(len(mats))]
         return ImmutableDenseMatrix(data)
 
-    @property
-    def shape(self):
-        return (sum(block.rows for block in self.args),
-                sum(block.cols for block in self.args))
+    def _eval_matrix_shape(self):
+        shapes = []
+        for block in self.args:
+            ret = block._eval_matrix_shape()
+            if ret is None:
+                return None
+            shapes.append(ret)
+
+        rows = sum(block[0] for block in shapes)
+        cols = sum(block[1] for block in shapes)
+        return rows, cols
 
     @property
     def blockshape(self):

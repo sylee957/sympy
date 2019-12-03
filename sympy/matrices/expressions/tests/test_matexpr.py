@@ -159,8 +159,7 @@ def test_OneMatrix():
     assert U ** 0 == MatPow(U, 0)
     assert U ** 1 == MatPow(U, 1)
     assert U ** 2 == MatPow(U, 2)
-    with raises(ShapeError):
-        a + U
+    assert a + U == MatAdd(a, U)
 
     U = OneMatrix(n, n)
     assert U[1, 2] == 1
@@ -228,7 +227,7 @@ def test_addition():
     assert (A + B).shape == A.shape
     assert isinstance(A - A + 2*B, MatMul)
 
-    raises(ShapeError, lambda: A + B.T)
+    assert A + B.T == MatAdd(A, B.T)
     raises(TypeError, lambda: A + 1)
     raises(TypeError, lambda: 5 + A)
     raises(TypeError, lambda: 5 - A)

@@ -68,8 +68,7 @@ class MatrixSlice(MatrixExpr):
             return mat_slice_of_slice(parent, rowslice, colslice)
         return Basic.__new__(cls, parent, Tuple(*rowslice), Tuple(*colslice))
 
-    @property
-    def shape(self):
+    def _eval_matrix_shape(self):
         rows = self.rowslice[1] - self.rowslice[0]
         rows = rows if self.rowslice[2] == 1 else floor(rows/self.rowslice[2])
         cols = self.colslice[1] - self.colslice[0]

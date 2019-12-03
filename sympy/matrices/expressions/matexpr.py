@@ -149,6 +149,18 @@ class MatrixExpr(Expr):
     __truediv__ = __div__
     __rtruediv__ = __rdiv__
 
+    def _eval_matrix_shape(self):
+        raise NotImplementedError
+
+    @property
+    def shape(self):
+        from .shape import MatrixShape
+
+        ret = self._eval_matrix_shape()
+        if ret is not None:
+            return ret
+        return tuple(MatrixShape(self))
+
     @property
     def rows(self):
         return self.shape[0]
@@ -780,9 +792,8 @@ class MatrixSymbol(MatrixExpr):
     def _hashable_content(self):
         return (self.name, self.shape)
 
-    @property
-    def shape(self):
-        return self.args[1:3]
+    def _eval_matrix_shape(self):
+        return self.args[1], self.args[2]
 
     @property
     def name(self):
@@ -853,17 +864,8 @@ class Identity(MatrixExpr):
 
         return super(Identity, cls).__new__(cls, n)
 
-    @property
-    def rows(self):
-        return self.args[0]
-
-    @property
-    def cols(self):
-        return self.args[0]
-
-    @property
-    def shape(self):
-        return (self.args[0], self.args[0])
+    def _eval_matrix_shape(self):
+        return self.args[0], self.args[0]
 
     @property
     def is_square(self):
@@ -951,9 +953,8 @@ class ZeroMatrix(MatrixExpr):
 
         return super(ZeroMatrix, cls).__new__(cls, m, n)
 
-    @property
-    def shape(self):
-        return (self.args[0], self.args[1])
+    def _eval_matrix_shape(self):
+        return self.args[0], self.args[1]
 
     def _eval_transpose(self):
         return ZeroMatrix(self.cols, self.rows)
@@ -988,16 +989,7 @@ class GenericZeroMatrix(ZeroMatrix):
         # because ZeroMatrix.__new__ doesn't have the same signature
         return super(ZeroMatrix, cls).__new__(cls)
 
-    @property
-    def rows(self):
-        raise TypeError("GenericZeroMatrix does not have a specified shape")
-
-    @property
-    def cols(self):
-        raise TypeError("GenericZeroMatrix does not have a specified shape")
-
-    @property
-    def shape(self):
+    def _eval_matrix_shape(self):
         raise TypeError("GenericZeroMatrix does not have a specified shape")
 
     # Avoid Matrix.__eq__ which might call .shape
@@ -1023,9 +1015,8 @@ class OneMatrix(MatrixExpr):
         obj = super(OneMatrix, cls).__new__(cls, m, n)
         return obj
 
-    @property
-    def shape(self):
-        return self._args
+    def _eval_matrix_shape(self):
+        return self.args[0], self.args[1]
 
     def as_explicit(self):
         from sympy import ImmutableDenseMatrix

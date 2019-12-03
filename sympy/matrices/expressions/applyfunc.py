@@ -1,5 +1,8 @@
-from sympy.matrices.expressions import MatrixExpr
 from sympy import MatrixBase, Dummy, Lambda, Function, FunctionClass
+
+from sympy.core.sympify import _sympify
+
+from .matexpr import MatrixElement, MatrixExpr
 
 
 class ElementwiseApplyFunction(MatrixExpr):
@@ -42,8 +45,8 @@ class ElementwiseApplyFunction(MatrixExpr):
     [0, E, 0],
     [0, 0, E]])
     """
-
     def __new__(cls, function, expr):
+        expr = _sympify(expr)
         obj = MatrixExpr.__new__(cls, expr)
         if not isinstance(function, FunctionClass):
             d = Dummy("d")
@@ -63,9 +66,8 @@ class ElementwiseApplyFunction(MatrixExpr):
     def expr(self):
         return self._expr
 
-    @property
-    def shape(self):
-        return self.expr.shape
+    def _eval_matrix_shape(self):
+        return self.expr._eval_matrix_shape()
 
     @property
     def func(self):
@@ -79,6 +81,9 @@ class ElementwiseApplyFunction(MatrixExpr):
         return _
 
     def doit(self, **kwargs):
+        if self._eval_matrix_shape() is None:
+            return self
+
         deep = kwargs.get("deep", True)
         expr = self.expr
         if deep:
@@ -98,6 +103,8 @@ class ElementwiseApplyFunction(MatrixExpr):
             return self
 
     def _entry(self, i, j, **kwargs):
+        if self._eval_matrix_shape() is None:
+            return MatrixElement(self, i, j)
         return self.function(self.expr._entry(i, j, **kwargs))
 
     def _get_function_fdiff(self):

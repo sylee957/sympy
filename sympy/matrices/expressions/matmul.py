@@ -55,8 +55,7 @@ class MatMul(MatrixExpr, Mul):
             return factor
         return obj
 
-    @property
-    def shape(self):
+    def _eval_matrix_shape(self):
         matrices = [arg for arg in self.args if arg.is_Matrix]
         return (matrices[0].rows, matrices[-1].cols)
 

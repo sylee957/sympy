@@ -4,14 +4,23 @@ from sympy.core.compatibility import reduce
 from operator import add
 
 from sympy.core import Add, Basic, sympify
+from sympy.core.cache import cacheit
+from sympy.core.containers import Tuple
+from sympy.core.logic import fuzzy_bool, fuzzy_and
+from sympy.core.relational import Eq
 from sympy.functions import adjoint
+from sympy.logic.boolalg import And
 from sympy.matrices.matrices import MatrixBase
-from sympy.matrices.expressions.transpose import transpose
 from sympy.strategies import (rm_id, unpack, flatten, sort, condition,
     exhaust, do_one, glom)
-from sympy.matrices.expressions.matexpr import (MatrixExpr, ShapeError,
-    ZeroMatrix, GenericZeroMatrix)
 from sympy.utilities import default_sort_key, sift
+
+from .adjoint import Adjoint
+from .matexpr import \
+    MatrixExpr, ShapeError, ZeroMatrix, GenericZeroMatrix, MatrixElement
+from .shape import MatrixShape
+from .transpose import transpose, Transpose
+
 
 # XXX: MatAdd should perhaps not subclass directly from Add
 class MatAdd(MatrixExpr, Add):
@@ -47,25 +56,44 @@ class MatAdd(MatrixExpr, Add):
         if check:
             if all(not isinstance(i, MatrixExpr) for i in args):
                 return Add.fromiter(args)
-            validate(*args)
+
+            if not all(arg.is_Matrix for arg in args):
+                raise TypeError("Mix of Matrix and Scalar symbols")
+
+            if obj._is_shape_aligned_predicate() == False:
+                raise ShapeError("Matrices are not aligned")
         return obj
 
-    @property
-    def shape(self):
-        return self.args[0].shape
+    @cacheit
+    def _is_shape_aligned_predicate(self):
+        A = self.args[0]
+        new_args = (Eq(A.shape, B.shape) for B in self.args[1:])
+        return And(*new_args)
+
+    def _eval_matrix_shape(self):
+        if self._is_shape_aligned_predicate() == True:
+            return self.args[0]._eval_matrix_shape()
 
     def _entry(self, i, j, **kwargs):
-        return Add(*[arg._entry(i, j, **kwargs) for arg in self.args])
+        if self._is_shape_aligned_predicate() == True:
+            return Add(*[arg._entry(i, j, **kwargs) for arg in self.args])
+        return MatrixElement(self, i, j)
 
     def _eval_transpose(self):
-        return MatAdd(*[transpose(arg) for arg in self.args]).doit()
+        if self._is_shape_aligned_predicate() == True:
+            return MatAdd(*[transpose(arg) for arg in self.args]).doit()
+        return Transpose(self)
 
     def _eval_adjoint(self):
-        return MatAdd(*[adjoint(arg) for arg in self.args]).doit()
+        if self._is_shape_aligned_predicate() == True:
+            return MatAdd(*[adjoint(arg) for arg in self.args]).doit()
+        return Adjoint(self)
 
     def _eval_trace(self):
-        from .trace import trace
-        return Add(*[trace(arg) for arg in self.args]).doit()
+        from .trace import trace, Trace
+        if self._is_shape_aligned_predicate() == True:
+            return Add(*[trace(arg) for arg in self.args]).doit()
+        return Trace(self)
 
     def doit(self, **kwargs):
         deep = kwargs.get('deep', True)
@@ -73,21 +101,18 @@ class MatAdd(MatrixExpr, Add):
             args = [arg.doit(**kwargs) for arg in self.args]
         else:
             args = self.args
-        return canonicalize(MatAdd(*args))
+
+        if self._is_shape_aligned_predicate() == True:
+            return canonicalize(MatAdd(*args))
+        return self
 
     def _eval_derivative_matrix_lines(self, x):
-        add_lines = [arg._eval_derivative_matrix_lines(x) for arg in self.args]
-        return [j for i in add_lines for j in i]
+        if self._is_shape_aligned_predicate() == True:
+            add_lines = [
+                arg._eval_derivative_matrix_lines(x) for arg in self.args]
+            return [j for i in add_lines for j in i]
+        raise NotImplementedError
 
-
-def validate(*args):
-    if not all(arg.is_Matrix for arg in args):
-        raise TypeError("Mix of Matrix and Scalar symbols")
-
-    A = args[0]
-    for B in args[1:]:
-        if A.shape != B.shape:
-            raise ShapeError("Matrices %s and %s are not aligned"%(A, B))
 
 factor_of = lambda arg: arg.as_coeff_mmul()[0]
 matrix_of = lambda arg: unpack(arg.as_coeff_mmul()[1])

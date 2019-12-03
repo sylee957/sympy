@@ -1,8 +1,12 @@
 from __future__ import print_function, division
 
 from sympy.core import Basic, Expr
+from sympy.core.cache import cacheit
+from sympy.core.relational import Eq
 from sympy.core.sympify import _sympify
+from sympy.logic.boolalg import And, Or
 from sympy.matrices.expressions.transpose import transpose
+from sympy.strategies.core import condition
 
 
 class DotProduct(Expr):
@@ -32,17 +36,30 @@ class DotProduct(Expr):
             raise TypeError("Argument 1 of DotProduct is not a matrix")
         if not arg2.is_Matrix:
             raise TypeError("Argument 2 of DotProduct is not a matrix")
-        if not (1 in arg1.shape):
-            raise TypeError("Argument 1 of DotProduct is not a vector")
-        if not (1 in arg2.shape):
-            raise TypeError("Argument 2 of DotProduct is not a vector")
 
-        if set(arg1.shape) != set(arg2.shape):
-            raise TypeError("DotProduct arguments are not the same length")
+        obj = Basic.__new__(cls, arg1, arg2)
+        if obj._is_valid_predicate() == False:
+            raise TypeError("The shape is not aligned for the dot product.")
+        return obj
 
-        return Basic.__new__(cls, arg1, arg2)
+
+    @cacheit
+    def _is_valid_predicate(self):
+        arg1, arg2 = self.args
+        pred1 = Or(Eq(arg1.rows, 1), Eq(arg1.cols, 1))
+        pred2 = Or(Eq(arg2.rows, 1), Eq(arg2.cols, 1))
+        pred3 = Or(
+            And(Eq(arg1.rows, arg2.rows), Eq(arg1.cols, arg2.cols)),
+            And(Eq(arg1.rows, arg2.cols), Eq(arg1.cols, arg2.rows))
+        )
+
+        return And(pred1, pred2, pred3)
+
 
     def doit(self, expand=False):
+        if self._is_valid_predicate() != True:
+            return self
+
         if self.args[0].shape == self.args[1].shape:
             if self.args[0].shape[0] == 1:
                 mul = self.args[0]*transpose(self.args[1])
