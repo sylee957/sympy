@@ -1,4 +1,5 @@
 from sympy.core import S, symbols
+from sympy.core.expr import unchanged
 from sympy.matrices import eye, Matrix, ShapeError
 from sympy.matrices.expressions import (
     Identity, MatrixExpr, MatrixSymbol, Determinant,
@@ -8,10 +9,11 @@ from sympy.matrices.expressions.matexpr import OneMatrix
 from sympy.utilities.pytest import raises
 from sympy import refine, Q
 
-n = symbols('n', integer=True)
+m, n = symbols('m, n', integer=True)
 A = MatrixSymbol('A', n, n)
 B = MatrixSymbol('B', n, n)
 C = MatrixSymbol('C', 3, 4)
+D = MatrixSymbol('D', m, n)
 
 
 def test_det():
@@ -23,6 +25,7 @@ def test_det():
     A / det(A)  # Make sure this is possible
 
     raises(TypeError, lambda: Determinant(S.One))
+    assert unchanged(Determinant, D)
 
     assert Determinant(A).arg is A
 
