@@ -69,6 +69,7 @@ class CodePrinter(StrPrinter):
         super(CodePrinter, self).__init__(settings=settings)
         if not hasattr(self, 'reserved_words'):
             self.reserved_words = set()
+        self.unknown_functions = set()
 
     def doprint(self, expr, assign_to=None):
         """
@@ -391,7 +392,10 @@ class CodePrinter(StrPrinter):
             # Simple rewrite to supported function possible
             return self._print(expr.rewrite(self._rewriteable_functions[expr.func.__name__]))
         elif expr.is_Function and self._settings.get('allow_unknown_functions', False):
-            return '%s(%s)' % (self._print(expr.func), ', '.join(map(self._print, expr.args)))
+            func_str = self._print(expr.func)
+            args_str = ', '.join(map(self._print, expr.args))
+            self.unknown_functions.add(func_str)
+            return '%s(%s)' % (func_str, args_str)
         else:
             return self._print_not_supported(expr)
 

@@ -1072,13 +1072,22 @@ class IntervalPrinter(MpmathPrinter, LambdaPrinter):
     """Use ``lambda`` printer but print numbers as ``mpi`` intervals. """
 
     def _print_Integer(self, expr):
-        return "mpi('%s')" % super(PythonCodePrinter, self)._print_Integer(expr)
+        arg_str = "'{}'".format(
+            super(PythonCodePrinter, self)._print_Integer(expr))
+        func_str = self._module_format('mpmath.mpi')
+        return "{}({})".format(func_str, arg_str)
 
     def _print_Rational(self, expr):
-        return "mpi('%s')" % super(PythonCodePrinter, self)._print_Rational(expr)
+        arg_str = "'{}'".format(
+            super(PythonCodePrinter, self)._print_Rational(expr))
+        func_str = self._module_format('mpmath.mpi')
+        return "{}({})".format(func_str, arg_str)
 
     def _print_Half(self, expr):
-        return "mpi('%s')" % super(PythonCodePrinter, self)._print_Rational(expr)
+        arg_str = "'{}'".format(
+            super(PythonCodePrinter, self)._print_Rational(expr))
+        func_str = self._module_format('mpmath.mpi')
+        return "{}({})".format(func_str, arg_str)
 
     def _print_Pow(self, expr):
         return super(MpmathPrinter, self)._print_Pow(expr, rational=True)

@@ -712,11 +712,29 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True,
         if _module_present('numexpr', modules) and len(modules) > 1:
             raise TypeError("numexpr must be the only item in 'modules'")
         namespaces += list(modules)
+
+
     # fill namespace with first having highest priority
+    from sympy.printing.printer import Printer as PrinterBase
+    if printer and not isinstance(printer, PrinterBase):
+        use_modules_namespace = True
+    else:
+        use_modules_namespace = False
+
     namespace = {}
     for m in namespaces[::-1]:
-        buf = _get_namespace(m)
+        buf = _get_namespace(m, use_modules_namespace=use_modules_namespace)
         namespace.update(buf)
+
+
+    # If printer is a function, then it cannot collect the context and
+    # should be made into
+    from sympy.printing.printer import Printer as PrinterBase
+    if not isinstance(printer, PrinterBase):
+        for m in namespaces[::-1]:
+            buf = _get_namespace(m)
+            namespace.update(buf)
+
 
     if hasattr(expr, "atoms"):
         #Try if you can extract symbols from the expression.
@@ -725,6 +743,7 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True,
         for term in syms:
             namespace.update({str(term): term})
 
+    user_functions = {}
     if printer is None:
         if _module_present('mpmath', namespaces):
             from sympy.printing.pycode import MpmathPrinter as Printer
@@ -748,6 +767,10 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True,
         printer = Printer({'fully_qualified_modules': False, 'inline': True,
                            'allow_unknown_functions': True,
                            'user_functions': user_functions})
+    else:
+        _settings = getattr(printer, '_settings', None)
+        if _settings:
+            user_functions = _settings.get('user_functions', {})
 
     # Get the names of the args, for creating a docstring
     if not iterable(args):
@@ -792,6 +815,33 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True,
                     exec_(ln, {}, namespace)
                 imp_mod_lines.append(ln)
 
+
+    # If the printer uses fully qualified module, import the module
+    # to the namespace.
+    printer_settings = getattr(funcprinter._printer, '_settings', None)
+    if printer_settings and \
+        printer_settings.get('fully_qualified_modules', None):
+        for mod, _ in getattr(printer, 'module_imports', {}).items():
+            exec_("import {}".format(mod), {}, namespace)
+
+
+    # Search for the candidates of the unknown functions
+    for f in getattr(printer, 'unknown_functions', {}):
+        for m in namespaces[::-1]:
+            if isinstance(m, string_types) and m in MODULES:
+                if f in MODULES[m][0]:
+                    namespace[f] = MODULES[m][0][f]
+
+    # Search for the candidates of the user functions
+    for f in user_functions.values():
+        if f in namespace:
+            continue
+        for m in namespaces[::-1]:
+            if isinstance(m, string_types) and m in MODULES:
+                if f in MODULES[m][0]:
+                    namespace[f] = MODULES[m][0][f]
+
+
     # Provide lambda expression with builtins, and compatible implementation of range
     namespace.update({'builtins':builtins, 'range':range})
 
@@ -833,19 +883,29 @@ def _module_present(modname, modlist):
     return False
 
 
-def _get_namespace(m):
+def _get_namespace(m, use_modules_namespace=False):
     """
     This is used by _lambdify to parse its arguments.
+
+    Parameters
+    ==========
+
+    use_modules_namespace : bool
+        There are lots of redundant functions in the namespace collected
+        in ``MODULES``, so using this keyword is not a good idea.
     """
     if isinstance(m, string_types):
         _import(m)
-        return MODULES[m][0]
+        if use_modules_namespace or m == 'sympy':
+            return MODULES[m][0]
+        return {}
     elif isinstance(m, dict):
         return m
     elif hasattr(m, "__dict__"):
         return m.__dict__
-    else:
-        raise TypeError("Argument must be either a string, dict or module but it is: %s" % m)
+    raise TypeError(
+        "Argument must be either a string, dict or module but it is: %s" % m)
+
 
 def lambdastr(args, expr, printer=None, dummify=None):
     """
@@ -981,7 +1041,7 @@ class _EvaluatorPrinter(object):
             self._exprrepr = printer
         else:
             if inspect.isclass(printer):
-                printer = printer()
+                printer = printer({'fully_qualified_modules': False})
 
             self._exprrepr = printer.doprint
 
@@ -993,6 +1053,7 @@ class _EvaluatorPrinter(object):
 
         # Used to print the generated function arguments in a standard way
         self._argrepr = LambdaPrinter().doprint
+        self._printer = printer
 
     def doprint(self, funcname, args, expr):
         """Returns the function definition code as a string."""

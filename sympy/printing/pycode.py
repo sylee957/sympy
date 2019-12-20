@@ -499,6 +499,7 @@ _known_functions_mpmath = dict(_in_mpmath, **{
     'fresnelc': 'fresnelc',
     'fresnels': 'fresnels',
     'sign': 'sign',
+    'sinc': 'sinc',
 })
 _known_constants_mpmath = {
     'Exp1': 'e',
@@ -836,6 +837,7 @@ _known_functions_scipy_special = {
     'gamma': 'gamma',
     'loggamma': 'gammaln',
     'digamma': 'psi',
+    'polygamma': 'polygamma',
     'RisingFactorial': 'poch',
     'jacobi': 'eval_jacobi',
     'gegenbauer': 'eval_gegenbauer',

@@ -880,7 +880,8 @@ def test_special_printers():
     from sympy.polys.numberfields import IntervalPrinter
 
     def intervalrepr(expr):
-        return IntervalPrinter().doprint(expr)
+        return IntervalPrinter(
+            {'fully_qualified_modules': False}).doprint(expr)
 
     expr = sqrt(sqrt(2) + sqrt(3)) + S.Half
 
