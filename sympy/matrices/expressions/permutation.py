@@ -76,7 +76,7 @@ class PermutationMatrix(MatrixExpr):
     def is_Identity(self):
         return self.args[0].is_Identity
 
-    def doit(self):
+    def doit(self, **kwargs):
         if self.is_Identity:
             return Identity(self.rows)
         return self

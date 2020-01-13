@@ -54,6 +54,8 @@ Matrix Expressions Core Reference
    :members:
 .. autoclass:: ZeroMatrix
    :members:
+.. autoclass:: RREF
+   :members:
 
 Block Matrices
 --------------
