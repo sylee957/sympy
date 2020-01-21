@@ -4,7 +4,7 @@ import random
 
 from sympy.core import SympifyError, Add
 from sympy.core.basic import Basic
-from sympy.core.compatibility import is_sequence, reduce
+from sympy.core.compatibility import as_int, is_sequence, reduce
 from sympy.core.expr import Expr
 from sympy.core.function import expand_mul
 from sympy.core.singleton import S
@@ -92,37 +92,52 @@ class DenseMatrix(MatrixBase):
         >>> m[::2]
         [1, 3]
         """
-        if isinstance(key, tuple):
-            i, j = key
-            try:
-                i, j = self.key2ij(key)
-                return self._mat[i*self.cols + j]
-            except (TypeError, IndexError):
-                if (isinstance(i, Expr) and not i.is_number) or (isinstance(j, Expr) and not j.is_number):
-                    if ((j < 0) is True) or ((j >= self.shape[1]) is True) or\
-                       ((i < 0) is True) or ((i >= self.shape[0]) is True):
-                        raise ValueError("index out of boundary")
-                    from sympy.matrices.expressions.matexpr import MatrixElement
-                    return MatrixElement(self, i, j)
+        if not isinstance(key, tuple):
+            return self._mat[key]
 
-                if isinstance(i, slice):
-                    i = range(self.rows)[i]
-                elif is_sequence(i):
-                    pass
-                else:
-                    i = [i]
-                if isinstance(j, slice):
-                    j = range(self.cols)[j]
-                elif is_sequence(j):
-                    pass
-                else:
-                    j = [j]
-                return self.extract(i, j)
-        else:
-            # row-wise decomposition of matrix
-            if isinstance(key, slice):
-                return self._mat[key]
-            return self._mat[a2idx(key)]
+        if len(key) != 2:
+            raise IndexError(
+                "{} must contain 2 elements for matrix indexing."
+                .format(key))
+
+        i, j = key
+        is_i_slice = isinstance(i, slice)
+        is_j_slice = isinstance(j, slice)
+        is_i_sequence = is_sequence(i)
+        is_j_sequence = is_sequence(j)
+
+        if not is_i_slice and not is_j_slice and \
+            not is_i_sequence and not is_j_sequence:
+            is_i_symbolic_expr = isinstance(i, Expr) and not i.is_number
+            is_j_symbolic_expr = isinstance(j, Expr) and not j.is_number
+
+            if is_i_symbolic_expr or is_j_symbolic_expr:
+                if (i < 0) == True or (i >= self.rows) == True:
+                    raise ValueError(
+                        "Index {} is out of the boundary".format(i))
+                if (j < 0) == True or (j >= self.cols) == True:
+                    raise ValueError(
+                        "Index {} is out of the boundary".format(i))
+
+                from sympy.matrices.expressions.matexpr import MatrixElement
+                return MatrixElement(self, i, j)
+
+            i, j = a2idx(i, n=self.rows), a2idx(j, n=self.cols)
+            return self._mat[i*self.cols + j]
+
+        if not is_i_sequence:
+            if is_i_slice:
+                i = tuple(range(self.rows)[i])
+            else:
+                i = (i,)
+
+        if not is_j_sequence:
+            if is_j_slice:
+                j = tuple(range(self.cols)[j])
+            else:
+                j = (j,)
+
+        return self.extract(i, j)
 
     def __setitem__(self, key, value):
         raise NotImplementedError()
