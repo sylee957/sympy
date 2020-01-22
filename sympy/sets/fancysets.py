@@ -6,6 +6,7 @@ from sympy.core.basic import Basic
 from sympy.core.containers import Tuple
 from sympy.core.expr import Expr
 from sympy.core.function import Lambda
+from sympy.core.parameters import global_parameters
 from sympy.core.logic import fuzzy_not, fuzzy_or
 from sympy.core.numbers import oo, Integer
 from sympy.core.relational import Eq
@@ -496,13 +497,31 @@ class ImageSet(Set):
 
 
 class Range(Set):
-    """
-    Represents a range of integers. Can be called as Range(stop),
-    Range(start, stop), or Range(start, stop, step); when stop is
-    not given it defaults to 1.
+    r"""Represents a range of integers.
 
-    `Range(stop)` is the same as `Range(0, stop, 1)` and the stop value
-    (juse as for Python ranges) is not included in the Range values.
+    Parameters
+    ==========
+
+    args : (stop,) or (start, stop) or (start, stop, step)
+        If specified as a single *start*, it is dispatched as
+        ``Range(0, stop, 1)``.
+
+        If specified as *start*, *stop*, it is dispatched as
+        ``Range(start, stop, 1)``.
+
+        If specified as *start*, *stop*, *step*, the range
+        specification follows the Python definition with some extension
+        made in the SymPy to support symbols or infinities.
+
+        Check the ``Definitions of Range`` section to see how the
+        integer range can be defined over symbols and infinities.
+
+    Examples
+    ========
+
+    ``Range(stop)`` is the same as ``Range(0, stop, 1)`` and the stop
+    value (juse as for Python ranges) is not included in the Range
+    bvalues.
 
         >>> from sympy import Range
         >>> list(Range(3))
@@ -576,12 +595,99 @@ class Range(Set):
         n
         >>> pprint(r)
         {n, n + 3, ..., n + 17}
+
+    Definitions of Range
+    ====================
+
+    If $i \in \mathbb{Z}$, $j \in \mathbb{Z}$ and
+    $k \in \mathbb{Z} - \{ 0 \}$ denotes *start*, *stop*, and *step*,
+    the $Range$ can be defined as:
+
+    - If $i < j \wedge k > 0$;
+      $Range(i, j, k) =
+      \left\{i, i+k, ..., i + (\lceil \frac{j-i}{k} \rceil - 1) k \right\}$
+    - If $i \geq j \wedge k > 0$;
+      $Range(i, j, k) = \left\{ \right\}$
+    - If $i \leq j \wedge k < 0$;
+      $Range(i, j, k) = \left\{ \right\}$
+    - If $i > j \wedge k < 0$;
+      $Range(i, j, k) =
+      \left\{i, i+k, ..., i + (\lceil \frac{i-j}{k} \rceil - 1) k \right\}$
+
+    If $k$ is infinite and $i$, $j$ are finite:
+
+    - If $i < j$; $Range(i, j, \infty) = \left\{i \right\}$
+    - If $i \geq j$; $Range(i, j, \infty) = \left\{ \right\}$
+    - If $i \leq j$; $Range(i, j, -\infty) = \left\{ \right\}$
+    - If $i > j$; $Range(i, j, -\infty) = \left\{ i \right\}$
+
+    If any of $i$, $j$ is infinite and $k$ is finite:
+
+    - If $k > 0$;
+      $Range(i, \infty, k) = \left\{i, i+k, ... \right\}$
+    - If $k < 0$;
+      $Range(i, \infty, k) = \left\{ \right\}$
+    - If $k > 0$;
+      $Range(i, -\infty, k) = \left\{ \right\}$
+    - If $k < 0$;
+      $Range(i, -\infty, k) = \left\{i, i+k, ... \right\}$
+    - If $k > 0$;
+      $Range(\infty, j, k) = \left\{ \right\}$
+    - If $k < 0$;
+      $Range(\infty, j, k) = \left\{..., j+k, j \right\}$
+    - If $k > 0$;
+      $Range(-\infty, j, k) = \left\{..., j+k, j \right\}$
+    - If $k < 0$;
+      $Range(-\infty, j, k) = \left\{ \right\}$
+    - $Range(-\infty, \infty, 1) = \left\{ ..., -1, 0, 1, ... \right\}$
+    - $Range(\infty, -\infty, -1) = \left\{ ..., 1, 0, -1, ... \right\}$
+    - $Range(\infty, \infty, k) = \left\{ \right\}$
+    - $Range(-\infty, -\infty, k) = \left\{ \right\}$
+    - If $k < 0$: $Range(-\infty, \infty, k) = \left\{ \right\}$
+    - If $k > 0$: $Range(\infty, -\infty, k) = \left\{ \right\}$
+
+    And any other cases are treated as indeterminates or exceptions.
+
+    Identities of Range
+    ===================
+
+    From the definitions, we can easily figure out some identities
+    if the range is finite.
+
+    - If $i < j \wedge k > 0$;
+      $Range(i, j, k) = Range(i, i + \lceil \frac{j-i}{k} \rceil k, k) =
+      \left\{i, i+k, ..., i + (\lceil \frac{j-i}{k} \rceil - 1) k \right\}$
+    - If $i > j \wedge k < 0$;
+      $Range(i, j, k) = Range(i, i + \lceil \frac{i-j}{k} \rceil k, k) =
+      \left\{i, i+k, ..., i + (\lceil \frac{i-j}{k} \rceil - 1) k \right\}$
+
+    And this is used to canonicalize the parameter $j$ to make it
+    invariant under
+    $j := i + \lceil \frac{ \left| j-i \right| }{k} \rceil$.
+
+    Similarly, if $i, j$ are finite and $k$ is infinite:
+
+    - If $i < j$;
+      $Range(i, j, \infty) = Range(i, i+1, 1) = \left\{ i \right\}$
+    - If $i > j$;
+      $Range(i, j, -\infty) = Range(i, i+1, 1) = \left\{ i \right\}$
+
+    Otherwise, every empty range $\left\{ \right\}$ are canonicalized as
+    ``Range(0, 0, 1)`` instead of the ``S.EmptySet``
+    because of the difference ``Range`` has than the ``Set``.
+
+    References
+    ==========
+
+    .. [1] https://docs.python.org/3/library/stdtypes.html#range
     """
 
     is_iterable = True
 
-    def __new__(cls, *args):
+    def __new__(cls, *args, evaluate=global_parameters.evaluate):
         from sympy.functions.elementary.integers import ceiling
+        from sympy.functions.elementary.complexes import Abs
+
         if len(args) == 1:
             if isinstance(args[0], range):
                 raise TypeError(
@@ -593,56 +699,88 @@ class Range(Set):
         if slc.step == 0:
             raise ValueError("step cannot be 0")
 
-        start, stop, step = slc.start or 0, slc.stop, slc.step or 1
-        try:
-            ok = []
-            for w in (start, stop, step):
-                w = sympify(w)
-                if w in [S.NegativeInfinity, S.Infinity] or (
-                        w.has(Symbol) and w.is_integer != False):
-                    ok.append(w)
-                elif not w.is_Integer:
-                    raise ValueError
-                else:
-                    ok.append(w)
-        except ValueError:
-            raise ValueError(filldedent('''
-    Finite arguments to Range must be integers; `imageset` can define
-    other cases, e.g. use `imageset(i, i/10, Range(3))` to give
-    [0, 1/10, 1/5].'''))
-        start, stop, step = ok
+        start, stop, step = slc.start or S.Zero, slc.stop, slc.step or S.One
+        start, stop, step = _sympify(start), _sympify(stop), _sympify(step)
 
-        null = False
-        if any(i.has(Symbol) for i in (start, stop, step)):
-            if start == stop:
-                null = True
-            else:
-                end = stop
-        elif start.is_infinite:
-            span = step*(stop - start)
-            if span is S.NaN or span <= 0:
-                null = True
-            elif step.is_Integer and stop.is_infinite and abs(step) != 1:
-                raise ValueError(filldedent('''
-                    Step size must be %s in this case.''' % (1 if step > 0 else -1)))
-            else:
-                end = stop
-        else:
-            oostep = step.is_infinite
-            if oostep:
-                step = S.One if step > 0 else S.NegativeOne
-            n = ceiling((stop - start)/step)
-            if n <= 0:
-                null = True
-            elif oostep:
-                end = start + 1
-                step = S.One  # make it a canonical single step
-            else:
-                end = start + n*step
-        if null:
-            start = end = S.Zero
-            step = S.One
-        return Basic.__new__(cls, start, end, step)
+        if step.is_zero:
+            raise ValueError("step cannot be 0")
+
+        msg = filldedent('''
+            Finite arguments to Range must be integers;
+            `imageset` can define other cases, e.g. use
+            `imageset(i, i/10, Range(3))` to give [0, 1/10, 1/5].''')
+
+        ninf, inf = S.NegativeInfinity, S.Infinity
+
+        if start.is_integer is False and start not in (inf, ninf):
+            raise ValueError(msg)
+        if stop.is_integer is False and stop not in (inf, ninf):
+            raise ValueError(msg)
+        if step.is_integer is False and step not in (inf, ninf):
+            raise ValueError(msg)
+
+        if not evaluate:
+            return Basic.__new__(cls, start, stop, step)
+
+        if Eq(start, stop) == True:
+            return Range._create_empty_range()
+
+        if start is ninf and stop is inf:
+            if step.is_positive and Eq(step, S.One) == False:
+                raise ValueError(
+                    filldedent('''Step size must be 1 in this case.'''))
+            elif step.is_integer and step.is_negative:
+                return Range._create_empty_range()
+        if start is inf and stop is ninf:
+            if step.is_negative and Eq(step, S.NegativeOne) == False:
+                raise ValueError(
+                    filldedent('''Step size must be -1 in this case.'''))
+            elif step.is_integer and step.is_positive:
+                return Range._create_empty_range()
+
+        if start.is_integer and stop.is_integer and step.is_integer:
+            if start.is_number and stop.is_number and step.is_number:
+                if step.is_positive and (start < stop) == True:
+                    n = ceiling((stop - start) / Abs(step))
+                    return Basic.__new__(cls, start, start + n*step, step)
+                elif step.is_negative and (start > stop) == True:
+                    n = ceiling((start - stop) / Abs(step))
+                    return Basic.__new__(cls, start, start + n*step, step)
+
+            if step.is_positive and (start >= stop) == True:
+                return Range._create_empty_range()
+            elif step.is_negative and (start <= stop) == True:
+                return Range._create_empty_range()
+
+        if step.is_integer:
+            if step.is_positive:
+                if start.is_integer and stop is S.NegativeInfinity:
+                    return Range._create_empty_range()
+                elif start is S.Infinity and stop.is_integer:
+                    return Range._create_empty_range()
+            elif step.is_negative:
+                if start.is_integer and stop is S.Infinity:
+                    return Range._create_empty_range()
+                elif start is S.NegativeInfinity and stop.is_integer:
+                    return Range._create_empty_range()
+
+        if start.is_integer and stop.is_integer:
+            if step is S.Infinity:
+                if (start < stop) == True:
+                    return Basic.__new__(cls, start, start + S.One, S.One)
+                elif (start >= stop) == True:
+                    return Range._create_empty_range()
+            elif step is S.NegativeInfinity:
+                if (start > stop) == True:
+                    return Basic.__new__(cls, start, start + S.One, S.One)
+                elif (start <= stop) == True:
+                    return Range._create_empty_range()
+
+        return Basic.__new__(cls, start, stop, step)
+
+    @classmethod
+    def _create_empty_range(cls):
+        return Basic.__new__(cls, S.Zero, S.Zero, S.One)
 
     start = property(lambda self: self.args[0])
     stop = property(lambda self: self.args[1])
