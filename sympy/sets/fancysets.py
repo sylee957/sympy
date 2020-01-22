@@ -604,15 +604,15 @@ class Range(Set):
     the $Range$ can be defined as:
 
     - If $i < j \wedge k > 0$;
-      $Range(i, j, k) =
-      \left\{i, i+k, ..., i + (\lceil \frac{j-i}{k} \rceil - 1) k \right\}$
+      $Range(i, j, k) = \left\{i, i+k, ..., i +
+      (\lceil \left| \frac{j-i}{k} \right| \rceil - 1) k \right\}$
     - If $i \geq j \wedge k > 0$;
       $Range(i, j, k) = \left\{ \right\}$
     - If $i \leq j \wedge k < 0$;
       $Range(i, j, k) = \left\{ \right\}$
     - If $i > j \wedge k < 0$;
-      $Range(i, j, k) =
-      \left\{i, i+k, ..., i + (\lceil \frac{i-j}{k} \rceil - 1) k \right\}$
+      $Range(i, j, k) = \left\{i, i+k, ..., i +
+      (\lceil \left| \frac{i-j}{k} \right| \rceil - 1) k \right\}$
 
     If $k$ is infinite and $i$, $j$ are finite:
 
@@ -655,15 +655,19 @@ class Range(Set):
     if the range is finite.
 
     - If $i < j \wedge k > 0$;
-      $Range(i, j, k) = Range(i, i + \lceil \frac{j-i}{k} \rceil k, k) =
-      \left\{i, i+k, ..., i + (\lceil \frac{j-i}{k} \rceil - 1) k \right\}$
+      $Range(i, j, k) =
+      Range(i, i + \lceil \left| \frac{j-i}{k} \right| \rceil k, k) =
+      \left\{i, i+k, ..., i +
+      (\lceil \left| \frac{j-i}{k} \right| \rceil - 1) k \right\}$
     - If $i > j \wedge k < 0$;
-      $Range(i, j, k) = Range(i, i + \lceil \frac{i-j}{k} \rceil k, k) =
-      \left\{i, i+k, ..., i + (\lceil \frac{i-j}{k} \rceil - 1) k \right\}$
+      $Range(i, j, k) =
+      Range(i, i + \lceil \left| \frac{i-j}{k} \right| \rceil k, k) =
+      \left\{i, i+k, ..., i +
+      (\lceil \left| \frac{i-j}{k} \right| \rceil - 1) k \right\}$
 
     And this is used to canonicalize the parameter $j$ to make it
     invariant under
-    $j := i + \lceil \frac{ \left| j-i \right| }{k} \rceil$.
+    $j := i + \lceil \left| \frac{j-i}{k} \right| \rceil k$.
 
     Similarly, if $i, j$ are finite and $k$ is infinite:
 
