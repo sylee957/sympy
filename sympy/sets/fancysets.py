@@ -614,7 +614,8 @@ class Range(Set):
       $Range(i, j, k) = \left\{i, i+k, ..., i +
       (\lceil \left| \frac{i-j}{k} \right| \rceil - 1) k \right\}$
 
-    If $k$ is infinite and $i$, $j$ are finite:
+    If $i \in \mathbb{Z}$, $j \in \mathbb{Z}$,
+    $k \in \{ \infty, -\infty \}$:
 
     - If $i < j$; $Range(i, j, \infty) = \left\{i \right\}$
     - If $i \geq j$; $Range(i, j, \infty) = \left\{ \right\}$
@@ -634,9 +635,9 @@ class Range(Set):
     - If $k > 0$;
       $Range(\infty, j, k) = \left\{ \right\}$
     - If $k < 0$;
-      $Range(\infty, j, k) = \left\{..., j+k \right\}$
+      $Range(\infty, j, k) = \left\{..., j-k \right\}$
     - If $k > 0$;
-      $Range(-\infty, j, k) = \left\{..., j+k \right\}$
+      $Range(-\infty, j, k) = \left\{..., j-k \right\}$
     - If $k < 0$;
       $Range(-\infty, j, k) = \left\{ \right\}$
     - $Range(-\infty, \infty, 1) = \left\{ ..., -1, 0, 1, ... \right\}$
@@ -879,6 +880,7 @@ class Range(Set):
             return S.false
         if other.is_infinite:
             return S.false
+
         if not other.is_integer:
             return other.is_integer
         if self.has(Symbol):
@@ -919,23 +921,64 @@ class Range(Set):
                 i += step
 
     def __len__(self):
+        from sympy.functions.elementary.piecewise import Piecewise
+
         rv = self.size
         if rv is S.Infinity:
-            raise ValueError('Use .size to get the length of an infinite Range')
+            raise ValueError(
+                'Use .size to get the length of an infinite Range')
+        elif not rv.is_Integer:
+            raise ValueError(
+                'Use .size to get the symbolic length of the Range')
         return int(rv)
 
     @property
     def size(self):
+        r"""Return the number of elements in the ``Range``.
+
+        Notes
+        =====
+
+        If $i$, $j$, $k$ denotes *start*, *stop*, and *step* and
+
+        - $i \in \mathbb{Z} \cup \{ \infty, -\infty \}$
+        - $j \in \mathbb{Z} \cup \{ \infty, -\infty \}$
+        - $k \in \mathbb{Z} \cup \{ \infty, -\infty \} - \{ 0 \}$
+
+        The size $n$ of the $Range$ can be defined as:
+
+        .. math::
+            n(Range(i, j, k)) = \left\{\begin{matrix}
+            \lceil \left| \frac{j-i}{k} \right| \rceil & i<j \wedge k>0 \\
+            0 & i \geq j \wedge k>0 \\
+            0 & i \leq j \wedge k<0 \\
+            \lceil \left| \frac{i-j}{k} \right| \rceil & i>j \wedge k<0
+            \end{matrix}\right.
+        """
         if not self:
             return S.Zero
-        dif = self.stop - self.start
-        if self.has(Symbol):
-            if dif.has(Symbol) or self.step.has(Symbol) or (
-                    not self.start.is_integer and not self.stop.is_integer):
-                raise ValueError('invalid method for symbolic range')
-        if dif.is_infinite:
-            return S.Infinity
-        return Integer(abs(dif//self.step))
+
+        from sympy.functions.elementary.piecewise import Piecewise
+        from sympy.functions.elementary.complexes import Abs
+        from sympy.functions.elementary.integers import ceiling
+
+        start, stop, step = self.args
+        inf, ninf = S.Infinity, S.NegativeInfinity
+
+        if not start.is_integer and start not in (inf, ninf):
+            raise ValueError('Invalid method for symbolic range.')
+        if not stop.is_integer and stop not in (inf, ninf):
+            raise ValueError('Invalid method for symbolic range.')
+        if not step.is_integer and step not in (inf, ninf) or step.is_zero:
+            raise ValueError('Invalid method for symbolic range.')
+
+        n = ceiling(Abs((stop - start) / step))
+        return Piecewise(
+            (n, (start < stop) & (step > S.Zero)),
+            (S.Zero, (start >= stop) & (step > S.Zero)),
+            (n, (start > stop) & (step < S.Zero)),
+            (S.Zero, (start <= stop) & (step < S.Zero))
+        )
 
     def __nonzero__(self):
         return self.start != self.stop
@@ -1086,31 +1129,79 @@ class Range(Set):
     def _inf(self):
         if not self:
             raise NotImplementedError
-        if self.has(Symbol):
-            if self.step.is_positive:
-                return self[0]
-            elif self.step.is_negative:
-                return self[-1]
-            _ = self.size  # validate
-        if self.step > 0:
-            return self.start
-        else:
-            return self.stop - self.step
+
+        start, stop, step = self.args
+        ninf, inf = S.NegativeInfinity, S.Infinity
+
+        if start.is_integer and stop.is_integer:
+            if step.is_integer:
+                if (start < stop) == True and step.is_positive:
+                    return start
+                if (start > stop) == True and step.is_negative:
+                    n = self.size
+                    return start + (n-1)*step
+            if (start < stop) == True and step is inf:
+                return start
+            elif (start > stop) == True and step is ninf:
+                return start
+
+        if step.is_integer:
+            if start.is_integer:
+                if stop is inf and step.is_positive:
+                    return start
+                elif stop is ninf and step.is_negative:
+                    return stop
+            elif stop.is_integer:
+                if start is inf and step.is_negative:
+                    return stop - step
+                elif start is ninf and step.is_positive:
+                    return start
+
+        if start is ninf and stop is inf and step is S.One:
+            return start
+        elif start is inf and stop is ninf and step is S.NegativeOne:
+            return stop
+
+        raise NotImplementedError
 
     @property
     def _sup(self):
         if not self:
             raise NotImplementedError
-        if self.has(Symbol):
-            if self.step.is_positive:
-                return self[-1]
-            elif self.step.is_negative:
-                return self[0]
-            _ = self.size  # validate
-        if self.step > 0:
-            return self.stop - self.step
-        else:
-            return self.start
+
+        start, stop, step = self.args
+        ninf, inf = S.NegativeInfinity, S.Infinity
+
+        if start.is_integer and stop.is_integer:
+            if step.is_integer:
+                if (start < stop) == True and step.is_positive:
+                    n = self.size
+                    return start + (n-1)*step
+                if (start > stop) == True and step.is_negative:
+                    return start
+            if (start < stop) == True and step is inf:
+                return start
+            elif (start > stop) == True and step is ninf:
+                return start
+
+        if step.is_integer:
+            if start.is_integer:
+                if stop is inf and step.is_positive:
+                    return stop
+                elif stop is ninf and step.is_negative:
+                    return start
+            elif stop.is_integer:
+                if start is inf and step.is_negative:
+                    return start
+                elif start is ninf and step.is_positive:
+                    return stop - step
+
+        if start is ninf and stop is inf and step is S.One:
+            return stop
+        elif start is inf and stop is ninf and step is S.NegativeOne:
+            return start
+
+        raise NotImplementedError
 
     @property
     def _boundary(self):
