@@ -880,29 +880,41 @@ class Range(Set):
             return S.false
         if other.is_infinite:
             return S.false
-
         if not other.is_integer:
             return other.is_integer
-        if self.has(Symbol):
-            try:
-                _ = self.size  # validate
-            except ValueError:
-                return
-        if self.start.is_finite:
-            ref = self.start
-        elif self.stop.is_finite:
-            ref = self.stop
-        else:  # both infinite; step is +/- 1 (enforced by __new__)
+
+        try:
+            if self.size == 1:
+                return Eq(other, self[0])
+        except ValueError:
+            pass
+
+        start, stop, step = self.args
+        inf, ninf = S.Infinity, S.NegativeInfinity
+        if start is ninf and stop is inf and step is S.One:
             return S.true
-        if self.size == 1:
-            return Eq(other, self[0])
-        res = (ref - other) % self.step
-        if res == S.Zero:
-            return And(other >= self.inf, other <= self.sup)
-        elif res.is_Integer:  # off sequence
-            return S.false
-        else:  # symbolic/unsimplified residue modulo step
+        elif start is inf and stop is ninf and step is S.NegativeOne:
+            return S.true
+
+        if start.is_finite:
+            ref = self.start
+        elif stop.is_finite:
+            ref = self.stop
+        else:
             return None
+
+        mod = (ref - other) % step
+        if mod.is_zero:
+            try:
+                inf, sup = self.inf, self.sup
+                return And(other >= inf, other <= sup)
+            except ValueError:
+                return None
+
+        elif mod.is_zero is False:  # off sequence
+            return S.false
+        # symbolic/unsimplified residue modulo step
+        return None
 
     def __iter__(self):
         if self.has(Symbol):
@@ -943,7 +955,7 @@ class Range(Set):
 
         - $i \in \mathbb{Z} \cup \{ \infty, -\infty \}$
         - $j \in \mathbb{Z} \cup \{ \infty, -\infty \}$
-        - $k \in \mathbb{Z} \cup \{ \infty, -\infty \} - \{ 0 \}$
+        - $k \in (\mathbb{Z} - \{0\}) \cup \{ \infty, -\infty \}$
 
         The size $n$ of the $Range$ can be defined as:
 
@@ -1162,7 +1174,7 @@ class Range(Set):
         elif start is inf and stop is ninf and step is S.NegativeOne:
             return stop
 
-        raise NotImplementedError
+        raise ValueError
 
     @property
     def _sup(self):
@@ -1201,14 +1213,15 @@ class Range(Set):
         elif start is inf and stop is ninf and step is S.NegativeOne:
             return start
 
-        raise NotImplementedError
+        raise ValueError
 
     @property
     def _boundary(self):
         return self
 
     def as_relational(self, x):
-        """Rewrite a Range in terms of equalities and logic operators. """
+        """Rewrite the Range in terms of equalities and logic operators
+        with respect to *x*"""
         from sympy.functions.elementary.integers import floor
         if self.size == 1:
             return Eq(x, self[0])
