@@ -634,9 +634,9 @@ class Range(Set):
     - If $k > 0$;
       $Range(\infty, j, k) = \left\{ \right\}$
     - If $k < 0$;
-      $Range(\infty, j, k) = \left\{..., j+k, j \right\}$
+      $Range(\infty, j, k) = \left\{..., j+k \right\}$
     - If $k > 0$;
-      $Range(-\infty, j, k) = \left\{..., j+k, j \right\}$
+      $Range(-\infty, j, k) = \left\{..., j+k \right\}$
     - If $k < 0$;
       $Range(-\infty, j, k) = \left\{ \right\}$
     - $Range(-\infty, \infty, 1) = \left\{ ..., -1, 0, 1, ... \right\}$
@@ -792,21 +792,87 @@ class Range(Set):
 
     @property
     def reversed(self):
-        """Return an equivalent Range in the opposite order.
+        r"""Return the equivalent ``Range`` in the opposite order.
 
         Examples
         ========
 
+        Reversing a range:
+
         >>> from sympy import Range
         >>> Range(10).reversed
         Range(9, -1, -1)
+
+        Reversing a symbolic range:
+
+        >>> from sympy import Symbol
+        >>> j = Symbol('j', integer=True, positive=True)
+        >>> k = Symbol('k', integer=True, positive=True)
+        >>> Range(0, j, k).reversed
+        Range(k*(ceiling(j/k) - 1), -k, -k)
+
+        Notes
+        =====
+
+        If $i \in \mathbb{Z}$, $j \in \mathbb{Z}$ and
+        $k \in \mathbb{Z} - \{ 0 \}$ denotes *start*, *stop*, and
+        *step*, the $Range$ can be reversed as:
+
+        - If $i < j \wedge k > 0$;
+          $Range(i, j, k)[::-1] = Range(i + (\lceil \left|
+          \frac{j-i}{k} \right| \rceil - 1) k,i - k, -k)$
+        - If $i > j \wedge k < 0$;
+          $Range(i, j, k)[::-1] = Range(i + (\lceil \left|
+          \frac{i-j}{k} \right| \rceil - 1) k,i - k, -k)$
+
+        And the $Range$ with infinities can be reversed as:
+
+        - $Range(-\infty, \infty, 1)[::-1] = Range(\infty, -\infty, -1)$
+
+        - If $k > 0$;
+
+          - $Range(i, \infty, k)[::-1] = Range(\infty, i-k, -k)$
+          - $Range(-\infty, j, k)[::-1] = Range(j-k, \infty, -k)$
+
+        - If $k < 0$;
+
+          - $Range(i, -\infty, k)[::-1] = Range(-\infty, i-k, -k)$
+          - $Range(\infty, j, k)[::-1] = Range(j-k, \infty, -k)$
         """
-        if self.has(Symbol):
-            _ = self.size  # validate
+        from sympy.functions.elementary.complexes import Abs
+        from sympy.functions.elementary.integers import ceiling
+
         if not self:
             return self
-        return self.func(
-            self.stop - self.step, self.start - self.step, -self.step)
+
+        start, stop, step = self.args
+        if start.is_integer and stop.is_integer and \
+            step.is_integer and step.is_zero is False:
+            if step.is_positive and (start < stop) == True or \
+                step.is_negative and (start > stop) == True:
+                n = ceiling(Abs(stop-start)/Abs(step))
+                return self.func(start + step * (n - 1), start - step, -step)
+
+        if start is S.NegativeInfinity and stop is S.Infinity and \
+            step is S.One:
+            return self.func(stop, start, S.NegativeOne)
+        elif start is S.Infinity and stop is S.NegativeInfinity and \
+            step is S.NegativeOne:
+            return self.func(stop, start, S.One)
+
+        if step.is_integer:
+            if start.is_integer:
+                if stop is S.Infinity and step.is_positive:
+                    return self.func(stop, start-step, -step)
+                elif stop is S.NegativeInfinity and step.is_negative:
+                    return self.func(stop, start-step, -step)
+            elif stop.is_integer:
+                if start is S.Infinity and step.is_negative:
+                    return self.func(stop-step, start, -step)
+                elif start is S.NegativeInfinity and step.is_positive:
+                    return self.func(stop-step, start, -step)
+
+        raise ValueError('Invalid method for symbolic range')
 
     def _contains(self, other):
         if not self:
