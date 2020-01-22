@@ -355,7 +355,7 @@ def test_Range_symbolic():
     assert i + 2 in ir
     raises(TypeError, lambda: 1 in sr)  # XXX is this what contains is supposed to do?
     # iter
-    raises(ValueError, lambda: next(iter(sr)))
+    raises(TypeError, lambda: next(iter(sr)))
     assert next(iter(ir)) == i
     assert sr.intersect(S.Integers) == sr
     assert sr.intersect(FiniteSet(x)) == Intersection({x}, sr)

@@ -917,20 +917,55 @@ class Range(Set):
         return None
 
     def __iter__(self):
-        if self.has(Symbol):
-            _ = self.size  # validate
-        if self.start in [S.NegativeInfinity, S.Infinity]:
+        start, stop, step = self.args
+        inf, ninf = S.Infinity, S.NegativeInfinity
+        if start in (inf, ninf):
             raise TypeError("Cannot iterate over Range with infinite start")
-        elif self:
-            i = self.start
-            step = self.step
+        if not start.is_integer:
+            raise TypeError(
+                "The start of the range is not defined as an integer")
+        if stop.is_integer is not True and stop not in (inf, ninf):
+            raise TypeError(
+                "The stop of the range is not defined as an integer or "
+                "an infinity.")
+        if step.is_integer is not True and step.is_zero is not True:
+            raise TypeError(
+                "The stop of the range is not defined as a non-zero "
+                "integer.")
 
+        if not self:
+            return None
+
+        i = self.start
+        step = self.step
+
+        if step.is_positive:
             while True:
-                if (step > 0 and not (self.start <= i < self.stop)) or \
-                   (step < 0 and not (self.stop < i <= self.start)):
+                truth = self.start <= i < self.stop
+                if truth == True:
+                    yield i
+                    i += step
+                elif truth == False:
                     break
-                yield i
-                i += step
+                else:
+                    raise TypeError(
+                        "An indeterminate truth value {} found while"
+                        "iterating".format(truth))
+        elif step.is_negative:
+            while True:
+                truth = self.stop < i <= self.start
+                if truth == True:
+                    yield i
+                    i += step
+                elif truth == False:
+                    break
+                else:
+                    raise TypeError(
+                        "An indeterminate truth value {} found while"
+                        "iterating".format(truth))
+        else:
+            raise TypeError(
+                "The step is not determined to be positive or negative.")
 
     def __len__(self):
         from sympy.functions.elementary.piecewise import Piecewise
