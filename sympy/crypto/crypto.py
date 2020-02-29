@@ -1727,6 +1727,130 @@ def rsa_public_key(*args, **kwargs):
     However, it may need further understanding of the time complexities
     of each prime-factoring algorithms to verify the claim.
 
+    Correctness of RSA
+    ==================
+
+    - $n \in \mathbb{N}$ the modulus of RSA.
+    - $n = {p_1}^{q_1} {p_2}^{q_2} ... {p_n}^{q_n}$ the prime
+      factorization of $n$.
+    - $\phi(n) = \phi({p_1}^{q_1}) \phi({p_2}^{q_2}) ...
+      \phi({p_n}^{q_n})$ the Euler totient.
+    - $e \in \mathbb{Z}_{>0}$, $d \in \mathbb{Z}_{>0}$ the public and
+      private exponents satisfying $e d \equiv 1 \mod \phi(n)$
+    - $m \in \{ 0, 1, 2, ... , n \}$ the plaintext.
+
+    To prove the correctness of RSA, we need to find the exact
+    which makes $m^{e d} \equiv m \mod n$ satisfiable.
+
+    Since ${p_i}^{q_i}$ are pairwise coprime from the principle of the
+    prime factorization, we can use the chinese remainder theorem
+    to get:
+
+    .. math::
+      m^{e d} \equiv m \mod N \Leftrightarrow
+      \forall i \in \{1, ... n\}:m^{e d} \equiv m \mod {p_i}^{q_i}
+
+    And each $m^{e d} \equiv m \mod {p_i}^{q_i}$ means
+    either one of the following is satisfied:
+
+    1. $m \equiv 0 \mod {p_i}^{q_i}$
+    2. $m^{e d - 1} \equiv 1 \mod {p_i}^{q_i}$
+
+    The first case is satisfied when $m$ is a multiple of ${p_i}^{q_i}$
+
+    And the second case is equivalent to either $m$ is coprime to
+    ${p_i}^{q_i}$ or $e d = 1$.
+
+    If $m$ is not coprime to ${p_i}^{q_i}$,
+    $m^{e d - 1} \equiv 1 \mod {p_i}^{q_i}$ cannot hold true for any
+    $e d$ unless $e d = 1$.
+
+    And when $m$ is coprime to ${p_i}^{q_i}$,
+    $m^{e d - 1} \equiv 1 \mod {p_i}^{q_i}$ can be confirmed in
+    the following steps:
+
+    1. There exists an integer $k$ for $e d - 1 = k \phi(n)$ because
+       $e d \equiv 1 \mod \phi(n)$
+    2. Then, $m^{e d - 1} = m^{k \phi(n)}$.
+    3. $m^{k \phi(n)} = m^{k \phi({p_1}^{q_1}) \phi({p_2}^{q_2}) ...
+       \phi({p_n}^{q_n})}$ because
+       $\phi(n) = \phi({p_1}^{q_1}) \phi({p_2}^{q_2}) ...
+       \phi({p_n}^{q_n})$.
+    4. $m^{k \phi({p_i}^{q_i})} \equiv 1 \mod {p_i}^{q_i}$ from the
+       Euler's theorem. (Since $m$ is coprime to ${p_i}^{q_i}$.)
+    5. $m^{k \phi({p_1}^{q_1}) \phi({p_2}^{q_2}) ... \phi({p_n}^{q_n})}
+       = 1^{k \phi({p_1}^{q_1}) \phi({p_2}^{q_2}) ... \phi({p_n}^{q_n})}
+       = 1 \mod {p_i}^{q_i}$
+
+    So the RSA correctness condition should be either:
+
+    1. $e d = 1$
+    2. $m$ is a multiple of ${p_i}^{q_i}$ or coprime to ${p_i}^{q_i}$
+       for every $i$.
+
+    Since $e$ and $d$ are given as positive integers,
+    $e d = 1$ would mean that $e = d = 1$ and it would be a trivial RSA
+    formulation that is an identity mapping, and hence would not much be
+    an interesting result.
+
+    And I can take some examples to showcase how RSA correctiveness
+    condition plays a role in multipower formulation.
+
+    >>> from sympy.crypto.crypto import rsa_public_key, rsa_private_key
+    >>> from sympy.crypto.crypto import encipher_rsa, decipher_rsa
+
+    1. If the RSA is formulated as $n = 3 * 5^2$
+
+       >>> n, e = rsa_public_key(3, 5, 5, 7, multipower=True)
+       >>> _, d = rsa_private_key(3, 5, 5, 7, multipower=True)
+
+       There are no problems with most of the plaintexts
+
+       >>> decipher_rsa(encipher_rsa(3, (n, e)), (n, d))
+       3
+       >>> decipher_rsa(encipher_rsa(9, (n, e)), (n, d))
+       9
+
+       But you can see some descrepencies among some multiples of $5$
+
+       >>> decipher_rsa(encipher_rsa(5, (n, e)), (n, d))
+       50
+       >>> decipher_rsa(encipher_rsa(10, (n, e)), (n, d))
+       25
+
+       However, the multiples of $5^2$ don't have any problem
+
+       >>> decipher_rsa(encipher_rsa(25, (n, e)), (n, d))
+       25
+       >>> decipher_rsa(encipher_rsa(50, (n, e)), (n, d))
+       50
+
+    2. If the RSA is formulated as $n = 3^2 * 5^2$
+
+       >>> n, e = rsa_public_key(3, 3, 5, 5, 7, multipower=True)
+       >>> _, d = rsa_private_key(3, 3, 5, 5, 7, multipower=True)
+
+       You can see some multiples of $3$ or $5$ are giving wrong results
+
+       >>> decipher_rsa(encipher_rsa(6, (n, e)), (n, d))
+       81
+       >>> decipher_rsa(encipher_rsa(30, (n, e)), (n, d))
+       0
+
+       The multiples of $3^2$ are starting to give correct
+       results.
+
+       >>> decipher_rsa(encipher_rsa(18, (n, e)), (n, d))
+       18
+
+       However, it starts to give wrong result after $5$ is also
+       in its factors.
+
+       >>> decipher_rsa(encipher_rsa(45, (n, e)), (n, d))
+       0
+
+
+
     See Also
     ========
 
