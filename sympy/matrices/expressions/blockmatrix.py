@@ -432,7 +432,9 @@ def block_collapse(expr):
              MatPow: bc_matmul,
              Transpose: bc_transpose,
              Inverse: bc_inverse,
-             BlockMatrix: do_one(bc_unpack, deblock)}
+             BlockDiagMatrix: do_one(bc_combine_identity, bc_unpack, deblock),
+             BlockMatrix: do_one(bc_unpack, deblock),
+            }
         )
     )
 
@@ -454,6 +456,19 @@ def bc_unpack(expr):
     if expr.blockshape == (1, 1):
         return expr.blocks[0, 0]
     return expr
+
+
+def bc_combine_identity(expr):
+    args = expr.args
+    new_args = [args[0]]
+    for arg in args[1:]:
+        last_arg, rest_args = new_args[-1], new_args[:-1]
+        if last_arg.is_Identity and arg.is_Identity:
+            new_args = rest_args + [Identity(last_arg.rows + arg.rows)]
+            continue
+        new_args.append(arg)
+    return BlockDiagMatrix(*new_args)
+
 
 def bc_matadd(expr):
     args = sift(expr.args, lambda M: isinstance(M, BlockMatrix))
