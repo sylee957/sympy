@@ -690,6 +690,15 @@ def test_diagonalization():
     assert m.is_diagonalizable()
 
 
+def test_normalize_sort_diogonalization():
+    A = Matrix([[1, 2], [2, 1]])
+    P, Q = A.diagonalize(normalize=True)
+    assert P*P.T == P.T*P == eye(P.cols)
+    P, Q = A.diagonalize(normalize=True, sort=True)
+    assert P*P.T == P.T*P == eye(P.cols)
+    assert (P*Q).as_explicit() == A*P
+
+
 def test_issue_15887():
     # Mutable matrix should not use cache
     a = MutableDenseMatrix([[0, 1], [1, 0]])

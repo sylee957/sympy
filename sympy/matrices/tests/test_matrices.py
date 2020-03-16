@@ -1591,18 +1591,20 @@ def test_exp_jordan_block():
 def test_exp():
     m = Matrix([[3, 4], [0, -2]])
     m_exp = Matrix([[exp(3), -4*exp(-2)/5 + 4*exp(3)/5], [0, exp(-2)]])
-    assert m.exp() == m_exp
-    assert exp(m) == m_exp
+    assert m.exp().as_explicit() == m_exp
+    assert exp(m).as_explicit() == m_exp
 
     m = Matrix([[1, 0], [0, 1]])
-    assert m.exp() == Matrix([[E, 0], [0, E]])
-    assert exp(m) == Matrix([[E, 0], [0, E]])
+    assert m.exp().as_explicit() == Matrix([[E, 0], [0, E]])
 
     m = Matrix([[1, -1], [1, 1]])
-    assert m.exp() == Matrix([[E*cos(1), -E*sin(1)], [E*sin(1), E*cos(1)]])
+    P = Matrix([[-I, I], [1, 1]])
+    eJ = BlockDiagMatrix(Matrix([exp(1-I)]), Matrix([exp(1+I)]))
+    assert m.exp() == MatMul(P, eJ, Inverse(P))
 
     m = Matrix([[0, 1, 2], [0, 0, -1], [0, 0, 0]])
-    assert m.exp() == Matrix([[1, 1, Rational(3, 2)], [0, 1, -1], [0, 0, 1]])
+    assert m.exp().as_explicit() == \
+        Matrix([[1, 1, Rational(3, 2)], [0, 1, -1], [0, 0, 1]])
 
 
 def test_log():
@@ -2316,15 +2318,6 @@ def test_anti_symmetric():
     assert m.is_anti_symmetric() is False
 
 
-def test_normalize_sort_diogonalization():
-    A = Matrix(((1, 2), (2, 1)))
-    P, Q = A.diagonalize(normalize=True)
-    assert P*P.T == P.T*P == eye(P.cols)
-    P, Q = A.diagonalize(normalize=True, sort=True)
-    assert P*P.T == P.T*P == eye(P.cols)
-    assert P*Q*P.inv() == A
-
-
 def test_issue_5321():
     raises(ValueError, lambda: Matrix([[1, 2, 3], Matrix(0, 1, [])]))
 
@@ -2837,28 +2830,30 @@ def test_issue_8207():
 def test_func():
     from sympy.simplify.simplify import nthroot
 
-    A = Matrix([[1, 2],[0, 3]])
-    assert A.analytic_func(sin(x*t), x) == Matrix([[sin(t), sin(3*t) - sin(t)], [0, sin(3*t)]])
+    A = Matrix([[1, 2], [0, 3]])
+    assert A.analytic_func(sin(x*t), x) == \
+        Matrix([[sin(t), sin(3*t) - sin(t)], [0, sin(3*t)]])
 
-    A = Matrix([[2, 1],[1, 2]])
-    assert (pi * A / 6).analytic_func(cos(x), x) == Matrix([[sqrt(3)/4, -sqrt(3)/4], [-sqrt(3)/4, sqrt(3)/4]])
+    A = Matrix([[2, 1], [1, 2]])
+    assert (pi * A / 6).analytic_func(cos(x), x) == \
+        Matrix([[sqrt(3)/4, -sqrt(3)/4], [-sqrt(3)/4, sqrt(3)/4]])
 
-
-    raises(ValueError, lambda : zeros(5).analytic_func(log(x), x))
-    raises(ValueError, lambda : (A*x).analytic_func(log(x), x))
+    raises(ValueError, lambda: zeros(5).analytic_func(log(x), x))
+    raises(ValueError, lambda: (A*x).analytic_func(log(x), x))
 
     A = Matrix([[0, -1, -2, 3], [0, -1, -2, 3], [0, 1, 0, -1], [0, 0, -1, 1]])
-    assert A.analytic_func(exp(x), x) == A.exp()
-    raises(ValueError, lambda : A.analytic_func(sqrt(x), x))
+    assert A.analytic_func(exp(x), x) == A.exp().as_explicit()
+    raises(ValueError, lambda: A.analytic_func(sqrt(x), x))
 
-    A = Matrix([[41, 12],[12, 34]])
+    A = Matrix([[41, 12], [12, 34]])
     assert simplify(A.analytic_func(sqrt(x), x)**2) == A
 
     A = Matrix([[3, -12, 4], [-1, 0, -2], [-1, 5, -1]])
     assert simplify(A.analytic_func(nthroot(x, 3), x)**3) == A
 
     A = Matrix([[2, 0, 0, 0], [1, 2, 0, 0], [0, 1, 3, 0], [0, 0, 1, 3]])
-    assert A.analytic_func(exp(x), x) == A.exp()
+    assert A.analytic_func(exp(x), x) == A.exp().as_explicit()
 
     A = Matrix([[0, 2, 1, 6], [0, 0, 1, 2], [0, 0, 0, 3], [0, 0, 0, 0]])
-    assert A.analytic_func(exp(x*t), x) == expand(simplify((A*t).exp()))
+    expected = (A*t).exp().as_explicit()
+    assert A.analytic_func(exp(x*t), x) == expand(simplify(expected))
