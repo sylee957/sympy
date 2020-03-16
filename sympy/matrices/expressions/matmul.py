@@ -332,12 +332,16 @@ def combine_powers(mul):
         if A_base == B_base:
             new_exp = A_exp + B_exp
             new_args[-1] = MatPow(A_base, new_exp).doit(deep=False)
-        elif not isinstance(B_base, MatrixBase) and \
-            A_base == B_base.inverse():
-            new_exp = A_exp - B_exp
-            new_args[-1] = MatPow(A_base, new_exp).doit(deep=False)
-        else:
-            new_args.append(B)
+            continue
+
+        if not isinstance(B_base, MatrixBase) and \
+            ask(Q.invertible(B_base)):
+            if A_base == B_base.inverse():
+                new_exp = A_exp - B_exp
+                new_args[-1] = MatPow(A_base, new_exp).doit(deep=False)
+                continue
+
+        new_args.append(B)
 
     return newmul(factor, *new_args)
 

@@ -2,12 +2,15 @@ from __future__ import print_function, division
 
 from sympy import ask, Q
 from sympy.core import Basic, Add
+from sympy.core.sympify import _sympify
+from sympy.core.singleton import S
 from sympy.strategies import typed, exhaust, condition, do_one, unpack
 from sympy.strategies.traverse import bottom_up
 from sympy.utilities import sift
 from sympy.utilities.misc import filldedent
 
-from sympy.matrices.expressions.matexpr import MatrixExpr, ZeroMatrix, Identity
+from sympy.matrices.expressions.matexpr import \
+    MatrixExpr, ZeroMatrix, Identity, MatrixElement
 from sympy.matrices.expressions.matmul import MatMul
 from sympy.matrices.expressions.matadd import MatAdd
 from sympy.matrices.expressions.matpow import MatPow
@@ -19,6 +22,7 @@ from sympy.matrices.expressions.inverse import Inverse
 from sympy.matrices import Matrix, ShapeError
 from sympy.functions.elementary.complexes import re, im
 
+
 class BlockMatrix(MatrixExpr):
     """A BlockMatrix is a Matrix comprised of other matrices.
 
@@ -27,22 +31,24 @@ class BlockMatrix(MatrixExpr):
 
     >>> from sympy import (MatrixSymbol, BlockMatrix, symbols,
     ...     Identity, ZeroMatrix, block_collapse)
+
     >>> n,m,l = symbols('n m l')
     >>> X = MatrixSymbol('X', n, n)
     >>> Y = MatrixSymbol('Y', m ,m)
     >>> Z = MatrixSymbol('Z', n, m)
+
     >>> B = BlockMatrix([[X, Z], [ZeroMatrix(m,n), Y]])
     >>> print(B)
-    Matrix([
+    BlockMatrix(Matrix([
     [X, Z],
-    [0, Y]])
+    [0, Y]]))
 
     >>> C = BlockMatrix([[Identity(n), Z]])
     >>> print(C)
-    Matrix([[I, Z]])
+    BlockMatrix(Matrix([[I, Z]]))
 
     >>> print(block_collapse(C*B))
-    Matrix([[X, Z + Z*Y]])
+    BlockMatrix(Matrix([[X, Z + Z*Y]]))
 
     Some matrices might be comprised of rows of blocks with
     the matrices in each row having the same height and the
@@ -217,18 +223,21 @@ class BlockMatrix(MatrixExpr):
 
         >>> from sympy import MatrixSymbol, BlockMatrix, ZeroMatrix
         >>> from sympy.abc import l, m, n
+
         >>> X = MatrixSymbol('X', n, n)
         >>> Y = MatrixSymbol('Y', m ,m)
         >>> Z = MatrixSymbol('Z', n, m)
+
         >>> B = BlockMatrix([[X, Z], [ZeroMatrix(m,n), Y]])
         >>> B.transpose()
-        Matrix([
-        [X.T,  0],
-        [Z.T, Y.T]])
+        BlockMatrix(Matrix([
+        [X.T,   0],
+        [Z.T, Y.T]]))
+
         >>> _.transpose()
-        Matrix([
+        BlockMatrix(Matrix([
         [X, Z],
-        [0, Y]])
+        [0, Y]]))
         """
         return self._eval_transpose()
 
@@ -271,23 +280,40 @@ class BlockMatrix(MatrixExpr):
 
 
 class BlockDiagMatrix(BlockMatrix):
-    """
-    A BlockDiagMatrix is a BlockMatrix with matrices only along the diagonal
+    """A symbolic representation for a block diagonal matrix
+
+    Explanation
+    ===========
+
+    A block diagonal matrix is a block matrix with matrices only along
+    the diagonal.
+
+    This is also called as the direct sum of matrices.
+
+    Examples
+    ========
 
     >>> from sympy import MatrixSymbol, BlockDiagMatrix, symbols, Identity
     >>> n, m, l = symbols('n m l')
     >>> X = MatrixSymbol('X', n, n)
     >>> Y = MatrixSymbol('Y', m ,m)
-    >>> BlockDiagMatrix(X, Y)
-    Matrix([
-    [X, 0],
-    [0, Y]])
+
+    >>> M = BlockDiagMatrix(X, Y)
+    >>> M
+    BlockDiagMatrix(X, Y)
 
     See Also
     ========
+
     sympy.matrices.dense.diag
     """
     def __new__(cls, *mats):
+        mats = [_sympify(mat) for mat in mats]
+
+        for mat in mats:
+            if mat.is_Matrix is False:
+                raise ValueError("{} must be a matrix.".format(mat))
+
         return Basic.__new__(BlockDiagMatrix, *mats)
 
     @property
@@ -307,6 +333,34 @@ class BlockDiagMatrix(BlockMatrix):
     def shape(self):
         return (sum(block.rows for block in self.args),
                 sum(block.cols for block in self.args))
+
+    def _entry(self, i, j, **kwargs):
+        rows_begin, cols_begin = 0, 0
+        rows_found = False
+        cols_found = False
+
+        for row_block, numrows in enumerate(self.rowblocksizes):
+            rows_end = rows_begin + numrows
+            if (i >= rows_begin) == True and (i < rows_end) == True:
+                rows_found = True
+                break
+            rows_begin = rows_end
+
+        for col_block, numcols in enumerate(self.colblocksizes):
+            cols_end = cols_begin + numcols
+            if (j >= cols_begin) == True and (j < cols_end) == True:
+                cols_found = True
+                break
+            cols_begin = cols_end
+
+        if rows_found and cols_found:
+            if row_block != col_block:
+                return S.Zero
+
+            block = self.blocks[row_block, col_block]
+            return block[i - rows_begin, j - cols_begin]
+
+        return MatrixElement(self, i, j)
 
     @property
     def blockshape(self):
@@ -355,16 +409,16 @@ def block_collapse(expr):
     >>> Z = MatrixSymbol('Z', n, m)
     >>> B = BlockMatrix([[X, Z], [ZeroMatrix(m, n), Y]])
     >>> print(B)
-    Matrix([
+    BlockMatrix(Matrix([
     [X, Z],
-    [0, Y]])
+    [0, Y]]))
 
     >>> C = BlockMatrix([[Identity(n), Z]])
     >>> print(C)
-    Matrix([[I, Z]])
+    BlockMatrix(Matrix([[I, Z]]))
 
     >>> print(block_collapse(C*B))
-    Matrix([[X, Z + Z*Y]])
+    BlockMatrix(Matrix([[X, Z + Z*Y]]))
     """
     from sympy.strategies.util import expr_fns
 

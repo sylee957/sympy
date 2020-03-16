@@ -37,11 +37,8 @@ class ElementwiseApplyFunction(MatrixExpr):
 
     Notice the difference with the real mathematical functions:
 
-    >>> exp(eye(3))
-    Matrix([
-    [E, 0, 0],
-    [0, E, 0],
-    [0, 0, E]])
+    >>> exp(eye(3)).doit()
+    BlockDiagMatrix(Matrix([[E]]), Matrix([[E]]), Matrix([[E]]))
     """
 
     def __new__(cls, function, expr):

@@ -2232,6 +2232,32 @@ class MatrixArithmetic(MatrixRequired):
 
         return m._new(m.rows, m.cols, elems)
 
+    def _eval_pow_jordan_cell(self, n):
+        from sympy import binomial
+        from .sparsetools import banded
+
+        size = self.rows
+        l = self[0, 0]
+        if l.is_zero and not (n.is_integer and n.is_nonnegative):
+            raise NonInvertibleMatrixError(
+                "Non-invertible matrix can only be raised to a "
+                "nonnegative integer")
+
+        bands = {i: binomial(n, i) * l**(n - i) for i in range(size)}
+        return self._new(banded(size, bands))
+
+    def _eval_pow_by_jordan_blocks(self, n):
+        from .expressions.blockmatrix import BlockDiagMatrix
+        from .expressions.matexpr import MatMul
+        from .expressions.inverse import Inverse
+
+        P, J = self.jordan_form()
+        cells = J.args
+        cells = [cell._eval_pow_jordan_cell(n) for cell in cells]
+        eJ = BlockDiagMatrix(*cells)
+
+        return MatMul(P, eJ, Inverse(P))
+
     def _eval_scalar_mul(self, other):
         return self._new(self.rows, self.cols, lambda i, j: self[i,j]*other)
 
@@ -2418,7 +2444,7 @@ class MatrixArithmetic(MatrixRequired):
         if self.rows != self.cols:
             raise NonSquareMatrixError()
         a = self
-        jordan_pow = getattr(a, '_matrix_pow_by_jordan_blocks', None)
+        jordan_pow = a._eval_pow_by_jordan_blocks
         exp = sympify(exp)
 
         if exp.is_zero:

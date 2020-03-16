@@ -1,17 +1,46 @@
 from sympy import (
     Rational, Poly, Symbol, N, I, Abs, sqrt, exp, Float, sin,
     cos, symbols)
-from sympy.matrices import eye, Matrix
-from sympy.matrices.matrices import MatrixEigen
-from sympy.matrices.common import _MinimalMatrix, _CastableMatrix
 from sympy.abc import x, y
 from sympy.core.singleton import S
-from sympy.testing.pytest import raises, XFAIL
-from sympy.matrices.matrices import NonSquareMatrixError, MatrixError
-from sympy.simplify.simplify import simplify
+from sympy.matrices import eye, Matrix
+from sympy.matrices.dense import diag, MutableDenseMatrix
+from sympy.matrices.common import _MinimalMatrix, _CastableMatrix
+from sympy.matrices.expressions.blockmatrix import BlockDiagMatrix
 from sympy.matrices.immutable import ImmutableMatrix
+from sympy.matrices.matrices import \
+    NonSquareMatrixError, MatrixError, MatrixEigen
+from sympy.polys.polytools import PurePoly
+from sympy.simplify.simplify import simplify
+from sympy.testing.pytest import slow, warns_deprecated_sympy, raises, XFAIL
+
+
 class EigenOnlyMatrix(_MinimalMatrix, _CastableMatrix, MatrixEigen):
     pass
+
+
+def test_charpoly():
+    UA, K_i, K_w = symbols('UA K_i K_w')
+
+    A = Matrix([[-K_i - UA + K_i**2/(K_i + K_w),       K_i*K_w/(K_i + K_w)],
+                [           K_i*K_w/(K_i + K_w), -K_w + K_w**2/(K_i + K_w)]])
+
+    charpoly = A.charpoly(x)
+
+    assert charpoly == \
+        Poly(x**2 + (K_i*UA + K_w*UA + 2*K_i*K_w)/(K_i + K_w)*x +
+        K_i*K_w*UA/(K_i + K_w), x, domain='ZZ(K_i,K_w,UA)')
+
+    assert type(charpoly) is PurePoly
+
+    A = Matrix([[1, 3], [2, 0]])
+    assert A.charpoly() == A.charpoly(x) == PurePoly(x**2 - x - 6)
+
+    A = Matrix([[1, 2], [x, 0]])
+    p = A.charpoly(x)
+    assert p.gen != x
+    assert p.as_expr().subs(p.gen, x) == x**2 - 3*x
+
 
 def test_eigen():
     R = Rational
@@ -151,15 +180,6 @@ def test_eigen():
     assert isinstance(m.eigenvals(simplify=lambda x: x, multiple=False), dict)
     assert isinstance(m.eigenvals(simplify=lambda x: x, multiple=True), list)
 
-@XFAIL
-def test_eigen_vects():
-    m = Matrix(2, 2, [1, 0, 0, I])
-    raises(NotImplementedError, lambda: m.is_diagonalizable(True))
-    # !!! bug because of eigenvects() or roots(x**2 + (-1 - I)*x + I, x)
-    # see issue 5292
-    assert not m.is_diagonalizable(True)
-    raises(MatrixError, lambda: m.diagonalize(True))
-    (P, D) = m.diagonalize(True)
 
 def test_issue_8240():
     # Eigenvalues of large triangular matrices
@@ -226,6 +246,7 @@ def test_left_eigenvects():
         assert vec_list[0]*M == val*vec_list[0]
 
 
+@slow
 def test_bidiagonalize():
     M = Matrix([[1, 0, 0],
                 [0, 1, 0],
@@ -363,25 +384,6 @@ def test_bidiagonalize():
     assert abs(max(diff)) < 10**-12
 
 
-def test_diagonalize():
-    m = EigenOnlyMatrix(2, 2, [0, -1, 1, 0])
-    raises(MatrixError, lambda: m.diagonalize(reals_only=True))
-    P, D = m.diagonalize()
-    assert D.is_diagonal()
-    assert D == Matrix([
-                 [-I, 0],
-                 [ 0, I]])
-
-    # make sure we use floats out if floats are passed in
-    m = EigenOnlyMatrix(2, 2, [0, .5, .5, 0])
-    P, D = m.diagonalize()
-    assert all(isinstance(e, Float) for e in D.values())
-    assert all(isinstance(e, Float) for e in P.values())
-
-    _, D2 = m.diagonalize(reals_only=True)
-    assert D == D2
-
-
 def test_is_diagonalizable():
     a, b, c = symbols('a b c')
     m = EigenOnlyMatrix(2, 2, [a, c, c, b])
@@ -393,9 +395,12 @@ def test_is_diagonalizable():
     assert m.is_diagonalizable()
     assert not m.is_diagonalizable(reals_only=True)
 
+    m = Matrix([[1, 0], [0, I]])
+    assert m.is_diagonalizable()
+
 
 def test_jordan_form():
-    m = Matrix(3, 2, [-3, 1, -3, 20, 3, 10])
+    m = Matrix([[-3, 1, -3], [20, 3, 10]])
     raises(NonSquareMatrixError, lambda: m.jordan_form())
 
     # the next two tests test the cases where the old
@@ -403,33 +408,35 @@ def test_jordan_form():
     # *NOT* be determined  from algebraic and geometric multiplicity alone
     # This can be seen most easily when one lets compute the J.c.f. of a matrix that
     # is in J.c.f already.
-    m = EigenOnlyMatrix(4, 4, [2, 1, 0, 0,
-                    0, 2, 1, 0,
-                    0, 0, 2, 0,
-                    0, 0, 0, 2
-    ])
+    m = Matrix([
+        [2, 1, 0, 0],
+        [0, 2, 1, 0],
+        [0, 0, 2, 0],
+        [0, 0, 0, 2]])
     P, J = m.jordan_form()
-    assert m == J
+    assert m == J.as_explicit()
 
-    m = EigenOnlyMatrix(4, 4, [2, 1, 0, 0,
-                    0, 2, 0, 0,
-                    0, 0, 2, 1,
-                    0, 0, 0, 2
-    ])
+    m = Matrix([
+        [2, 1, 0, 0],
+        [0, 2, 0, 0],
+        [0, 0, 2, 1],
+        [0, 0, 0, 2]])
     P, J = m.jordan_form()
-    assert m == J
+    assert m == J.as_explicit()
 
-    A = Matrix([[ 2,  4,  1,  0],
-                [-4,  2,  0,  1],
-                [ 0,  0,  2,  4],
-                [ 0,  0, -4,  2]])
+    A = Matrix([
+        [2, 4, 1, 0],
+        [-4, 2, 0, 1],
+        [0, 0, 2, 4],
+        [0, 0, -4, 2]])
     P, J = A.jordan_form()
-    assert simplify(P*J*P.inv()) == A
+    J = J.as_explicit()
+    assert simplify(P*J) == A*P
 
-    assert EigenOnlyMatrix(1, 1, [1]).jordan_form() == (
-        Matrix([1]), Matrix([1]))
-    assert EigenOnlyMatrix(1, 1, [1]).jordan_form(
-        calc_transform=False) == Matrix([1])
+    assert EigenOnlyMatrix([[1]]).jordan_form() == \
+        (Matrix([[1]]), BlockDiagMatrix(Matrix([[1]])))
+    assert EigenOnlyMatrix(1, 1, [1]).jordan_form(calc_transform=False) == \
+        BlockDiagMatrix(Matrix([[1]]))
 
     # make sure if we cannot factor the characteristic polynomial, we raise an error
     m = Matrix([[3, 0, 0, 0, -3], [0, -3, -3, 0, 3], [0, 3, 0, 3, 0], [0, 0, 3, 0, 3], [3, 0, 0, 3, 0]])
@@ -473,8 +480,233 @@ def test_singular_values():
     assert A.T.singular_values() == \
         [sqrt(sqrt(221) + 15), sqrt(15 - sqrt(221)), 0, 0]
 
-def test___eq__():
-    assert (EigenOnlyMatrix(
-        [[0, 1, 1],
-        [1, 0, 0],
-        [1, 1, 1]]) == {}) is False
+
+def test_diagonalization():
+    # make sure we use floats out if floats are passed in
+    m = Matrix([[0, .5], [.5, 0]])
+    P, D = m.diagonalize()
+    D = D.as_explicit()
+    assert all(isinstance(e, Float) for e in D.values())
+    assert all(isinstance(e, Float) for e in P.values())
+    _, D2 = m.diagonalize(reals_only=True)
+    D2 = D2.as_explicit()
+    assert D == D2
+
+    m = Matrix([[1, 2+I], [2-I, 3]])
+    assert m.is_diagonalizable()
+
+    m = Matrix([[-3, 1], [-3, 20], [3, 10]])
+    assert not m.is_diagonalizable()
+    assert not m.is_symmetric()
+    raises(NonSquareMatrixError, lambda: m.diagonalize())
+
+    # diagonalizable
+    m = diag(1, 2, 3)
+    P, D = m.diagonalize()
+    assert P == eye(3)
+    assert D == BlockDiagMatrix(Matrix([[1]]), Matrix([[2]]), Matrix([[3]]))
+
+    m = Matrix([[0, 1], [1, 0]])
+    assert m.is_symmetric()
+    assert m.is_diagonalizable()
+    P, D = m.diagonalize()
+    assert m * P == (P * D).as_explicit()
+
+    m = Matrix([[1, 0], [0, 3]])
+    assert m.is_symmetric()
+    assert m.is_diagonalizable()
+    P, D = m.diagonalize()
+    assert m * P == (P * D).as_explicit()
+    assert P == eye(2)
+    assert D.as_explicit() == m
+
+    m = Matrix([[1, 1], [0, 0]])
+    assert m.is_diagonalizable()
+    P, D = m.diagonalize()
+    assert m * P == (P * D).as_explicit()
+
+    m = Matrix([[1, 2, 0], [0, 3, 0], [2, -4, 2]])
+    assert m.is_diagonalizable()
+    P, D = m.diagonalize()
+    assert m * P == (P * D).as_explicit()
+    for i in P:
+        assert i.as_numer_denom()[1] == 1
+
+    m = Matrix([[1, 0], [0, 0]])
+    assert m.is_diagonal()
+    assert m.is_diagonalizable()
+    P, D = m.diagonalize()
+    assert m * P == (P * D).as_explicit()
+    assert P == Matrix([[0, 1], [1, 0]])
+
+    # diagonalizable, complex only
+    m = Matrix([[0, 1], [-1, 0]])
+    assert not m.is_diagonalizable(reals_only=True)
+    raises(MatrixError, lambda: m.diagonalize(True))
+    assert m.is_diagonalizable()
+    (P, D) = m.diagonalize()
+    assert m * P == (P * D).as_explicit()
+
+    # not diagonalizable
+    m = Matrix([[0, 1], [0, 0]])
+    assert not m.is_diagonalizable()
+    raises(MatrixError, lambda: m.diagonalize())
+
+    m = Matrix([[-3, 1, -3], [20, 3, 10], [2, -2, 4]])
+    assert not m.is_diagonalizable()
+    raises(MatrixError, lambda: m.diagonalize())
+
+    # symbolic
+    a, b, c, d = symbols('a b c d')
+    m = Matrix([[a, c], [c, b]])
+    assert m.is_symmetric()
+    assert m.is_diagonalizable()
+
+
+def test_issue_15887():
+    # Mutable matrix should not use cache
+    a = MutableDenseMatrix([[0, 1], [1, 0]])
+    assert a.is_diagonalizable() is True
+    a[1, 0] = 0
+    assert a.is_diagonalizable() is False
+
+    a = MutableDenseMatrix([[0, 1], [1, 0]])
+    a.diagonalize()
+    a[1, 0] = 0
+    raises(MatrixError, lambda: a.diagonalize())
+
+    # Test deprecated cache and kwargs
+    with warns_deprecated_sympy():
+        a.is_diagonalizable(clear_cache=True)
+
+    with warns_deprecated_sympy():
+        a.is_diagonalizable(clear_subproducts=True)
+
+
+def test_jordan_form():
+    m = Matrix(3, 2, [-3, 1, -3, 20, 3, 10])
+    raises(NonSquareMatrixError, lambda: m.jordan_form())
+
+    # diagonalizable
+    m = Matrix(3, 3, [7, -12, 6, 10, -19, 10, 12, -24, 13])
+    Jmust = Matrix(3, 3, [-1, 0, 0, 0, 1, 0, 0, 0, 1])
+    P, J = m.jordan_form()
+    assert Jmust == J
+    assert Jmust == m.diagonalize()[1]
+
+    # m = Matrix(3, 3, [0, 6, 3, 1, 3, 1, -2, 2, 1])
+    # m.jordan_form()  # very long
+    # m.jordan_form()  #
+
+    # diagonalizable, complex only
+
+    # Jordan cells
+    # complexity: one of eigenvalues is zero
+    m = Matrix(3, 3, [0, 1, 0, -4, 4, 0, -2, 1, 2])
+    # The blocks are ordered according to the value of their eigenvalues,
+    # in order to make the matrix compatible with .diagonalize()
+    Jmust = Matrix(3, 3, [2, 1, 0, 0, 2, 0, 0, 0, 2])
+    P, J = m.jordan_form()
+    assert Jmust == J
+
+    # complexity: all of eigenvalues are equal
+    m = Matrix(3, 3, [2, 6, -15, 1, 1, -5, 1, 2, -6])
+    # Jmust = Matrix(3, 3, [-1, 0, 0, 0, -1, 1, 0, 0, -1])
+    # same here see 1456ff
+    Jmust = Matrix(3, 3, [-1, 1, 0, 0, -1, 0, 0, 0, -1])
+    P, J = m.jordan_form()
+    assert Jmust == J
+
+    # complexity: two of eigenvalues are zero
+    m = Matrix(3, 3, [4, -5, 2, 5, -7, 3, 6, -9, 4])
+    Jmust = Matrix(3, 3, [0, 1, 0, 0, 0, 0, 0, 0, 1])
+    P, J = m.jordan_form()
+    assert Jmust == J
+
+    m = Matrix(4, 4, [6, 5, -2, -3, -3, -1, 3, 3, 2, 1, -2, -3, -1, 1, 5, 5])
+    Jmust = Matrix(4, 4, [2, 1, 0, 0,
+                          0, 2, 0, 0,
+              0, 0, 2, 1,
+              0, 0, 0, 2]
+              )
+    P, J = m.jordan_form()
+    assert Jmust == J
+
+    m = Matrix(4, 4, [6, 2, -8, -6, -3, 2, 9, 6, 2, -2, -8, -6, -1, 0, 3, 4])
+    # Jmust = Matrix(4, 4, [2, 0, 0, 0, 0, 2, 1, 0, 0, 0, 2, 0, 0, 0, 0, -2])
+    # same here see 1456ff
+    Jmust = Matrix(4, 4, [-2, 0, 0, 0,
+                           0, 2, 1, 0,
+                           0, 0, 2, 0,
+                           0, 0, 0, 2])
+    P, J = m.jordan_form()
+    assert Jmust == J
+
+    m = Matrix(4, 4, [5, 4, 2, 1, 0, 1, -1, -1, -1, -1, 3, 0, 1, 1, -1, 2])
+    assert not m.is_diagonalizable()
+    Jmust = Matrix(4, 4, [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 4, 1, 0, 0, 0, 4])
+    P, J = m.jordan_form()
+    assert Jmust == J
+
+    # checking for maximum precision to remain unchanged
+    m = Matrix([[Float('1.0', precision=110), Float('2.0', precision=110)],
+                [Float('3.14159265358979323846264338327', precision=110), Float('4.0', precision=110)]])
+    P, J = m.jordan_form()
+    for term in J._mat:
+        if isinstance(term, Float):
+            assert term._prec == 110
+
+
+def test_jordan_form_complex_issue_9274():
+    A = Matrix([[ 2,  4,  1,  0],
+                [-4,  2,  0,  1],
+                [ 0,  0,  2,  4],
+                [ 0,  0, -4,  2]])
+    p = 2 - 4*I;
+    q = 2 + 4*I;
+    Jmust1 = Matrix([[p, 1, 0, 0],
+                     [0, p, 0, 0],
+                     [0, 0, q, 1],
+                     [0, 0, 0, q]])
+    Jmust2 = Matrix([[q, 1, 0, 0],
+                     [0, q, 0, 0],
+                     [0, 0, p, 1],
+                     [0, 0, 0, p]])
+    P, J = A.jordan_form()
+    assert J == Jmust1 or J == Jmust2
+    assert simplify(P*J*P.inv()) == A
+
+def test_issue_10220():
+    # two non-orthogonal Jordan blocks with eigenvalue 1
+    M = Matrix([[1, 0, 0, 1],
+                [0, 1, 1, 0],
+                [0, 0, 1, 1],
+                [0, 0, 0, 1]])
+    P, J = M.jordan_form()
+    assert P == Matrix([[0, 1, 0, 1],
+                        [1, 0, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0]])
+    assert J == Matrix([
+                        [1, 1, 0, 0],
+                        [0, 1, 1, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1]])
+
+def test_jordan_form_issue_15858():
+    A = Matrix([
+        [1, 1, 1, 0],
+        [-2, -1, 0, -1],
+        [0, 0, -1, -1],
+        [0, 0, 2, 1]])
+    (P, J) = A.jordan_form()
+    assert P.expand() == Matrix([
+        [    -I,          -I/2,      I,           I/2],
+        [-1 + I,             0, -1 - I,             0],
+        [     0, -S(1)/2 - I/2,      0, -S(1)/2 + I/2],
+        [     0,             1,      0,             1]])
+    assert J == Matrix([
+        [-I, 1, 0, 0],
+        [0, -I, 0, 0],
+        [0, 0, I, 1],
+        [0, 0, 0, I]])

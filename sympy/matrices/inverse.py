@@ -58,13 +58,16 @@ def _pinv_diagonalization(M):
     try:
         if M.rows >= M.cols:
             P, D   = AH.multiply(A).diagonalize(normalize=True)
+
+            D = M.__class__(D)
             D_pinv = D.applyfunc(lambda x: 0 if _iszero(x) else 1 / x)
 
             return P.multiply(D_pinv).multiply(P.H).multiply(AH)
 
         else:
-            P, D   = A.multiply(AH).diagonalize(
-                        normalize=True)
+            P, D   = A.multiply(AH).diagonalize(normalize=True)
+
+            D = M.__class__(D)
             D_pinv = D.applyfunc(lambda x: 0 if _iszero(x) else 1 / x)
 
             return AH.multiply(P).multiply(D_pinv).multiply(P.H)

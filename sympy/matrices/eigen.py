@@ -499,44 +499,50 @@ def _bidiagonalize(M, upper=True):
 
 
 def _diagonalize(M, reals_only=False, sort=False, normalize=False):
-    """
-    Return (P, D), where D is diagonal and
+    """Compute the diagonalization of a matrix.
 
-        D = P^-1 * M * P
+    Explanation
+    ===========
 
-    where M is current matrix.
+    Diagonalization is a decomposition of a matrix in a form
+    $M = P D P^{-1}$ where
+
+    - $D$ is a diagonal matrix.
+    - $P$ is a matrix used in the similarity transform.
 
     Parameters
     ==========
 
-    reals_only : bool. Whether to throw an error if complex numbers are need
-                    to diagonalize. (Default: False)
+    reals_only : bool, optional
+        Whether to throw an error if complex numbers are need to
+        diagonalize.
 
-    sort : bool. Sort the eigenvalues along the diagonal. (Default: False)
+    sort : bool, optional
+        Whether to sort the eigenvalues along the diagonal.
 
-    normalize : bool. If True, normalize the columns of P. (Default: False)
+    normalize : bool, optional
+        Whether to normalize the columns of $P$.
+
+    Returns
+    =======
+
+    P, D : Matrix, Matrix
 
     Examples
     ========
 
     >>> from sympy.matrices import Matrix
-    >>> M = Matrix(3, 3, [1, 2, 0, 0, 3, 0, 2, -4, 2])
-    >>> M
-    Matrix([
-    [1,  2, 0],
-    [0,  3, 0],
-    [2, -4, 2]])
+    >>> M = Matrix([[1, 2, 0], [0, 3, 0], [2, -4, 2]])
+
     >>> (P, D) = M.diagonalize()
     >>> D
-    Matrix([
-    [1, 0, 0],
-    [0, 2, 0],
-    [0, 0, 3]])
+    BlockDiagMatrix(Matrix([[1]]), Matrix([[2]]), Matrix([[3]]))
     >>> P
     Matrix([
     [-1, 0, -1],
     [ 0, 0, -1],
     [ 2, 1,  2]])
+
     >>> P.inv() * M * P
     Matrix([
     [1, 0, 0],
@@ -549,6 +555,8 @@ def _diagonalize(M, reals_only=False, sort=False, normalize=False):
     is_diagonal
     is_diagonalizable
     """
+    from .expressions.blockmatrix import BlockDiagMatrix
+    from .immutable import ImmutableDenseMatrix
 
     if not M.is_square:
         raise NonSquareMatrixError()
@@ -571,7 +579,10 @@ def _diagonalize(M, reals_only=False, sort=False, normalize=False):
     if normalize:
         p_cols = [v / v.norm() for v in p_cols]
 
-    return M.hstack(*p_cols), M.diag(*diag)
+    P = M.hstack(*p_cols)
+    diag = (ImmutableDenseMatrix([[x]]) for x in diag)
+    D = BlockDiagMatrix(*diag)
+    return P, D
 
 
 def _eval_is_positive_definite(M, method="eigen"):
@@ -765,16 +776,25 @@ _is_indefinite.__doc__            = _doc_positive_definite
 
 
 def _jordan_form(M, calc_transform=True, **kwargs):
-    """Return ``(P, J)`` where `J` is a Jordan block
-    matrix and `P` is a matrix such that
+    """Compute the Jordan decomposition of a matrix.
 
-        ``M == P*J*P**-1``
+    Explanation
+    ===========
+
+    Jordan decomposition is a decomposition into $M = P J P^{-1}$ form
+    where
+
+    - $J$ is a Jordan block matrix similar to $M$.
+    - $P$ is an invertible matrix used in the similarity transform.
+
+    When the matrix is diagonalizable, Jordan decomposition reduces
+    to the diagonalization.
 
     Parameters
     ==========
 
     calc_transform : bool
-        If ``False``, then only `J` is returned.
+        If ``False``, then only $J$ is returned.
 
     chop : bool
         All matrices are converted to exact types when computing
@@ -782,24 +802,55 @@ def _jordan_form(M, calc_transform=True, **kwargs):
         approximation errors.  If ``chop==True``, these errors
         will be truncated.
 
+    Returns
+    =======
+
+    P, J : Matrix, BlockDiagMatrix
+        If *calc_transform* is set to ``True``.
+
+    J : BlockDiagMatrix
+        If *calc_transform* is set to ``False``.
+
     Examples
     ========
 
     >>> from sympy.matrices import Matrix
-    >>> M = Matrix([[ 6,  5, -2, -3], [-3, -1,  3,  3], [ 2,  1, -2, -3], [-1,  1,  5,  5]])
+    >>> from sympy.interactive import init_printing
+    >>> init_printing()
+
+    >>> M = Matrix([
+    ...     [6, 5, -2, -3],
+    ...     [-3, -1, 3, 3],
+    ...     [2, 1, -2, -3],
+    ...     [-1, 1, 5, 5]])
+
+    Computing the Jordan decomposition:
+
     >>> P, J = M.jordan_form()
     >>> J
-    Matrix([
-    [2, 1, 0, 0],
-    [0, 2, 0, 0],
-    [0, 0, 2, 1],
-    [0, 0, 0, 2]])
+    [[2  1]        ]
+    [[    ]    0   ]
+    [[0  2]        ]
+    [              ]
+    [        [2  1]]
+    [  0     [    ]]
+    [        [0  2]]
+    >>> P
+    [4   1  5   0]
+    [            ]
+    [-3  0  -3  1]
+    [            ]
+    [2   0  1   0]
+    [            ]
+    [-1  0  1   0]
 
     See Also
     ========
 
     jordan_block
     """
+    from .expressions.blockmatrix import BlockDiagMatrix
+    from .immutable import ImmutableDenseMatrix
 
     if not M.is_square:
         raise NonSquareMatrixError("Only square matrices have Jordan forms")
@@ -823,12 +874,8 @@ def _jordan_form(M, calc_transform=True, **kwargs):
     def restore_floats(*args):
         """If ``has_floats`` is `True`, cast all ``args`` as
         matrices of floats."""
-
         if has_floats:
             args = [m.evalf(n=max_dps, chop=chop) for m in args]
-        if len(args) == 1:
-            return args[0]
-
         return args
 
     # cache calculations for some speedup
@@ -926,17 +973,18 @@ def _jordan_form(M, calc_transform=True, **kwargs):
     # and so are diagonalizable.  In this case, don't
     # do extra work!
     if len(eigs.keys()) == mat.cols:
-        blocks     = list(sorted(eigs.keys(), key=default_sort_key))
-        jordan_mat = mat.diag(*blocks)
+        eigs = list(sorted(eigs.keys(), key=default_sort_key))
+        blocks = restore_floats(*eigs)
+        blocks = (ImmutableDenseMatrix([[block]]) for block in blocks)
+        jordan_mat = BlockDiagMatrix(*blocks)
 
         if not calc_transform:
-            return restore_floats(jordan_mat)
+            return jordan_mat
 
-        jordan_basis = [eig_mat(eig, 1).nullspace()[0]
-                for eig in blocks]
-        basis_mat    = mat.hstack(*jordan_basis)
-
-        return restore_floats(basis_mat, jordan_mat)
+        jordan_basis = [eig_mat(eig, 1).nullspace()[0] for eig in eigs]
+        basis_mat = mat.hstack(*jordan_basis)
+        basis_mat = restore_floats(basis_mat)[0]
+        return basis_mat, jordan_mat
 
     block_structure = []
 
@@ -965,10 +1013,10 @@ def _jordan_form(M, calc_transform=True, **kwargs):
             "computing Jordan block. : {}".format(M))
 
     blocks     = (mat.jordan_block(size=size, eigenvalue=eig) for eig, size in block_structure)
-    jordan_mat = mat.diag(*blocks)
+    jordan_mat = BlockDiagMatrix(*blocks)
 
     if not calc_transform:
-        return restore_floats(jordan_mat)
+        return restore_floats(jordan_mat)[0]
 
     # For each generalized eigenspace, calculate a basis.
     # We start by looking for a vector in null( (A - eig*I)**n )

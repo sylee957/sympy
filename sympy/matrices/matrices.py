@@ -736,7 +736,7 @@ class MatrixDeprecated(MatrixCommon):
 
     def jordan_cells(self, calc_transformation=True):
         P, J = self.jordan_form()
-        return P, J.get_diag_blocks()
+        return P, J.args
 
     def minorEntry(self, i, j, method="berkowitz"):
         return self.minor(i, j, method=method)
@@ -810,40 +810,6 @@ class MatrixBase(MatrixDeprecated,
                 mml += self[i, j].__mathml__()
             mml += "</matrixrow>"
         return "<matrix>" + mml + "</matrix>"
-
-    def _matrix_pow_by_jordan_blocks(self, num):
-        from sympy.matrices import diag, MutableMatrix
-        from sympy import binomial
-
-        def jordan_cell_power(jc, n):
-            N = jc.shape[0]
-            l = jc[0,0]
-            if l.is_zero:
-                if N == 1 and n.is_nonnegative:
-                    jc[0,0] = l**n
-                elif not (n.is_integer and n.is_nonnegative):
-                    raise NonInvertibleMatrixError("Non-invertible matrix can only be raised to a nonnegative integer")
-                else:
-                    for i in range(N):
-                        jc[0,i] = KroneckerDelta(i, n)
-            else:
-                for i in range(N):
-                    bn = binomial(n, i)
-                    if isinstance(bn, binomial):
-                        bn = bn._eval_expand_func()
-                    jc[0,i] = l**(n-i)*bn
-            for i in range(N):
-                for j in range(1, N-i):
-                    jc[j,i+j] = jc [j-1,i+j-1]
-
-        P, J = self.jordan_form()
-        jordan_cells = J.get_diag_blocks()
-        # Make sure jordan_cells matrices are mutable:
-        jordan_cells = [MutableMatrix(j) for j in jordan_cells]
-        for j in jordan_cells:
-            jordan_cell_power(j, num)
-        return self._new(P.multiply(diag(*jordan_cells))
-                .multiply(P.inv()))
 
     def __repr__(self):
         return sstr(self)
@@ -1593,41 +1559,40 @@ class MatrixBase(MatrixDeprecated,
 
 
     def exp(self):
-
-        """Return the exponential of a square matrix
+        r"""Return the exponential of a square matrix
 
         Examples
         ========
 
         >>> from sympy import Symbol, Matrix
+        >>> from sympy import init_printing
+        >>> init_printing()
 
         >>> t = Symbol('t')
         >>> m = Matrix([[0, 1], [-1, 0]]) * t
+
         >>> m.exp()
-        Matrix([
-        [    exp(I*t)/2 + exp(-I*t)/2, -I*exp(I*t)/2 + I*exp(-I*t)/2],
-        [I*exp(I*t)/2 - I*exp(-I*t)/2,      exp(I*t)/2 + exp(-I*t)/2]])
+                [[ -I*t]        ]          -1
+        [I  -I] [[e    ]    0   ] /[I  -I]\
+        [     ]*[               ]*|[     ]|
+        [1  1 ] [         [ I*t]] \[1  1 ]/
+                [   0     [e   ]]
         """
         if not self.is_square:
             raise NonSquareMatrixError(
                 "Exponentiation is valid only for square matrices")
         try:
             P, J = self.jordan_form()
-            cells = J.get_diag_blocks()
+            cells = J.args
         except MatrixError:
             raise NotImplementedError(
                 "Exponentiation is implemented only for matrices for which the Jordan normal form can be computed")
 
         blocks = [cell._eval_matrix_exp_jblock() for cell in cells]
-        from sympy.matrices import diag
-        from sympy import re
-        eJ = diag(*blocks)
-        # n = self.rows
-        ret = P.multiply(eJ, dotprodsimp=True).multiply(P.inv(), dotprodsimp=True)
-        if all(value.is_real for value in self.values()):
-            return type(self)(re(ret))
-        else:
-            return type(self)(ret)
+        from .expressions import BlockDiagMatrix, MatMul, Inverse
+        eJ = BlockDiagMatrix(*blocks)
+        return MatMul(P, eJ, Inverse(P))
+
 
     def _eval_matrix_log_jblock(self):
         """Helper function to compute logarithm of a jordan block.
@@ -1668,8 +1633,9 @@ class MatrixBase(MatrixDeprecated,
         from .sparsetools import banded
         return self.__class__(banded(size, bands))
 
+
     def log(self, simplify=cancel):
-        """Return the logarithm of a square matrix
+        r"""Return the logarithm of a square matrix
 
         Parameters
         ==========
@@ -1685,28 +1651,33 @@ class MatrixBase(MatrixDeprecated,
         ========
 
         >>> from sympy import S, Matrix
+        >>> from sympy import init_printing
+        >>> init_printing()
 
         Examples for positive-definite matrices:
 
         >>> m = Matrix([[1, 1], [0, 1]])
         >>> m.log()
-        Matrix([
-        [0, 1],
-        [0, 0]])
+                            -1
+        [1  0] [0  1] /[1  0]\
+        [    ]*[    ]*|[    ]|
+        [0  1] [0  0] \[0  1]/
 
         >>> m = Matrix([[S(5)/4, S(3)/4], [S(3)/4, S(5)/4]])
         >>> m.log()
-        Matrix([
-        [     0, log(2)],
-        [log(2),      0]])
+                                               -1
+        [-1  1] [[-log(2)]     0    ] /[-1  1]\
+        [     ]*[                   ]*|[     ]|
+        [1   1] [    0      [log(2)]] \[1   1]/
 
         Examples for non positive-definite matrices:
 
         >>> m = Matrix([[S(3)/4, S(5)/4], [S(5)/4, S(3)/4]])
         >>> m.log()
-        Matrix([
-        [         I*pi/2, log(2) - I*pi/2],
-        [log(2) - I*pi/2,          I*pi/2]])
+                                                      -1
+        [-1  1] [[-log(2) + I*pi]     0    ] /[-1  1]\
+        [     ]*[                          ]*|[     ]|
+        [1   1] [       0          [log(2)]] \[1   1]/
 
         >>> m = Matrix(
         ...     [[0, 0, 0, 1],
@@ -1714,41 +1685,32 @@ class MatrixBase(MatrixDeprecated,
         ...      [0, 1, 0, 0],
         ...      [1, 0, 0, 0]])
         >>> m.log()
-        Matrix([
-        [ I*pi/2,       0,       0, -I*pi/2],
-        [      0,  I*pi/2, -I*pi/2,       0],
-        [      0, -I*pi/2,  I*pi/2,       0],
-        [-I*pi/2,       0,       0,  I*pi/2]])
+                                                                  -1
+        [0   -1  0  1] [[I*pi]    0      0    0 ] /[0   -1  0  1]\
+        [            ] [                        ] |[            ]|
+        [-1  0   1  0] [  0     [I*pi]   0    0 ] |[-1  0   1  0]|
+        [            ]*[                        ]*|[            ]|
+        [1   0   1  0] [  0       0     [0]   0 ] |[1   0   1  0]|
+        [            ] [                        ] |[            ]|
+        [0   1   0  1] [  0       0      0   [0]] \[0   1   0  1]/
         """
+        from .expressions import BlockDiagMatrix, MatMul, Inverse
+
         if not self.is_square:
             raise NonSquareMatrixError(
                 "Logarithm is valid only for square matrices")
 
         try:
-            if simplify:
-                P, J = simplify(self).jordan_form()
-            else:
-                P, J = self.jordan_form()
-
-            cells = J.get_diag_blocks()
+            P, J = self.jordan_form()
         except MatrixError:
             raise NotImplementedError(
                 "Logarithm is implemented only for matrices for which "
                 "the Jordan normal form can be computed")
 
-        blocks = [
-            cell._eval_matrix_log_jblock()
-            for cell in cells]
-        from sympy.matrices import diag
-        eJ = diag(*blocks)
+        blocks = [block._eval_matrix_log_jblock() for block in J.args]
+        eJ = BlockDiagMatrix(*blocks)
+        return MatMul(P, eJ, Inverse(P))
 
-        if simplify:
-            ret = simplify(P * eJ * simplify(P.inv()))
-            ret = self.__class__(ret)
-        else:
-            ret = P * eJ * P.inv()
-
-        return ret
 
     def is_nilpotent(self):
         """Checks if a matrix is nilpotent.

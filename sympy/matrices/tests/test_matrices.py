@@ -1,9 +1,11 @@
 import random
 
 from sympy import (
-    Abs, Add, E, Float, I, Integer, Max, Min, Poly, Pow, PurePoly, Rational,
-    S, Symbol, cos, exp, log, oo, pi, signsimp, simplify, sin,
-    sqrt, symbols, sympify, trigsimp, tan, sstr, diff, Function, expand)
+    Add, E, Float, I, Integer, Poly, Pow, PurePoly, Rational, S, Symbol, oo,
+    pi, signsimp, simplify, symbols, sympify, trigsimp, sstr, diff, Function,
+    expand)
+from sympy.functions import (
+    Abs, Max, Min, sin, cos, tan, exp, log, sqrt, binomial)
 from sympy.matrices.matrices import (ShapeError, MatrixError,
     NonSquareMatrixError, DeferredVector, _find_reasonable_pivot_naive,
     _simplify)
@@ -11,7 +13,9 @@ from sympy.matrices import (
     GramSchmidt, ImmutableMatrix, ImmutableSparseMatrix, Matrix,
     SparseMatrix, casoratian, diag, eye, hessian,
     matrix_multiply_elementwise, ones, randMatrix, rot_axis1, rot_axis2,
-    rot_axis3, wronskian, zeros, MutableDenseMatrix, ImmutableDenseMatrix, MatrixSymbol)
+    rot_axis3, wronskian, zeros, MutableDenseMatrix, ImmutableDenseMatrix)
+from sympy.matrices.expressions import (
+    MatMul, Inverse, MatrixSymbol, BlockDiagMatrix)
 from sympy.core.compatibility import iterable, Hashable
 from sympy.core import Tuple, Wild
 from sympy.functions.special.tensor_functions import KroneckerDelta
@@ -188,34 +192,60 @@ def test_multiplication():
 
 
 def test_power():
-    raises(NonSquareMatrixError, lambda: Matrix((1, 2))**2)
+    raises(NonSquareMatrixError, lambda: Matrix([1, 2])**2)
 
     R = Rational
     A = Matrix([[2, 3], [4, 5]])
-    assert (A**-3)[:] == [R(-269)/8, R(153)/8, R(51)/2, R(-29)/2]
-    assert (A**5)[:] == [6140, 8097, 10796, 14237]
+    assert A**-3 == Matrix([[R(-269)/8, R(153)/8], [R(51)/2, R(-29)/2]])
+    assert A**5 == Matrix([[6140, 8097], [10796, 14237]])
+
     A = Matrix([[2, 1, 3], [4, 2, 4], [6, 12, 1]])
-    assert (A**3)[:] == [290, 262, 251, 448, 440, 368, 702, 954, 433]
+    assert A**3 == Matrix([[290, 262, 251], [448, 440, 368], [702, 954, 433]])
     assert A**0 == eye(3)
     assert A**1 == A
-    assert (Matrix([[2]]) ** 100)[0, 0] == 2**100
+
+    assert Matrix([[2]]) ** 100 == Matrix([[2**100]])
     assert eye(2)**10000000 == eye(2)
-    assert Matrix([[1, 2], [3, 4]])**Integer(2) == Matrix([[7, 10], [15, 22]])
+    assert Matrix([[1, 2], [3, 4]]) ** 2 == Matrix([[7, 10], [15, 22]])
 
     A = Matrix([[33, 24], [48, 57]])
-    assert (A**S.Half)[:] == [5, 2, 4, 7]
-    A = Matrix([[0, 4], [-1, 5]])
-    assert (A**S.Half)**2 == A
+    sqrt = (A**S.Half).as_explicit()
+    assert sqrt == Matrix([[5, 2], [4, 7]])
+    assert sqrt ** 2 == A
 
-    assert Matrix([[1, 0], [1, 1]])**S.Half == Matrix([[1, 0], [S.Half, 1]])
-    assert Matrix([[1, 0], [1, 1]])**0.5 == Matrix([[1.0, 0], [0.5, 1.0]])
+    A = Matrix([[0, 4], [-1, 5]])
+    sqrt = (A**S.Half).as_explicit()
+    assert sqrt == Matrix([[2, 4], [-1, 7]]) / 3
+    assert sqrt ** 2 == A
+
+    A = Matrix([[1, 0], [1, 1]])
+    sqrt = (A**S.Half).as_explicit()
+    assert sqrt == Matrix([[1, 0], [S.Half, 1]])
+    sqrt = (A**0.5).as_explicit()
+    assert sqrt == Matrix([[1.0, 0], [0.5, 1.0]])
+
     from sympy.abc import a, b, n
-    assert Matrix([[1, a], [0, 1]])**n == Matrix([[1, a*n], [0, 1]])
-    assert Matrix([[b, a], [0, b]])**n == Matrix([[b**n, a*b**(n-1)*n], [0, b**n]])
-    assert Matrix([
-        [a**n, a**(n - 1)*n, (a**n*n**2 - a**n*n)/(2*a**2)],
-        [   0,         a**n,                  a**(n - 1)*n],
-        [   0,            0,                          a**n]])
+
+    A = Matrix([[1, a], [0, 1]]) ** n
+    P = Matrix([[a, 0], [0, 1]])
+    eJ = BlockDiagMatrix(Matrix([[1, n], [0, 1]]))
+    assert A == MatMul(P, eJ, Inverse(P))
+
+    A = Matrix([[b, a], [0, b]]) ** n
+    eJ = BlockDiagMatrix(Matrix([[b**n, b**(n-1)*n], [0, b**n]]))
+    assert A == MatMul(P, eJ, Inverse(P))
+
+    A = Matrix([[a, 1, 0], [0, a, 1], [0, 0, a]]) ** n
+    P = Matrix.eye(3)
+    eJ = BlockDiagMatrix(
+        Matrix([
+            [a**n, a**(n-1) * n, a**(n-2) * binomial(n, 2)],
+            [0, a**n, a**(n-1) * n],
+            [0, 0, a**n]]
+        )
+    )
+    assert A == MatMul(P, eJ, Inverse(P))
+
     assert Matrix([[a, 1, 0], [0, a, 0], [0, 0, b]])**n == Matrix([
         [a**n, a**(n-1)*n, 0],
         [0, a**n, 0],
@@ -286,13 +316,13 @@ def test_power():
 
 def test_issue_17247_expression_blowup_1():
     M = Matrix([[1+x, 1-x], [1-x, 1+x]])
-    assert M.exp().expand() == Matrix([
-        [ (exp(2*x) + exp(2))/2, (-exp(2*x) + exp(2))/2],
-        [(-exp(2*x) + exp(2))/2,  (exp(2*x) + exp(2))/2]])
+    P = Matrix([[x/(x-1) - 1/(x-1), -1], [1, 1]])
+    eJ = BlockDiagMatrix(Matrix([[exp(2)]]), Matrix([[exp(2*x)]]))
+    assert M.exp() == MatMul(P, eJ, Inverse(P))
 
 def test_issue_17247_expression_blowup_2():
     M = Matrix([[1+x, 1-x], [1-x, 1+x]])
-    P, J = M.jordan_form ()
+    P, J = M.jordan_form()
     assert P*J*P.inv()
 
 def test_issue_17247_expression_blowup_3():
@@ -450,21 +480,21 @@ def test_issue_17247_expression_blowup_19():
     assert not M.is_diagonalizable()
 
 def test_issue_17247_expression_blowup_20():
-    M = Matrix([
-    [x + 1,  1 - x,      0,      0],
-    [1 - x,  x + 1,      0,  x + 1],
-    [    0,  1 - x,  x + 1,      0],
-    [    0,      0,      0,  x + 1]])
-    assert M.diagonalize() == (Matrix([
-        [1,  1, 0, (x + 1)/(x - 1)],
-        [1, -1, 0,               0],
-        [1,  1, 1,               0],
-        [0,  0, 0,               1]]),
-        Matrix([
-        [2,   0,     0,     0],
-        [0, 2*x,     0,     0],
-        [0,   0, x + 1,     0],
-        [0,   0,     0, x + 1]]))
+    A = Matrix([[1, -1, 0, 0], [-1, 1, 0, 1], [0, -1, 1, 0], [0, 0, 0, 1]])
+    B = Matrix([[1, 1, 0, 0], [1, 1, 0, 1], [0, 1, 1, 0], [0, 0, 0, 1]])
+    M = A*x + B
+
+    P = Matrix([
+        [1, 1, 0, (x + 1)/(x - 1)],
+        [1, -1, 0, 0],
+        [1, 1, 1, 0],
+        [0, 0, 0, 1]])
+
+    D = BlockDiagMatrix(
+        Matrix([[2]]), Matrix([[2 * x]]),
+        Matrix([[x + 1]]), Matrix([[x + 1]]))
+
+    assert M.diagonalize() == (P, D)
 
 def test_issue_17247_expression_blowup_21():
     M = Matrix(S('''[
@@ -548,16 +578,18 @@ def test_issue_17247_expression_blowup_27():
         [    0, 1 - x, x + 1, 1 - x],
         [    0,     0,     1 - x, 0]])
     P, J = M.jordan_form()
+
     assert P.expand() == Matrix(S('''[
         [    0,  4*x/(x**2 - 2*x + 1), -(-17*x**4 + 12*sqrt(2)*x**4 - 4*sqrt(2)*x**3 + 6*x**3 - 6*x - 4*sqrt(2)*x + 12*sqrt(2) + 17)/(-7*x**4 + 5*sqrt(2)*x**4 - 6*sqrt(2)*x**3 + 8*x**3 - 2*x**2 + 8*x + 6*sqrt(2)*x - 5*sqrt(2) - 7), -(12*sqrt(2)*x**4 + 17*x**4 - 6*x**3 - 4*sqrt(2)*x**3 - 4*sqrt(2)*x + 6*x - 17 + 12*sqrt(2))/(7*x**4 + 5*sqrt(2)*x**4 - 6*sqrt(2)*x**3 - 8*x**3 + 2*x**2 - 8*x + 6*sqrt(2)*x - 5*sqrt(2) + 7)],
         [x - 1, x/(x - 1) + 1/(x - 1),                       (-7*x**3 + 5*sqrt(2)*x**3 - x**2 + sqrt(2)*x**2 - sqrt(2)*x - x - 5*sqrt(2) - 7)/(-3*x**3 + 2*sqrt(2)*x**3 - 2*sqrt(2)*x**2 + 3*x**2 + 2*sqrt(2)*x + 3*x - 3 - 2*sqrt(2)),                       (7*x**3 + 5*sqrt(2)*x**3 + x**2 + sqrt(2)*x**2 - sqrt(2)*x + x - 5*sqrt(2) + 7)/(2*sqrt(2)*x**3 + 3*x**3 - 3*x**2 - 2*sqrt(2)*x**2 - 3*x + 2*sqrt(2)*x - 2*sqrt(2) + 3)],
         [    0,                     1,                                                                                            -(-3*x**2 + 2*sqrt(2)*x**2 + 2*x - 3 - 2*sqrt(2))/(-x**2 + sqrt(2)*x**2 - 2*sqrt(2)*x + 1 + sqrt(2)),                                                                                            -(2*sqrt(2)*x**2 + 3*x**2 - 2*x - 2*sqrt(2) + 3)/(x**2 + sqrt(2)*x**2 - 2*sqrt(2)*x - 1 + sqrt(2))],
         [1 - x,                     0,                                                                                                                                                                                               1,                                                                                                                                                                                             1]]''')).expand()
-    assert J == Matrix(S('''[
-        [0, 1,                       0,                       0],
-        [0, 0,                       0,                       0],
-        [0, 0, x - sqrt(2)*(x - 1) + 1,                       0],
-        [0, 0,                       0, x + sqrt(2)*(x - 1) + 1]]'''))
+
+    assert J == BlockDiagMatrix(
+        Matrix([[0, 1], [0, 0]]),
+        Matrix([[x - sqrt(2)*(x - 1) + 1]]),
+        Matrix([[x + sqrt(2)*(x - 1) + 1]])
+    )
 
 def test_issue_17247_expression_blowup_28():
     M = Matrix(S('''[
@@ -781,12 +813,6 @@ def test_expand():
 
     assert Matrix([exp(I*a)]).expand(complex=True) == \
         Matrix([cos(a) + I*sin(a)])
-
-    assert Matrix([[0, 1, 2], [0, 0, -1], [0, 0, 0]]).exp() == Matrix([
-        [1, 1, Rational(3, 2)],
-        [0, 1, -1],
-        [0, 0, 1]]
-    )
 
 def test_refine():
     m0 = Matrix([[Abs(x)**2, sqrt(x**2)],
@@ -1548,250 +1574,6 @@ def test_diagonal_symmetrical():
     assert m.expand().is_symmetric(simplify=False)
 
 
-def test_diagonalization():
-    m = Matrix([[1, 2+I], [2-I, 3]])
-    assert m.is_diagonalizable()
-
-    m = Matrix(3, 2, [-3, 1, -3, 20, 3, 10])
-    assert not m.is_diagonalizable()
-    assert not m.is_symmetric()
-    raises(NonSquareMatrixError, lambda: m.diagonalize())
-
-    # diagonalizable
-    m = diag(1, 2, 3)
-    (P, D) = m.diagonalize()
-    assert P == eye(3)
-    assert D == m
-
-    m = Matrix(2, 2, [0, 1, 1, 0])
-    assert m.is_symmetric()
-    assert m.is_diagonalizable()
-    (P, D) = m.diagonalize()
-    assert P.inv() * m * P == D
-
-    m = Matrix(2, 2, [1, 0, 0, 3])
-    assert m.is_symmetric()
-    assert m.is_diagonalizable()
-    (P, D) = m.diagonalize()
-    assert P.inv() * m * P == D
-    assert P == eye(2)
-    assert D == m
-
-    m = Matrix(2, 2, [1, 1, 0, 0])
-    assert m.is_diagonalizable()
-    (P, D) = m.diagonalize()
-    assert P.inv() * m * P == D
-
-    m = Matrix(3, 3, [1, 2, 0, 0, 3, 0, 2, -4, 2])
-    assert m.is_diagonalizable()
-    (P, D) = m.diagonalize()
-    assert P.inv() * m * P == D
-    for i in P:
-        assert i.as_numer_denom()[1] == 1
-
-    m = Matrix(2, 2, [1, 0, 0, 0])
-    assert m.is_diagonal()
-    assert m.is_diagonalizable()
-    (P, D) = m.diagonalize()
-    assert P.inv() * m * P == D
-    assert P == Matrix([[0, 1], [1, 0]])
-
-    # diagonalizable, complex only
-    m = Matrix(2, 2, [0, 1, -1, 0])
-    assert not m.is_diagonalizable(True)
-    raises(MatrixError, lambda: m.diagonalize(True))
-    assert m.is_diagonalizable()
-    (P, D) = m.diagonalize()
-    assert P.inv() * m * P == D
-
-    # not diagonalizable
-    m = Matrix(2, 2, [0, 1, 0, 0])
-    assert not m.is_diagonalizable()
-    raises(MatrixError, lambda: m.diagonalize())
-
-    m = Matrix(3, 3, [-3, 1, -3, 20, 3, 10, 2, -2, 4])
-    assert not m.is_diagonalizable()
-    raises(MatrixError, lambda: m.diagonalize())
-
-    # symbolic
-    a, b, c, d = symbols('a b c d')
-    m = Matrix(2, 2, [a, c, c, b])
-    assert m.is_symmetric()
-    assert m.is_diagonalizable()
-
-
-def test_issue_15887():
-    # Mutable matrix should not use cache
-    a = MutableDenseMatrix([[0, 1], [1, 0]])
-    assert a.is_diagonalizable() is True
-    a[1, 0] = 0
-    assert a.is_diagonalizable() is False
-
-    a = MutableDenseMatrix([[0, 1], [1, 0]])
-    a.diagonalize()
-    a[1, 0] = 0
-    raises(MatrixError, lambda: a.diagonalize())
-
-    # Test deprecated cache and kwargs
-    with warns_deprecated_sympy():
-        a.is_diagonalizable(clear_cache=True)
-
-    with warns_deprecated_sympy():
-        a.is_diagonalizable(clear_subproducts=True)
-
-
-def test_jordan_form():
-
-    m = Matrix(3, 2, [-3, 1, -3, 20, 3, 10])
-    raises(NonSquareMatrixError, lambda: m.jordan_form())
-
-    # diagonalizable
-    m = Matrix(3, 3, [7, -12, 6, 10, -19, 10, 12, -24, 13])
-    Jmust = Matrix(3, 3, [-1, 0, 0, 0, 1, 0, 0, 0, 1])
-    P, J = m.jordan_form()
-    assert Jmust == J
-    assert Jmust == m.diagonalize()[1]
-
-    # m = Matrix(3, 3, [0, 6, 3, 1, 3, 1, -2, 2, 1])
-    # m.jordan_form()  # very long
-    # m.jordan_form()  #
-
-    # diagonalizable, complex only
-
-    # Jordan cells
-    # complexity: one of eigenvalues is zero
-    m = Matrix(3, 3, [0, 1, 0, -4, 4, 0, -2, 1, 2])
-    # The blocks are ordered according to the value of their eigenvalues,
-    # in order to make the matrix compatible with .diagonalize()
-    Jmust = Matrix(3, 3, [2, 1, 0, 0, 2, 0, 0, 0, 2])
-    P, J = m.jordan_form()
-    assert Jmust == J
-
-    # complexity: all of eigenvalues are equal
-    m = Matrix(3, 3, [2, 6, -15, 1, 1, -5, 1, 2, -6])
-    # Jmust = Matrix(3, 3, [-1, 0, 0, 0, -1, 1, 0, 0, -1])
-    # same here see 1456ff
-    Jmust = Matrix(3, 3, [-1, 1, 0, 0, -1, 0, 0, 0, -1])
-    P, J = m.jordan_form()
-    assert Jmust == J
-
-    # complexity: two of eigenvalues are zero
-    m = Matrix(3, 3, [4, -5, 2, 5, -7, 3, 6, -9, 4])
-    Jmust = Matrix(3, 3, [0, 1, 0, 0, 0, 0, 0, 0, 1])
-    P, J = m.jordan_form()
-    assert Jmust == J
-
-    m = Matrix(4, 4, [6, 5, -2, -3, -3, -1, 3, 3, 2, 1, -2, -3, -1, 1, 5, 5])
-    Jmust = Matrix(4, 4, [2, 1, 0, 0,
-                          0, 2, 0, 0,
-              0, 0, 2, 1,
-              0, 0, 0, 2]
-              )
-    P, J = m.jordan_form()
-    assert Jmust == J
-
-    m = Matrix(4, 4, [6, 2, -8, -6, -3, 2, 9, 6, 2, -2, -8, -6, -1, 0, 3, 4])
-    # Jmust = Matrix(4, 4, [2, 0, 0, 0, 0, 2, 1, 0, 0, 0, 2, 0, 0, 0, 0, -2])
-    # same here see 1456ff
-    Jmust = Matrix(4, 4, [-2, 0, 0, 0,
-                           0, 2, 1, 0,
-                           0, 0, 2, 0,
-                           0, 0, 0, 2])
-    P, J = m.jordan_form()
-    assert Jmust == J
-
-    m = Matrix(4, 4, [5, 4, 2, 1, 0, 1, -1, -1, -1, -1, 3, 0, 1, 1, -1, 2])
-    assert not m.is_diagonalizable()
-    Jmust = Matrix(4, 4, [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 4, 1, 0, 0, 0, 4])
-    P, J = m.jordan_form()
-    assert Jmust == J
-
-    # checking for maximum precision to remain unchanged
-    m = Matrix([[Float('1.0', precision=110), Float('2.0', precision=110)],
-                [Float('3.14159265358979323846264338327', precision=110), Float('4.0', precision=110)]])
-    P, J = m.jordan_form()
-    for term in J._mat:
-        if isinstance(term, Float):
-            assert term._prec == 110
-
-
-def test_jordan_form_complex_issue_9274():
-    A = Matrix([[ 2,  4,  1,  0],
-                [-4,  2,  0,  1],
-                [ 0,  0,  2,  4],
-                [ 0,  0, -4,  2]])
-    p = 2 - 4*I;
-    q = 2 + 4*I;
-    Jmust1 = Matrix([[p, 1, 0, 0],
-                     [0, p, 0, 0],
-                     [0, 0, q, 1],
-                     [0, 0, 0, q]])
-    Jmust2 = Matrix([[q, 1, 0, 0],
-                     [0, q, 0, 0],
-                     [0, 0, p, 1],
-                     [0, 0, 0, p]])
-    P, J = A.jordan_form()
-    assert J == Jmust1 or J == Jmust2
-    assert simplify(P*J*P.inv()) == A
-
-def test_issue_10220():
-    # two non-orthogonal Jordan blocks with eigenvalue 1
-    M = Matrix([[1, 0, 0, 1],
-                [0, 1, 1, 0],
-                [0, 0, 1, 1],
-                [0, 0, 0, 1]])
-    P, J = M.jordan_form()
-    assert P == Matrix([[0, 1, 0, 1],
-                        [1, 0, 0, 0],
-                        [0, 1, 0, 0],
-                        [0, 0, 1, 0]])
-    assert J == Matrix([
-                        [1, 1, 0, 0],
-                        [0, 1, 1, 0],
-                        [0, 0, 1, 0],
-                        [0, 0, 0, 1]])
-
-def test_jordan_form_issue_15858():
-    A = Matrix([
-        [1, 1, 1, 0],
-        [-2, -1, 0, -1],
-        [0, 0, -1, -1],
-        [0, 0, 2, 1]])
-    (P, J) = A.jordan_form()
-    assert P.expand() == Matrix([
-        [    -I,          -I/2,      I,           I/2],
-        [-1 + I,             0, -1 - I,             0],
-        [     0, -S(1)/2 - I/2,      0, -S(1)/2 + I/2],
-        [     0,             1,      0,             1]])
-    assert J == Matrix([
-        [-I, 1, 0, 0],
-        [0, -I, 0, 0],
-        [0, 0, I, 1],
-        [0, 0, 0, I]])
-
-def test_Matrix_berkowitz_charpoly():
-    UA, K_i, K_w = symbols('UA K_i K_w')
-
-    A = Matrix([[-K_i - UA + K_i**2/(K_i + K_w),       K_i*K_w/(K_i + K_w)],
-                [           K_i*K_w/(K_i + K_w), -K_w + K_w**2/(K_i + K_w)]])
-
-    charpoly = A.charpoly(x)
-
-    assert charpoly == \
-        Poly(x**2 + (K_i*UA + K_w*UA + 2*K_i*K_w)/(K_i + K_w)*x +
-        K_i*K_w*UA/(K_i + K_w), x, domain='ZZ(K_i,K_w,UA)')
-
-    assert type(charpoly) is PurePoly
-
-    A = Matrix([[1, 3], [2, 0]])
-    assert A.charpoly() == A.charpoly(x) == PurePoly(x**2 - x - 6)
-
-    A = Matrix([[1, 2], [x, 0]])
-    p = A.charpoly(x)
-    assert p.gen != x
-    assert p.as_expr().subs(p.gen, x) == x**2 - 3*x
-
-
 def test_exp_jordan_block():
     l = Symbol('lamda')
 
@@ -1818,6 +1600,9 @@ def test_exp():
 
     m = Matrix([[1, -1], [1, 1]])
     assert m.exp() == Matrix([[E*cos(1), -E*sin(1)], [E*sin(1), E*cos(1)]])
+
+    m = Matrix([[0, 1, 2], [0, 0, -1], [0, 0, 0]])
+    assert m.exp() == Matrix([[1, 1, Rational(3, 2)], [0, 1, -1], [0, 0, 1]])
 
 
 def test_log():
