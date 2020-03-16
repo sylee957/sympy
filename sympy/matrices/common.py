@@ -20,7 +20,7 @@ from sympy.core.decorators import call_highest_priority
 from sympy.core.singleton import S
 from sympy.core.symbol import Symbol
 from sympy.core.sympify import sympify
-from sympy.functions import Abs
+from sympy.functions import Abs, KroneckerDelta
 from sympy.simplify import simplify as _simplify
 from sympy.simplify.simplify import dotprodsimp as _dotprodsimp
 from sympy.utilities.exceptions import SymPyDeprecationWarning
@@ -2238,10 +2238,15 @@ class MatrixArithmetic(MatrixRequired):
 
         size = self.rows
         l = self[0, 0]
-        if l.is_zero and not (n.is_integer and n.is_nonnegative):
-            raise NonInvertibleMatrixError(
-                "Non-invertible matrix can only be raised to a "
-                "nonnegative integer")
+        if l.is_zero:
+            if n.is_real is not True or (n >= size - 1) != True:
+                if not n.is_integer or not n.is_nonnegative:
+                    raise NonInvertibleMatrixError(
+                        "{} may or may not be able to be raised to the "
+                        "power {}, But is not able to be computed "
+                        "in the current implementation.".format(self, n))
+            bands = {i: KroneckerDelta(n, i) for i in range(size)}
+            return self._new(banded(size, bands))
 
         bands = {i: binomial(n, i) * l**(n - i) for i in range(size)}
         return self._new(banded(size, bands))

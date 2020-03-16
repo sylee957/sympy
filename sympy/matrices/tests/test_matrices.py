@@ -191,6 +191,18 @@ def test_multiplication():
         assert c[1, 1] == 0
 
 
+@XFAIL
+def test_failing_power():
+    # testing a matrix that cannot be jordan blocked issue 11766
+    m = Matrix([
+        [3, 0, 0, 0, -3],
+        [0, -3, -3, 0, 3],
+        [0, 3, 0, 3, 0],
+        [0, 0, 3, 0, 3],
+        [3, 0, 0, 3, 0]])
+    m._eval_pow_by_jordan_blocks(S(10))
+
+
 def test_power():
     raises(NonSquareMatrixError, lambda: Matrix([1, 2])**2)
 
@@ -246,48 +258,62 @@ def test_power():
     )
     assert A == MatMul(P, eJ, Inverse(P))
 
-    assert Matrix([[a, 1, 0], [0, a, 0], [0, 0, b]])**n == Matrix([
-        [a**n, a**(n-1)*n, 0],
-        [0, a**n, 0],
-        [0, 0, b**n]])
+    A = Matrix([[a, 1, 0], [0, a, 0], [0, 0, b]]) ** n
+    eJ = BlockDiagMatrix(
+        Matrix([[a**n, a**(n-1)*n], [0, a**n]]), Matrix([b**n]))
+    assert Matrix([[a, 1, 0], [0, a, 0], [0, 0, b]])**n == \
+        MatMul(P, eJ, Inverse(P))
 
     A = Matrix([[1, 0], [1, 7]])
-    assert A._matrix_pow_by_jordan_blocks(S(3)) == A._eval_pow_by_recursion(3)
+    assert A._eval_pow_by_jordan_blocks(S(3)).as_explicit() == \
+        A._eval_pow_by_recursion(3)
     A = Matrix([[2]])
-    assert A**10 == Matrix([[2**10]]) == A._matrix_pow_by_jordan_blocks(S(10)) == \
+    assert A**10 == Matrix([[2**10]]) == \
+        A._eval_pow_by_jordan_blocks(S(10)).as_explicit() == \
         A._eval_pow_by_recursion(10)
 
-    # testing a matrix that cannot be jordan blocked issue 11766
-    m = Matrix([[3, 0, 0, 0, -3], [0, -3, -3, 0, 3], [0, 3, 0, 3, 0], [0, 0, 3, 0, 3], [3, 0, 0, 3, 0]])
-    raises(MatrixError, lambda: m._matrix_pow_by_jordan_blocks(S(10)))
+    A = Matrix([[8, 1], [3, 2]])
+    assert A**10.0 == \
+        Matrix([[1760744107, 272388050], [817164150, 126415807]])
 
     # test issue 11964
-    raises(MatrixError, lambda: Matrix([[1, 1], [3, 3]])._matrix_pow_by_jordan_blocks(S(-10)))
-    A = Matrix([[0, 1, 0], [0, 0, 1], [0, 0, 0]])  # Nilpotent jordan block size 3
-    assert A**10.0 == Matrix([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
-    raises(ValueError, lambda: A**2.1)
-    raises(ValueError, lambda: A**Rational(3, 2))
-    A = Matrix([[8, 1], [3, 2]])
-    assert A**10.0 == Matrix([[1760744107, 272388050], [817164150, 126415807]])
-    A = Matrix([[0, 0, 1], [0, 0, 1], [0, 0, 1]])  # Nilpotent jordan block size 1
+    raises(MatrixError, lambda: Matrix([[1, 1], [3, 3]])
+           ._eval_pow_by_jordan_blocks(S(-10)))
+
+    # Nilpotent jordan block size 1
+    A = Matrix([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
     assert A**10.0 == Matrix([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
-    A = Matrix([[0, 1, 0], [0, 0, 1], [0, 0, 1]])  # Nilpotent jordan block size 2
+
+    # Nilpotent jordan block size 2
+    A = Matrix([[0, 1, 0], [0, 0, 1], [0, 0, 1]])
     assert A**10.0 == Matrix([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
     n = Symbol('n', integer=True)
     assert isinstance(A**n, MatPow)
     n = Symbol('n', integer=True, negative=True)
     raises(ValueError, lambda: A**n)
     n = Symbol('n', integer=True, nonnegative=True)
-    assert A**n == Matrix([
-        [KroneckerDelta(0, n), KroneckerDelta(1, n), -KroneckerDelta(0, n) - KroneckerDelta(1, n) + 1],
-        [                   0, KroneckerDelta(0, n),                         1 - KroneckerDelta(0, n)],
-        [                   0,                    0,                                                1]])
-    assert A**(n + 2) == Matrix([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
+    P = Matrix([[1, 0, 1], [0, 1, 1], [0, 0, 1]])
+    K = KroneckerDelta
+    eJ = BlockDiagMatrix(
+        Matrix([[K(n, 0), K(n, 1)], [0, K(n, 0)]]), Matrix([1]))
+    assert A**n == MatMul(P, eJ, Inverse(P))
+    eJ = BlockDiagMatrix(Matrix([[0, 0], [0, 0]]), Matrix([1]))
+    assert A**(n + 2) == MatMul(P, eJ, Inverse(P))
+    assert (A**Rational(3, 2)).as_explicit() == \
+        Matrix([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
+
+    # Nilpotent jordan block size 3
+    A = Matrix([[0, 1, 0], [0, 0, 1], [0, 0, 0]])
+    assert A**10.0 == Matrix.zeros(3, 3)
+    assert (A**2.1).as_explicit() == Matrix.zeros(3, 3)
     raises(ValueError, lambda: A**Rational(3, 2))
+    assert (A**Rational(5, 2)).as_explicit() == Matrix.zeros(3, 3)
+
     A = Matrix([[0, 0, 1], [3, 0, 1], [4, 3, 1]])
-    assert A**5.0 == Matrix([[168,  72,  89], [291, 144, 161], [572, 267, 329]])
+    assert A**5.0 == Matrix([[168, 72, 89], [291, 144, 161], [572, 267, 329]])
     assert A**5.0 == A**5
-    A = Matrix([[0, 1, 0],[-1, 0, 0],[0, 0, 0]])
+
+    A = Matrix([[0, 1, 0], [-1, 0, 0], [0, 0, 0]])
     n = Symbol("n")
     An = A**n
     assert An.subs(n, 2).doit() == A**2
@@ -295,23 +321,28 @@ def test_power():
     assert An * An == A**(2*n)
 
     # concretizing behavior for non-integer and complex powers
-    A = Matrix([[0,0,0],[0,0,0],[0,0,0]])
+    A = Matrix.zeros(3, 3)
     n = Symbol('n', integer=True, positive=True)
     assert A**n == A
     n = Symbol('n', integer=True, nonnegative=True)
     assert A**n == diag(0**n, 0**n, 0**n)
     assert (A**n).subs(n, 0) == eye(3)
     assert (A**n).subs(n, 1) == zeros(3)
-    A = Matrix ([[2,0,0],[0,2,0],[0,0,2]])
-    assert A**2.1 == diag (2**2.1, 2**2.1, 2**2.1)
-    assert A**I == diag (2**I, 2**I, 2**I)
+
+    A = Matrix([[2, 0, 0], [0, 2, 0], [0, 0, 2]])
+    assert A**2.1 == diag(2**2.1, 2**2.1, 2**2.1)
+    assert A**I == diag(2**I, 2**I, 2**I)
+
     A = Matrix([[0, 1, 0], [0, 0, 1], [0, 0, 1]])
-    raises(ValueError, lambda: A**2.1)
+    assert (A**2.1).as_explicit() == Matrix([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
     raises(ValueError, lambda: A**I)
+
     A = Matrix([[S.Half, S.Half], [S.Half, S.Half]])
-    assert A**S.Half == A
-    A = Matrix([[1, 1],[3, 3]])
-    assert A**S.Half == Matrix ([[S.Half, S.Half], [3*S.Half, 3*S.Half]])
+    assert (A**S.Half).as_explicit() == A
+
+    A = Matrix([[1, 1], [3, 3]])
+    assert (A**S.Half).as_explicit() == \
+        Matrix([[S.Half, S.Half], [3*S.Half, 3*S.Half]])
 
 
 def test_issue_17247_expression_blowup_1():
