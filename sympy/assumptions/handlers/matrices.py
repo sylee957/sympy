@@ -4,6 +4,7 @@ infinitesimal, bounded, etc.
 """
 from __future__ import print_function, division
 
+from sympy.core.logic import fuzzy_and
 from sympy.logic.boolalg import conjuncts
 from sympy.assumptions import Q, ask
 from sympy.assumptions.handlers import CommonHandler, test_closed_group
@@ -152,6 +153,11 @@ class AskInvertibleHandler(CommonHandler):
             return ask(Q.invertible(expr.parent), assumptions)
 
     DFT = staticmethod(CommonHandler.AlwaysTrue)
+
+    @staticmethod
+    def KroneckerProduct(expr, assumptions):
+        args = (ask(Q.invertible(arg), assumptions) for arg in expr.args)
+        return fuzzy_and(args)
 
 class AskOrthogonalHandler(CommonHandler):
     """

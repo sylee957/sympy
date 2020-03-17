@@ -1,4 +1,5 @@
 from sympy import I, symbols, Matrix, eye, Mod, floor
+from sympy.assumptions import Q, assuming
 from sympy.matrices import MatrixSymbol, Identity
 from sympy.matrices.expressions import det, trace
 
@@ -23,7 +24,11 @@ def test_KroneckerProduct():
     assert KroneckerProduct(A, B).subs(A, C) == KroneckerProduct(C, B)
     assert KroneckerProduct(A, C).shape == (n*m, m*k)
     assert (KroneckerProduct(A, C) + KroneckerProduct(-A, C)).is_ZeroMatrix
-    assert (KroneckerProduct(W, Z) * KroneckerProduct(W.I, Z.I)).is_Identity
+
+    M0 = KroneckerProduct(W, Z)
+    M1 = KroneckerProduct(W.I, Z.I)
+    with assuming(Q.invertible(W), Q.invertible(Z)):
+        assert (M0 * M1).is_Identity
 
 
 def test_KroneckerProduct_identity():
