@@ -98,6 +98,7 @@ class AskSymmetricHandler(CommonHandler):
 
     Identity = staticmethod(CommonHandler.AlwaysTrue)
 
+    DFT = staticmethod(CommonHandler.AlwaysTrue)
 
 class AskInvertibleHandler(CommonHandler):
     """
@@ -149,6 +150,8 @@ class AskInvertibleHandler(CommonHandler):
             return None
         else:
             return ask(Q.invertible(expr.parent), assumptions)
+
+    DFT = staticmethod(CommonHandler.AlwaysTrue)
 
 class AskOrthogonalHandler(CommonHandler):
     """
@@ -208,6 +211,8 @@ class AskOrthogonalHandler(CommonHandler):
 
     Factorization = staticmethod(partial(_Factorization, Q.orthogonal))
 
+    DFT = staticmethod(CommonHandler.AlwaysFalse)
+
 class AskUnitaryHandler(CommonHandler):
     """
     Handler for key 'unitary'
@@ -254,9 +259,7 @@ class AskUnitaryHandler(CommonHandler):
         else:
             return ask(Q.unitary(expr.parent), assumptions)
 
-    @staticmethod
-    def DFT(expr, assumptions):
-        return True
+    DFT = staticmethod(CommonHandler.AlwaysTrue)
 
     Factorization = staticmethod(partial(_Factorization, Q.unitary))
 
@@ -297,6 +300,8 @@ class AskFullRankHandler(CommonHandler):
     def MatrixSlice(expr, assumptions):
         if ask(Q.orthogonal(expr.parent), assumptions):
             return True
+
+    DFT = staticmethod(CommonHandler.AlwaysTrue)
 
 class AskPositiveDefiniteHandler(CommonHandler):
     """
@@ -404,6 +409,8 @@ class AskUpperTriangularHandler(CommonHandler):
 
     Factorization = staticmethod(partial(_Factorization, Q.upper_triangular))
 
+    DFT = staticmethod(CommonHandler.AlwaysFalse)
+
 class AskLowerTriangularHandler(CommonHandler):
     """
     Handler for key 'lower_triangular'
@@ -456,6 +463,8 @@ class AskLowerTriangularHandler(CommonHandler):
             return ask(Q.lower_triangular(expr.parent), assumptions)
 
     Factorization = staticmethod(partial(_Factorization, Q.lower_triangular))
+
+    DFT = staticmethod(CommonHandler.AlwaysFalse)
 
 class AskDiagonalHandler(CommonHandler):
     """
@@ -534,6 +543,7 @@ class AskDiagonalHandler(CommonHandler):
 
     Factorization = staticmethod(partial(_Factorization, Q.diagonal))
 
+    DFT = staticmethod(CommonHandler.AlwaysFalse)
 
 def BM_elements(predicate, expr, assumptions):
     """ Block Matrix elements """
