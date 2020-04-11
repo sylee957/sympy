@@ -27,9 +27,10 @@ from __future__ import print_function, division
 import warnings
 
 from sympy import sympify, Expr, Tuple, Dummy, Symbol
-from sympy.external import import_module
-from sympy.core.function import arity
+from sympy.core.basic import Basic
 from sympy.core.compatibility import Callable
+from sympy.core.function import arity
+from sympy.external import import_module
 from sympy.utilities.iterables import is_sequence
 from .experimental_lambdify import (vectorized_lambdify, lambdify)
 
@@ -51,6 +52,15 @@ def unset_show():
     """
     global _show
     _show = False
+
+mpl_toolkits = import_module(
+    'mpl_toolkits', import_kwargs={'fromlist': ['mplot3d']})
+
+matplotlib = import_module('matplotlib',
+    import_kwargs={'fromlist': ['pyplot', 'cm', 'collections']},
+    min_module_version='1.1.0', catch=(RuntimeError,))
+
+np = import_module('numpy')
 
 ##############################################################################
 # The public interface
@@ -178,11 +188,36 @@ class Plot(object):
         # (thanks to the parent attribute of the backend).
         self.backend = plot_backends[kwargs.pop('backend', 'default')]
 
-
         # The keyword arguments should only contain options for the plot.
         for key, val in kwargs.items():
             if hasattr(self, key):
                 setattr(self, key, val)
+
+        self._normalize_xlim_ylim()
+
+    def _normalize_xlim_ylim(self):
+        """If xlim or ylim are given as sympy numbers (e.g. Pi),
+        they should be converted into floats to be usable in matplotlib.
+        """
+        xlim, ylim = self.xlim, self.ylim
+
+        if xlim:
+            if any(isinstance(i, Basic) and not i.is_real for i in xlim):
+                raise ValueError(
+                "All numbers from xlim={} must be real".format(xlim))
+            if any(isinstance(i, Basic) and not i.is_finite for i in xlim):
+                raise ValueError(
+                "All numbers from xlim={} must be finite".format(xlim))
+            self.xlim = [float(i) for i in xlim]
+
+        if ylim:
+            if any(isinstance(i, Basic) and not i.is_real for i in ylim):
+                raise ValueError(
+                "All numbers from ylim={} must be real".format(ylim))
+            if any(isinstance(i, Basic) and not i.is_finite for i in ylim):
+                raise ValueError(
+                "All numbers from ylim={} must be finite".format(ylim))
+            self.ylim = [float(i) for i in ylim]
 
     def show(self):
         # TODO move this to the backend (also for save)
@@ -311,7 +346,7 @@ class PlotGrid(object):
        :format: doctest
        :include-source: True
 
-        >>> PlotGrid(2, 1 , p1, p2)
+        >>> PlotGrid(2, 1, p1, p2)
         PlotGrid object containing:
         Plot[0]:Plot object containing:
         [0]: cartesian line: x for x over (-5.0, 5.0)
@@ -328,7 +363,7 @@ class PlotGrid(object):
        :format: doctest
        :include-source: True
 
-        >>> PlotGrid(1, 3 , p2, p3, p4)
+        >>> PlotGrid(1, 3, p2, p3, p4)
         PlotGrid object containing:
         Plot[0]:Plot object containing:
         [0]: cartesian line: x**2 for x over (-6.0, 6.0)
@@ -522,7 +557,6 @@ class Line2DBaseSeries(BaseSeries):
         self.line_color = None
 
     def get_segments(self):
-        np = import_module('numpy')
         points = self.get_points()
         if self.steps is True:
             x = np.array((points[0], points[0])).T.flatten()[1:]
@@ -532,7 +566,6 @@ class Line2DBaseSeries(BaseSeries):
         return np.ma.concatenate([points[:-1], points[1:]], axis=1)
 
     def get_color_array(self):
-        np = import_module('numpy')
         c = self.line_color
         if hasattr(c, '__call__'):
             f = np.vectorize(c)
@@ -556,7 +589,6 @@ class List2DSeries(Line2DBaseSeries):
     """Representation for a line consisting of list of points."""
 
     def __init__(self, list_x, list_y):
-        np = import_module('numpy')
         super(List2DSeries, self).__init__()
         self.list_x = np.array(list_x)
         self.list_y = np.array(list_y)
@@ -610,7 +642,6 @@ class LineOver1DRangeSeries(Line2DBaseSeries):
         else:
             f = lambdify([self.var], self.expr)
             list_segments = []
-            np = import_module('numpy')
             def sample(p, q, depth):
                 """ Samples recursively if three points are almost collinear.
                 For depth < 6, points are added irrespective of whether they
@@ -669,7 +700,6 @@ class LineOver1DRangeSeries(Line2DBaseSeries):
             return list_segments
 
     def get_points(self):
-        np = import_module('numpy')
         if self.only_integers is True:
             if self.xscale == 'log':
                 list_x = np.logspace(int(self.start), int(self.end),
@@ -712,7 +742,6 @@ class Parametric2DLineSeries(Line2DBaseSeries):
             str((self.start, self.end)))
 
     def get_parameter_points(self):
-        np = import_module('numpy')
         return np.linspace(self.start, self.end, num=self.nb_of_points)
 
     def get_points(self):
@@ -751,7 +780,6 @@ class Parametric2DLineSeries(Line2DBaseSeries):
             allowed is 12.
             """
             # Randomly sample to avoid aliasing.
-            np = import_module('numpy')
             random = 0.45 + np.random.rand() * 0.1
             param_new = param_p + random * (param_q - param_p)
             xnew = f_x(param_new)
@@ -843,7 +871,6 @@ class Parametric3DLineSeries(Line3DBaseSeries):
             str(self.var), str((self.start, self.end)))
 
     def get_parameter_points(self):
-        np = import_module('numpy')
         return np.linspace(self.start, self.end, num=self.nb_of_points)
 
     def get_points(self):
@@ -868,7 +895,6 @@ class SurfaceBaseSeries(BaseSeries):
         self.surface_color = None
 
     def get_color_array(self):
-        np = import_module('numpy')
         c = self.surface_color
         if isinstance(c, Callable):
             f = np.vectorize(c)
@@ -916,7 +942,6 @@ class SurfaceOver2DRangeSeries(SurfaceBaseSeries):
                     str((self.start_y, self.end_y)))
 
     def get_meshes(self):
-        np = import_module('numpy')
         mesh_x, mesh_y = np.meshgrid(np.linspace(self.start_x, self.end_x,
                                                  num=self.nb_of_points_x),
                                      np.linspace(self.start_y, self.end_y,
@@ -960,7 +985,6 @@ class ParametricSurfaceSeries(SurfaceBaseSeries):
                     str((self.start_v, self.end_v)))
 
     def get_parameter_meshes(self):
-        np = import_module('numpy')
         return np.meshgrid(np.linspace(self.start_u, self.end_u,
                                        num=self.nb_of_points_u),
                            np.linspace(self.start_v, self.end_v,
@@ -1006,7 +1030,6 @@ class ContourSeries(BaseSeries):
                     str((self.start_y, self.end_y)))
 
     def get_meshes(self):
-        np = import_module('numpy')
         mesh_x, mesh_y = np.meshgrid(np.linspace(self.start_x, self.end_x,
                                                  num=self.nb_of_points_x),
                                      np.linspace(self.start_y, self.end_y,
@@ -1030,12 +1053,12 @@ class BaseBackend(object):
 class MatplotlibBackend(BaseBackend):
     def __init__(self, parent):
         super(MatplotlibBackend, self).__init__(parent)
-        self.matplotlib = import_module('matplotlib',
-            import_kwargs={'fromlist': ['pyplot', 'cm', 'collections']},
-            min_module_version='1.1.0', catch=(RuntimeError,))
+
+        self.matplotlib = matplotlib
         self.plt = self.matplotlib.pyplot
         self.cm = self.matplotlib.cm
         self.LineCollection = self.matplotlib.collections.LineCollection
+
         aspect = getattr(self.parent, 'aspect_ratio', 'auto')
         if aspect != 'auto':
             aspect = float(aspect[1]) / aspect[0]
@@ -1056,12 +1079,7 @@ class MatplotlibBackend(BaseBackend):
             if any(are_3D) and not all(are_3D):
                 raise ValueError('The matplotlib backend can not mix 2D and 3D.')
             elif all(are_3D):
-                # mpl_toolkits.mplot3d is necessary for
-                # projection='3d'
-                mpl_toolkits = import_module('mpl_toolkits', # noqa
-                                     import_kwargs={'fromlist': ['mplot3d']})
                 self.ax.append(self.fig.add_subplot(nrows, ncolumns, i + 1, projection='3d', aspect=aspect))
-
             elif not any(are_3D):
                 self.ax.append(self.fig.add_subplot(nrows, ncolumns, i + 1, aspect=aspect))
                 self.ax[i].spines['left'].set_position('zero')
@@ -1082,9 +1100,6 @@ class MatplotlibBackend(BaseBackend):
             elif s.is_contour:
                 ax.contour(*s.get_meshes())
             elif s.is_3Dline:
-                # TODO too complicated, I blame matplotlib
-                mpl_toolkits = import_module('mpl_toolkits',
-                    import_kwargs={'fromlist': ['mplot3d']})
                 art3d = mpl_toolkits.mplot3d.art3d
                 collection = art3d.Line3DCollection(s.get_segments())
                 ax.add_collection(collection)
@@ -1127,15 +1142,15 @@ class MatplotlibBackend(BaseBackend):
             if hasattr(s, 'label'):
                 collection.set_label(s.label)
             if s.is_line and s.line_color:
-                if isinstance(s.line_color, (float, int)) or isinstance(s.line_color, Callable):
+                if isinstance(s.line_color, (float, int)) or \
+                    isinstance(s.line_color, Callable):
                     color_array = s.get_color_array()
                     collection.set_array(color_array)
                 else:
                     collection.set_color(s.line_color)
             if s.is_3Dsurface and s.surface_color:
-                if self.matplotlib.__version__ < "1.2.0":  # TODO in the distant future remove this check
-                    warnings.warn('The version of matplotlib is too old to use surface coloring.')
-                elif isinstance(s.surface_color, (float, int)) or isinstance(s.surface_color, Callable):
+                if isinstance(s.surface_color, (float, int)) or \
+                    isinstance(s.surface_color, Callable):
                     color_array = s.get_color_array()
                     color_array = color_array.reshape(color_array.size)
                     collection.set_array(color_array)
@@ -1145,8 +1160,6 @@ class MatplotlibBackend(BaseBackend):
         # Set global options.
         # TODO The 3D stuff
         # XXX The order of those is important.
-        mpl_toolkits = import_module('mpl_toolkits',
-            import_kwargs={'fromlist': ['mplot3d']})
         Axes3D = mpl_toolkits.mplot3d.Axes3D
         if parent.xscale and not isinstance(ax, Axes3D):
             ax.set_xscale(parent.xscale)
@@ -1171,6 +1184,7 @@ class MatplotlibBackend(BaseBackend):
             else:
                 ax.spines['left'].set_position(('data', val[0]))
                 ax.spines['bottom'].set_position(('data', val[1]))
+
         if not parent.axis:
             ax.set_axis_off()
         if parent.legend:
@@ -1205,16 +1219,7 @@ class MatplotlibBackend(BaseBackend):
         # xlim and ylim shoulld always be set at last so that plot limits
         # doesn't get altered during the process.
         if parent.xlim:
-            from sympy.core.basic import Basic
-            xlim = parent.xlim
-            if any(isinstance(i, Basic) and not i.is_real for i in xlim):
-                raise ValueError(
-                "All numbers from xlim={} must be real".format(xlim))
-            if any(isinstance(i, Basic) and not i.is_finite for i in xlim):
-                raise ValueError(
-                "All numbers from xlim={} must be finite".format(xlim))
-            xlim = (float(i) for i in xlim)
-            ax.set_xlim(xlim)
+            ax.set_xlim(parent.xlim)
         else:
             if parent._series and all(isinstance(s, LineOver1DRangeSeries) for s in parent._series):
                 starts = [s.start for s in parent._series]
@@ -1222,16 +1227,7 @@ class MatplotlibBackend(BaseBackend):
                 ax.set_xlim(min(starts), max(ends))
 
         if parent.ylim:
-            from sympy.core.basic import Basic
-            ylim = parent.ylim
-            if any(isinstance(i,Basic) and not i.is_real for i in ylim):
-                raise ValueError(
-                "All numbers from ylim={} must be real".format(ylim))
-            if any(isinstance(i,Basic) and not i.is_finite for i in ylim):
-                raise ValueError(
-                "All numbers from ylim={} must be finite".format(ylim))
-            ylim = (float(i) for i in ylim)
-            ax.set_ylim(ylim)
+            ax.set_ylim(parent.ylim)
 
 
     def process_series(self):
@@ -1292,7 +1288,6 @@ class TextBackend(BaseBackend):
 
 class DefaultBackend(BaseBackend):
     def __new__(cls, parent):
-        matplotlib = import_module('matplotlib', min_module_version='1.1.0', catch=(RuntimeError,))
         if matplotlib:
             return MatplotlibBackend(parent)
         else:
@@ -1311,12 +1306,10 @@ plot_backends = {
 ##############################################################################
 
 def centers_of_segments(array):
-    np = import_module('numpy')
     return np.mean(np.vstack((array[:-1], array[1:])), 0)
 
 
 def centers_of_faces(array):
-    np = import_module('numpy')
     return np.mean(np.dstack((array[:-1, :-1],
                              array[1:, :-1],
                              array[:-1, 1:],
@@ -1326,7 +1319,6 @@ def centers_of_faces(array):
 
 def flat(x, y, z, eps=1e-3):
     """Checks whether three points are almost collinear"""
-    np = import_module('numpy')
     # Workaround plotting piecewise (#8577):
     #   workaround for `lambdify` in `.experimental_lambdify` fails
     #   to return numerical values in some cases. Lower-level fix
