@@ -11,7 +11,7 @@ from sympy.core.compatibility import reduce
 from sympy.core.numbers import Zero
 from sympy.core.sympify import _sympify
 from sympy.functions import factorial
-from sympy.matrices import Matrix
+from sympy.matrices import ImmutableDenseMatrix as Matrix
 from sympy.simplify import simplify
 from sympy.solvers import solve
 
