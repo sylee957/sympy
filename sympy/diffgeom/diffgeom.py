@@ -26,29 +26,31 @@ from sympy.tensor.array import ImmutableDenseNDimArray
 class Manifold(Atom):
     """A mathematical manifold.
 
-    Explanation
-    ===========
-
-    The only role that this object plays is to keep a list of all patches
-    defined on the manifold. It does not provide any means to study the
-    topological characteristics of the manifold that it represents.
-
     Parameters
     ==========
+
     name : str
         The name of the manifold.
 
     dim : int
         The dimension of the manifold.
+
+    Examples
+    ========
+
+    >>> from sympy.diffgeom import Manifold
+    >>> m = Manifold('M', 3)
+    >>> m.name
+    'M'
+    >>> m.dim
+    3
+
     """
 
     def __new__(cls, name, dim):
         obj = super().__new__(cls)
         obj.name = name
         obj.dim = dim
-        obj.patches = []
-        # The patches list is necessary if a Patch instance needs to enumerate
-        # other Patch instance on the same manifold.
         return obj
 
     def _hashable_content(self):
@@ -65,11 +67,9 @@ class Patch(Atom):
     permit the parameterization of any point on the patch in terms of a tuple
     of real numbers (the coordinates).
 
-    This object serves as a container/parent for all coordinate system charts
-    that can be defined on the patch it represents.
-
     Parameters
     ==========
+
     name : string
         The name of the patch.
 
@@ -79,25 +79,19 @@ class Patch(Atom):
     Examples
     ========
 
-    Define a Manifold and a Patch on that Manifold:
-
     >>> from sympy.diffgeom import Manifold, Patch
     >>> m = Manifold('M', 3)
     >>> p = Patch('P', m)
-    >>> p in m.patches
-    True
+    >>> p.name
+    'P'
+    >>> p.dim
+    3
 
     """
-    # Contains a reference to the parent manifold in order to be able to access
-    # other patches.
     def __new__(cls, name, manifold):
         obj = super().__new__(cls)
         obj.name = name
         obj.manifold = manifold
-        obj.manifold.patches.append(obj)
-        obj.coord_systems = []
-        # The list of coordinate systems is necessary for an instance of
-        # CoordSystem to enumerate other coord systems on the patch.
         return obj
 
     @property
@@ -141,8 +135,6 @@ class CoordSystem(Atom):
     >>> patch = Patch('P', m)
     >>> rect = CoordSystem('rect', patch)
     >>> polar = CoordSystem('polar', patch)
-    >>> rect in patch.coord_systems
-    True
 
     Connect the coordinate systems. An inverse transformation is automatically
     found by ``solve`` when possible:
@@ -225,7 +217,6 @@ class CoordSystem(Atom):
         obj.name = name
         obj._names = tuple(str(i) for i in names)
         obj.patch = patch
-        obj.patch.coord_systems.append(obj)
         obj.transforms = {}
         # All the coordinate transformation logic is in this dictionary in the
         # form of:
