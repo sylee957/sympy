@@ -5,7 +5,7 @@ from itertools import permutations
 from sympy.combinatorics import Permutation
 from sympy.core import (
     Basic, Expr, Dummy, Function,  diff,
-    Pow, Mul, Add, Atom
+    Pow, Mul, Add, Atom, Lambda
 )
 from sympy.core.compatibility import reduce
 from sympy.core.numbers import Zero
@@ -217,9 +217,9 @@ class CoordSystem(Atom):
         # All the coordinate transformation logic is in this dictionary in the
         # form of:
         #  key = other coordinate system
-        #  value = tuple of  # TODO make these Lambda instances
-        #          - list of `Dummy` coordinates in this coordinate system
-        #          - list of expressions as a function of the Dummies giving
+        #  value = Lambda
+        #          - signature : Tuple of `Dummy` coordinates in this coordinate system
+        #          - expr : Matrix of expressions as a function of the Dummies giving
         #          the coordinates in another coordinate system
         obj._dummies = [Dummy(str(n)) for n in names]
         obj._dummy = Dummy()
@@ -257,10 +257,11 @@ class CoordSystem(Atom):
 
         """
         from_coords, to_exprs = dummyfy(from_coords, to_exprs)
-        self.transforms[to_sys] = Matrix(from_coords), Matrix(to_exprs)
+        self.transforms[to_sys] = Lambda(tuple(from_coords), Matrix(to_exprs))
 
         if inverse:
-            to_sys.transforms[self] = self._inv_transf(from_coords, to_exprs)
+            signature, expr = self._inv_transf(from_coords, to_exprs)
+            to_sys.transforms[self] = Lambda(tuple(signature), expr)
 
         if fill_in_gaps:
             self._fill_gaps_in_transformations()
@@ -283,10 +284,11 @@ class CoordSystem(Atom):
         """Transform ``coords`` to coord system ``to_sys``.
 
         See the docstring of ``CoordSystem`` for examples."""
-        coords = Matrix(coords)
         if self != to_sys:
             transf = self.transforms[to_sys]
-            coords = transf[1].subs(list(zip(transf[0], coords)))
+            coords = transf(*coords)
+        else:
+            coords = Matrix(coords)
         return coords
 
     def jacobian(self, to_sys, coords):
