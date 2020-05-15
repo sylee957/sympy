@@ -102,7 +102,7 @@ class Patch(Atom):
         return self.name, self.manifold
 
 class CoordSystem(Atom):
-    """A coordinate system defined on the patch
+    """A coordinate system defined on the patch.
 
     Explanation
     ===========
@@ -206,18 +206,14 @@ class CoordSystem(Atom):
     (x, e_x, dx)
 
     """
-    #  Contains a reference to the parent patch in order to be able to access
-    # other coordinate system charts.
-    def __new__(cls, name, patch, names=None):
-        # names is not in args because it is related only to printing, not to
-        # identifying the CoordSystem instance.
+    def __new__(cls, name, patch, names=None, transforms={}):
         if not names:
             names = ['%s_%d' % (name, i) for i in range(patch.dim)]
         obj = super().__new__(cls)
         obj.name = name
         obj._names = tuple(str(i) for i in names)
         obj.patch = patch
-        obj.transforms = {}
+        obj.transforms = {} # deprecated
         # All the coordinate transformation logic is in this dictionary in the
         # form of:
         #  key = other coordinate system
