@@ -5,7 +5,7 @@ from itertools import permutations
 from sympy.combinatorics import Permutation
 from sympy.core import (
     Basic, Expr, Dummy, Function,  diff,
-    Pow, Mul, Add, Atom, Lambda
+    Pow, Mul, Add, Atom, Lambda, Dict
 )
 from sympy.core.compatibility import reduce
 from sympy.core.numbers import Zero
@@ -14,6 +14,8 @@ from sympy.functions import factorial
 from sympy.matrices import ImmutableDenseMatrix as Matrix
 from sympy.simplify import simplify
 from sympy.solvers import solve
+
+from sympy.utilities.exceptions import SymPyDeprecationWarning
 
 
 # TODO you are a bit excessive in the use of Dummies
@@ -214,6 +216,7 @@ class CoordSystem(Atom):
         obj._names = tuple(str(i) for i in names)
         obj.patch = patch
         obj.transforms = {} # deprecated
+        obj._transform_dict = Dict(transforms)
         # All the coordinate transformation logic is in this dictionary in the
         # form of:
         #  key = other coordinate system
@@ -256,6 +259,12 @@ class CoordSystem(Atom):
             registered transformation
 
         """
+        SymPyDeprecationWarning(
+                feature="Using connect_to method to register the transformation relation",
+                useinstead="the class signal to define the transformation relation",
+                issue=19321,
+                deprecated_since_version="1.7").warn()
+
         from_coords, to_exprs = dummyfy(from_coords, to_exprs)
         self.transforms[to_sys] = Lambda(tuple(from_coords), Matrix(to_exprs))
 
