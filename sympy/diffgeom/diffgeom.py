@@ -216,7 +216,7 @@ class CoordSystem(Atom):
         obj._names = tuple(str(i) for i in names)
         obj.patch = patch
         obj.transforms = {} # deprecated
-        obj.transform_dict = _sympify(transforms)
+        obj.transform_dict = cls._handle_transforms(transforms)
         # All the coordinate transformation logic is in this dictionary in the
         # form of:
         #  key = other coordinate system
@@ -227,6 +227,29 @@ class CoordSystem(Atom):
         obj._dummies = [Dummy(str(n)) for n in names]
         obj._dummy = Dummy()
         return obj
+
+    @classmethod
+    def _handle_transforms(cls, transforms):
+        # Allow non-matrix expr of Lambdas as value
+        # Also allow single Lambda as value, which evokes _inv_transform
+
+        def handle_lambda(l):
+            # Convert non-matrix expr of Lambda to matrix
+            if not isinstance(l.expr, Matrix):
+                expr = Matrix(l.expr)
+                return Lambda(l.signature, expr)
+            return l
+
+        result = {}
+        for k,v in transforms.items():
+            if len(v) == 2 and all(isinstance(l,Lambda) for l in v):
+                v = handle_lambda(v[0]), handle_lambda(v[1])
+            elif len(v) == 1 and isinstance(v, Lambda):
+                raise NotImplementedError('Apply _inv_transform')
+            else:
+                raise TypeError('Wrong types are given to transforms')
+            result[k] = v
+        return _sympify(result)
 
     @property
     def dim(self):

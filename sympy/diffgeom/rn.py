@@ -12,7 +12,6 @@ from typing import Any
 
 from .diffgeom import Manifold, Patch, CoordSystem
 from sympy import sqrt, atan2, acos, sin, cos, Dummy, Lambda
-from sympy.matrices import ImmutableDenseMatrix as Matrix
 
 __all__ = [
     'R2', 'R2_origin', 'R2_r', 'R2_p',
@@ -31,8 +30,8 @@ R2_p = CoordSystem(
     'polar', R2_origin, ['r', 'theta'],
     {
         R2_r: (
-            Lambda((r, theta), Matrix([r*cos(theta), r*sin(theta)])),
-            Lambda((x, y), Matrix([sqrt(x**2 + y**2), atan2(y, x)]))
+            Lambda((r, theta), [r*cos(theta), r*sin(theta)]),
+            Lambda((x, y), [sqrt(x**2 + y**2), atan2(y, x)])
         )
     }
 )  # type: Any
@@ -65,8 +64,8 @@ R3_c = CoordSystem(
     'cylindrical', R3_origin, ['rho', 'psi', 'z'],
     {
         R3_r: (
-            Lambda((rho, psi, z), Matrix([rho*cos(psi), rho*sin(psi), z])),
-            Lambda((x, y, z), Matrix([sqrt(x**2 + y**2), atan2(y, x), z]))
+            Lambda((rho, psi, z), [rho*cos(psi), rho*sin(psi), z]),
+            Lambda((x, y, z), [sqrt(x**2 + y**2), atan2(y, x), z])
         )
     }
 )  # type: Any
@@ -74,12 +73,12 @@ R3_s = CoordSystem(
     'spherical', R3_origin, ['r', 'theta', 'phi'],
     {
         R3_r: (
-            Lambda((r, theta, phi), Matrix([r*sin(theta)*cos(phi), r*sin(theta)*sin(phi), r*cos(theta)])),
-            Lambda((x, y, z), Matrix([sqrt(x**2 + y**2 + z**2), acos(z/sqrt(x**2 + y**2 + z**2)), atan2(y, x)]))
+            Lambda((r, theta, phi), [r*sin(theta)*cos(phi), r*sin(theta)*sin(phi), r*cos(theta)]),
+            Lambda((x, y, z), [sqrt(x**2 + y**2 + z**2), acos(z/sqrt(x**2 + y**2 + z**2)), atan2(y, x)])
         ),
         R3_c: (
-            Lambda((r, theta, phi), Matrix([r*sin(theta), phi, r*cos(theta)])),
-            Lambda((rho, psi, z), Matrix([sqrt(rho**2 + z**2), acos(z/sqrt(rho**2 + z**2)), psi]))
+            Lambda((r, theta, phi), [r*sin(theta), phi, r*cos(theta)]),
+            Lambda((rho, psi, z), [sqrt(rho**2 + z**2), acos(z/sqrt(rho**2 + z**2)), psi])
         )
     }
 )  # type: Any
