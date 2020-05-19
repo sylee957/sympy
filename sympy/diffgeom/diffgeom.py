@@ -216,11 +216,11 @@ class CoordSystem(Atom):
         obj._names = tuple(str(i) for i in names)
         obj.patch = patch
         obj.transforms = {} # deprecated
-        obj._transform_dict = Dict(transforms)
+        obj.transform_dict = _sympify(transforms)
         # All the coordinate transformation logic is in this dictionary in the
         # form of:
         #  key = other coordinate system
-        #  value = Lambda
+        #  value = tuple of two Lambda, each are relation from other system and to other system
         #          - signature : Tuple of `Dummy` coordinates in this coordinate system
         #          - expr : Matrix of expressions as a function of the Dummies giving
         #          the coordinates in another coordinate system
@@ -294,7 +294,18 @@ class CoordSystem(Atom):
 
         See the docstring of ``CoordSystem`` for examples."""
         if self != to_sys:
-            transf = self.transforms[to_sys]
+
+            if to_sys in self.transform_dict:
+                transf = self.transform_dict[to_sys][0]
+            elif self in to_sys.transform_dict:
+                transf = to_sys.transform_dict[self][1]
+            else:
+                SymPyDeprecationWarning(
+                feature="CoorSystem.transforms",
+                useinstead="CoorSystem.transform_dict",
+                issue=19321,
+                deprecated_since_version="1.7").warn()
+                transf = self.transforms[to_sys]
             coords = transf(*coords)
         else:
             coords = Matrix(coords)
