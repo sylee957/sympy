@@ -123,6 +123,11 @@ class CoordSystem(Atom):
     names : list of strings, optional
         Determines how base scalar fields will be printed.
 
+    transforms : dict, optional
+        Contains the coordinate transform relation to other coordinate.
+        - key = other coordinate system
+        - value = tuple of two Lambda, each are relation from other system and to other system
+
     Examples
     ========
 
@@ -139,9 +144,6 @@ class CoordSystem(Atom):
     >>> polar = CoordSystem(
     ... 'polar', patch, transforms={rect: Lambda((r,theta), [r*cos(theta), r*sin(theta)])}
     ... )
-
-    Connect the coordinate systems. An inverse transformation is automatically
-    found by ``solve`` when possible:
 
     >>> polar.coord_tuple_transform_to(rect, [0, 2])
     Matrix([
