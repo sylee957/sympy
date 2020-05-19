@@ -129,19 +129,20 @@ class CoordSystem(Atom):
     Define a Manifold and a Patch, and then define two coord systems on that
     patch:
 
-    >>> from sympy import symbols, sin, cos, pi
+    >>> from sympy import symbols, sin, cos, pi, Lambda
     >>> from sympy.diffgeom import Manifold, Patch, CoordSystem
     >>> from sympy.simplify import simplify
     >>> r, theta = symbols('r, theta')
     >>> m = Manifold('M', 2)
     >>> patch = Patch('P', m)
     >>> rect = CoordSystem('rect', patch)
-    >>> polar = CoordSystem('polar', patch)
+    >>> polar = CoordSystem(
+    ... 'polar', patch, transforms={rect: Lambda((r,theta), [r*cos(theta), r*sin(theta)])}
+    ... )
 
     Connect the coordinate systems. An inverse transformation is automatically
     found by ``solve`` when possible:
 
-    >>> polar.connect_to(rect, [r, theta], [r*cos(theta), r*sin(theta)])
     >>> polar.coord_tuple_transform_to(rect, [0, 2])
     Matrix([
     [0],
@@ -243,7 +244,7 @@ class CoordSystem(Atom):
         result = {}
         for k,v in transforms.items():
             if isinstance(v, Lambda):
-                v_0 = v
+                v_0 = handle_lambda(v)
                 signature, expr = cls._inv_transf(v_0.signature, v_0.expr)
                 v_1 = Lambda(tuple(signature), expr)
                 v = v_0, v_1
@@ -437,15 +438,16 @@ class Point(Basic):
 
     Define the boilerplate Manifold, Patch and coordinate systems:
 
-    >>> from sympy import symbols, sin, cos, pi
+    >>> from sympy import symbols, sin, cos, pi, Lambda
     >>> from sympy.diffgeom import (
     ...        Manifold, Patch, CoordSystem, Point)
     >>> r, theta = symbols('r, theta')
     >>> m = Manifold('M', 2)
     >>> p = Patch('P', m)
     >>> rect = CoordSystem('rect', p)
-    >>> polar = CoordSystem('polar', p)
-    >>> polar.connect_to(rect, [r, theta], [r*cos(theta), r*sin(theta)])
+    >>> polar = CoordSystem(
+    ... 'polar', p, transforms={rect: Lambda((r,theta), [r*cos(theta), r*sin(theta)])}
+    ... )
 
     Define a point using coordinates from one of the coordinate systems:
 
@@ -516,15 +518,16 @@ class BaseScalarField(Expr):
 
     Define boilerplate Manifold, Patch and coordinate systems:
 
-    >>> from sympy import symbols, sin, cos, pi, Function
+    >>> from sympy import symbols, sin, cos, pi, Function, Lambda
     >>> from sympy.diffgeom import (
     ...        Manifold, Patch, CoordSystem, Point, BaseScalarField)
     >>> r0, theta0 = symbols('r0, theta0')
     >>> m = Manifold('M', 2)
     >>> p = Patch('P', m)
     >>> rect = CoordSystem('rect', p)
-    >>> polar = CoordSystem('polar', p)
-    >>> polar.connect_to(rect, [r0, theta0], [r0*cos(theta0), r0*sin(theta0)])
+    >>> polar = CoordSystem(
+    ... 'polar', p, transforms={rect: Lambda((r0,theta0), [r0*cos(theta0), r0*sin(theta0)])}
+    ... )
 
     Point to be used as an argument for the filed:
 
