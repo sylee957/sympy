@@ -310,11 +310,12 @@ def test_Permutation():
 
 def test_diffgeom():
     from sympy.diffgeom import Manifold, Patch, CoordSystem, BaseScalarField
+    from sympy.diffgeom.rn import R3_s
     m = Manifold('M', 2)
     assert srepr(m) == "Manifold('M', 2)"
     p = Patch('P', m)
     assert srepr(p) == "Patch('P', Manifold('M', 2))"
     rect = CoordSystem('rect', p)
-    assert srepr(rect) == "CoordSystem('rect', Patch('P', Manifold('M', 2)), ('rect_0', 'rect_1'))"
+    assert srepr(rect) == "CoordSystem('rect', Patch('P', Manifold('M', 2)), ('rect_0', 'rect_1'), Dict())"
     b = BaseScalarField(rect, 0)
-    assert srepr(b) == "BaseScalarField(CoordSystem('rect', Patch('P', Manifold('M', 2)), ('rect_0', 'rect_1')), Integer(0))"
+    assert srepr(b) == "BaseScalarField(CoordSystem('rect', Patch('P', Manifold('M', 2)), ('rect_0', 'rect_1'), Dict()), Integer(0))"

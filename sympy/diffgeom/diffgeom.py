@@ -5,7 +5,7 @@ from itertools import permutations
 from sympy.combinatorics import Permutation
 from sympy.core import (
     Basic, Expr, Dummy, Function,  diff,
-    Pow, Mul, Add, Atom, Lambda, Dict
+    Pow, Mul, Add, Atom, Lambda
 )
 from sympy.core.compatibility import reduce
 from sympy.core.numbers import Zero
