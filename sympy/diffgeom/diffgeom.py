@@ -231,7 +231,7 @@ class CoordSystem(Atom):
     @classmethod
     def _handle_transforms(cls, transforms):
         # Allow non-matrix expr of Lambdas as value
-        # Also allow single Lambda as value, which evokes _inv_transform
+        # Also allow single Lambda as value, which evokes _inv_transf
 
         def handle_lambda(l):
             # Convert non-matrix expr of Lambda to matrix
@@ -242,10 +242,13 @@ class CoordSystem(Atom):
 
         result = {}
         for k,v in transforms.items():
-            if len(v) == 2 and all(isinstance(l,Lambda) for l in v):
+            if isinstance(v, Lambda):
+                v_0 = v
+                signature, expr = cls._inv_transf(v_0.signature, v_0.expr)
+                v_1 = Lambda(tuple(signature), expr)
+                v = v_0, v_1
+            elif len(v) == 2 and all(isinstance(l,Lambda) for l in v):
                 v = handle_lambda(v[0]), handle_lambda(v[1])
-            elif len(v) == 1 and isinstance(v, Lambda):
-                raise NotImplementedError('Apply _inv_transform')
             else:
                 raise TypeError('Wrong types are given to transforms')
             result[k] = v
