@@ -233,7 +233,7 @@ class CoordSystem(Atom):
         return self.patch.dim
 
     def _hashable_content(self):
-        return self.name, self.patch, self._names
+        return self.name, self.patch, self._names, self.transform_dict
 
     ##########################################################################
     # Coordinate transformations.
