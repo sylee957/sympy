@@ -1777,7 +1777,7 @@ class _deprecated_container(object):
 
     def __iter__(self):
         self.warn()
-        return super().__iter__(key)
+        return super().__iter__()
 
     def __getitem__(self, key):
         self.warn()
