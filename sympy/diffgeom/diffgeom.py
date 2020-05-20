@@ -24,7 +24,6 @@ from sympy.utilities.exceptions import SymPyDeprecationWarning
 # tests and find out why
 from sympy.tensor.array import ImmutableDenseNDimArray
 
-
 class Manifold(Atom):
     """A mathematical manifold.
 
@@ -53,6 +52,13 @@ class Manifold(Atom):
         obj = super().__new__(cls)
         obj.name = name
         obj.dim = dim
+        obj.patches = _deprecated_list(
+            "Using Manifold.patches for registry",
+            "external container",
+            19321,
+            "1.7",
+            []
+        )
         return obj
 
     def _hashable_content(self):
@@ -94,6 +100,14 @@ class Patch(Atom):
         obj = super().__new__(cls)
         obj.name = name
         obj.manifold = manifold
+        obj.manifold.patches.append(obj) # deprecated
+        obj.coord_systems = _deprecated_list(
+            "Using Patch.coord_systems for registry",
+            "external container",
+            19321,
+            "1.7",
+            []
+        )
         return obj
 
     @property
@@ -218,7 +232,14 @@ class CoordSystem(Atom):
         obj.name = name
         obj._names = tuple(str(i) for i in names)
         obj.patch = patch
-        obj.transforms = {} # deprecated
+        obj.patch.coord_systems.append(obj) # deprecated
+        obj.transforms = _deprecated_dict(
+            "Using CoordSystem.transforms for storing transform relations",
+            "the class signature to define the transformation relation",
+            19321,
+            "1.7",
+            {}
+        ) # deprecated
         obj.transform_dict = cls._handle_transforms(transforms)
         # All the coordinate transformation logic is in this dictionary in the
         # form of:
@@ -290,7 +311,7 @@ class CoordSystem(Atom):
         """
         SymPyDeprecationWarning(
                 feature="Using connect_to method to register the transformation relation",
-                useinstead="the class signal to define the transformation relation",
+                useinstead="the class signature to define the transformation relation",
                 issue=19321,
                 deprecated_since_version="1.7").warn()
 
@@ -329,11 +350,6 @@ class CoordSystem(Atom):
             elif self in to_sys.transform_dict:
                 transf = to_sys.transform_dict[self][1]
             else:
-                SymPyDeprecationWarning(
-                feature="CoorSystem.transforms",
-                useinstead="CoorSystem.transform_dict",
-                issue=19321,
-                deprecated_since_version="1.7").warn()
                 transf = self.transforms[to_sys]
             coords = transf(*coords)
         else:
@@ -1732,3 +1748,47 @@ def metric_to_Ricci_components(expr):
               for j in indices]
              for i in indices]
     return ImmutableDenseNDimArray(ricci)
+
+###############################################################################
+# Classes for deprecation
+###############################################################################
+
+class _deprecated_container(object):
+    # This class gives deprecation warning.
+    # When deprecated features are completely deleted, this should be removed as well.
+    # See https://github.com/sympy/sympy/pull/19368
+    def __init__(self, feature, useinstead, issue, version, data):
+        super().__init__(data)
+        self.feature = feature
+        self.useinstead = useinstead
+        self.issue = issue
+        self.version = version
+
+    def warn(self):
+        SymPyDeprecationWarning(
+                    feature=self.feature,
+                    useinstead=self.useinstead,
+                    issue=self.issue,
+                    deprecated_since_version=self.version).warn()
+
+    def __repr__(self):
+        self.warn()
+        return super().__repr__()
+
+    def __iter__(self):
+        self.warn()
+        return super().__iter__(key)
+
+    def __getitem__(self, key):
+        self.warn()
+        return super().__getitem__(key)
+
+    def __contains__(self, key):
+        self.warn()
+        return super().__contains__(key)
+
+class _deprecated_list(_deprecated_container, list):
+    pass
+
+class _deprecated_dict(_deprecated_container, dict):
+    pass
