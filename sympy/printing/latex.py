@@ -979,10 +979,19 @@ class LatexPrinter(Printer):
             return tex
 
     def _print_log(self, expr, exp=None):
+        args = expr.args
         if not self._settings["ln_notation"]:
-            tex = r"\log{\left(%s \right)}" % self._print(expr.args[0])
+            if len(args) == 1:
+                tex = r"\log{\left(%s \right)}" % self._print(args[0])
+            else:
+                tex = r"\log_{%s}{\left(%s \right)}" \
+                    % (self._print(args[1]), self._print(args[0]))
         else:
-            tex = r"\ln{\left(%s \right)}" % self._print(expr.args[0])
+            if len(args) != 1:
+                raise ValueError(
+                    "'ln_notation'=True cannot be used because"
+                    "the logarithm doesn't have the exponential base.")
+            tex = r"\ln{\left(%s \right)}" % self._print(args[0])
 
         if exp is not None:
             return r"%s^{%s}" % (tex, exp)

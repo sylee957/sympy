@@ -1143,6 +1143,10 @@ def test_latex_log():
     assert latex(pow(log(x), x)) == r"\log{\left(x \right)}^{x}"
     assert latex(pow(log(x), x), ln_notation=True) == \
         r"\ln{\left(x \right)}^{x}"
+    assert latex(log(x, 10, evaluate=False)) == r'\log_{10}{\left(x \right)}'
+    raises(
+        ValueError,
+        lambda: latex(log(x, 10, evaluate=False), ln_notation=True))
 
 
 def test_issue_3568():
