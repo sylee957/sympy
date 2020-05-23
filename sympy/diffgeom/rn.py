@@ -26,15 +26,7 @@ R2 = Manifold('R^2', 2)  # type: Any
 # Patch and coordinate systems.
 R2_origin = Patch('origin', R2)  # type: Any
 R2_r = CoordSystem('rectangular', R2_origin, ['x', 'y'])  # type: Any
-R2_p = CoordSystem(
-    'polar', R2_origin, ['r', 'theta'],
-    {
-        R2_r: (
-            Lambda((r, theta), [r*cos(theta), r*sin(theta)]),
-            Lambda((x, y), [sqrt(x**2 + y**2), atan2(y, x)])
-        )
-    }
-)  # type: Any
+R2_p = CoordSystem('polar', R2_origin, ['r', 'theta'])  # type: Any
 
 # Defining the basis coordinate functions and adding shortcuts for them to the
 # manifold and the patch.
@@ -60,28 +52,8 @@ R3 = Manifold('R^3', 3)  # type: Any
 # Patch and coordinate systems.
 R3_origin = Patch('origin', R3)  # type: Any
 R3_r = CoordSystem('rectangular', R3_origin, ['x', 'y', 'z'])  # type: Any
-R3_c = CoordSystem(
-    'cylindrical', R3_origin, ['rho', 'psi', 'z'],
-    {
-        R3_r: (
-            Lambda((rho, psi, z), [rho*cos(psi), rho*sin(psi), z]),
-            Lambda((x, y, z), [sqrt(x**2 + y**2), atan2(y, x), z])
-        )
-    }
-)  # type: Any
-R3_s = CoordSystem(
-    'spherical', R3_origin, ['r', 'theta', 'phi'],
-    {
-        R3_r: (
-            Lambda((r, theta, phi), [r*sin(theta)*cos(phi), r*sin(theta)*sin(phi), r*cos(theta)]),
-            Lambda((x, y, z), [sqrt(x**2 + y**2 + z**2), acos(z/sqrt(x**2 + y**2 + z**2)), atan2(y, x)])
-        ),
-        R3_c: (
-            Lambda((r, theta, phi), [r*sin(theta), phi, r*cos(theta)]),
-            Lambda((rho, psi, z), [sqrt(rho**2 + z**2), acos(z/sqrt(rho**2 + z**2)), psi])
-        )
-    }
-)  # type: Any
+R3_c = CoordSystem('cylindrical', R3_origin, ['rho', 'psi', 'z'],)  # type: Any
+R3_s = CoordSystem('spherical', R3_origin, ['r', 'theta', 'phi'],)  # type: Any
 
 # Defining the basis coordinate functions.
 R3_r.x, R3_r.y, R3_r.z = R3_r.coord_functions()

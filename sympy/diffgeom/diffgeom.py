@@ -148,33 +148,39 @@ class CoordSystem(Atom):
     Define a Manifold and a Patch, and then define two coord systems on that
     patch:
 
-    >>> from sympy import symbols, sin, cos, pi, Lambda
+    >>> from sympy import symbols, sin, cos, pi, Lambda, atan2, sqrt, Matrix
     >>> from sympy.diffgeom import Manifold, Patch, CoordSystem
     >>> from sympy.simplify import simplify
-    >>> r, theta = symbols('r, theta')
+    >>> r, theta = symbols('r theta')
+    >>> x, y = symbols('x y')
     >>> m = Manifold('M', 2)
     >>> patch = Patch('P', m)
     >>> rect = CoordSystem('rect', patch)
-    >>> polar = CoordSystem(
-    ... 'polar', patch, transforms={rect: Lambda((r,theta), [r*cos(theta), r*sin(theta)])}
-    ... )
+    >>> polar = CoordSystem('polar', patch)
 
-    >>> polar.coord_tuple_transform_to(rect, [0, 2])
+    >>> transforms = {
+    ...     rect: (
+    ...         Lambda((r, theta), Matrix([r*cos(theta), r*sin(theta)])),
+    ...         Lambda((x, y), Matrix([sqrt(x**2 + y**2), atan2(y, x)]))
+    ...     )
+    ... }
+    >>> polar.coord_tuple_transform_to(rect, [0, 2], transforms=transforms)
     Matrix([
     [0],
     [0]])
-    >>> polar.coord_tuple_transform_to(rect, [2, pi/2])
+    >>> polar.coord_tuple_transform_to(rect, [2, pi/2], transforms=transforms)
     Matrix([
     [0],
     [2]])
-    >>> rect.coord_tuple_transform_to(polar, [1, 1]).applyfunc(simplify)
+    >>> rect.coord_tuple_transform_to(
+    ...     polar, [1, 1], transforms=transforms).applyfunc(simplify)
     Matrix([
     [sqrt(2)],
     [   pi/4]])
 
     Calculate the jacobian of the polar to cartesian transformation:
 
-    >>> polar.jacobian(rect, [r, theta])
+    >>> polar.jacobian(rect, [r, theta], transforms=transforms)
     Matrix([
     [cos(theta), -r*sin(theta)],
     [sin(theta),  r*cos(theta)]])
@@ -182,7 +188,7 @@ class CoordSystem(Atom):
     Define a point using coordinates in one of the coordinate systems:
 
     >>> p = polar.point([1, 3*pi/4])
-    >>> rect.point_to_coords(p)
+    >>> rect.point_to_coords(p, transforms=transforms)
     Matrix([
     [-sqrt(2)/2],
     [ sqrt(2)/2]])
@@ -190,9 +196,9 @@ class CoordSystem(Atom):
     Define a basis scalar field (i.e. a coordinate function), that takes a
     point and returns its coordinates. It is an instance of ``BaseScalarField``.
 
-    >>> rect.coord_function(0)(p)
+    >>> rect.coord_function(0)(p, transforms=transforms)
     -sqrt(2)/2
-    >>> rect.coord_function(1)(p)
+    >>> rect.coord_function(1)(p, transforms=transforms)
     sqrt(2)/2
 
     Define a basis vector field (i.e. a unit vector field along the coordinate
@@ -201,7 +207,7 @@ class CoordSystem(Atom):
 
     >>> v_x = rect.base_vector(0)
     >>> x = rect.coord_function(0)
-    >>> v_x(x)
+    >>> v_x(x, transforms=transforms)
     1
     >>> v_x(v_x(x))
     0
@@ -339,16 +345,19 @@ class CoordSystem(Atom):
         raise NotImplementedError
         # TODO
 
-    def coord_tuple_transform_to(self, to_sys, coords):
+    def coord_tuple_transform_to(self, to_sys, coords, transforms={}):
         """Transform ``coords`` to coord system ``to_sys``.
 
         See the docstring of ``CoordSystem`` for examples."""
         if self != to_sys:
-
             if to_sys in self.transform_dict:
                 transf = self.transform_dict[to_sys][0]
             elif self in to_sys.transform_dict:
                 transf = to_sys.transform_dict[self][1]
+            elif to_sys in transforms:
+                transf = transforms[to_sys][0]
+            elif self in transforms:
+                transf = transforms[self][1]
             else:
                 transf = self.transforms[to_sys]
             coords = transf(*coords)
@@ -356,10 +365,10 @@ class CoordSystem(Atom):
             coords = Matrix(coords)
         return coords
 
-    def jacobian(self, to_sys, coords):
+    def jacobian(self, to_sys, coords, transforms={}):
         """Return the jacobian matrix of a transformation."""
         with_dummies = self.coord_tuple_transform_to(
-            to_sys, self._dummies).jacobian(self._dummies)
+            to_sys, self._dummies, transforms=transforms).jacobian(self._dummies)
         return with_dummies.subs(list(zip(self._dummies, coords)))
 
     ##########################################################################
@@ -420,11 +429,11 @@ class CoordSystem(Atom):
         See the docstring of ``CoordSystem`` for examples."""
         return Point(self, coords)
 
-    def point_to_coords(self, point):
+    def point_to_coords(self, point, transforms={}):
         """Calculate the coordinates of a point in this coord system.
 
         See the docstring of ``CoordSystem`` for examples."""
-        return point.coords(self)
+        return point.coords(self, transforms=transforms)
 
     ##########################################################################
     # Printing.
@@ -456,16 +465,21 @@ class Point(Basic):
 
     Define the boilerplate Manifold, Patch and coordinate systems:
 
-    >>> from sympy import symbols, sin, cos, pi, Lambda
+    >>> from sympy import symbols, sin, cos, pi, Lambda, sqrt, atan2, Matrix
     >>> from sympy.diffgeom import (
     ...        Manifold, Patch, CoordSystem, Point)
-    >>> r, theta = symbols('r, theta')
+    >>> r, theta = symbols('r theta')
+    >>> x, y = symbols('x y')
     >>> m = Manifold('M', 2)
     >>> p = Patch('P', m)
     >>> rect = CoordSystem('rect', p)
-    >>> polar = CoordSystem(
-    ... 'polar', p, transforms={rect: Lambda((r,theta), [r*cos(theta), r*sin(theta)])}
-    ... )
+    >>> polar = CoordSystem('polar', p)
+    >>> transforms = {
+    ...     rect: (
+    ...         Lambda((r, theta), Matrix([r*cos(theta), r*sin(theta)])),
+    ...         Lambda((x, y), Matrix([sqrt(x**2 + y**2), atan2(y, x)]))
+    ...     )
+    ... }
 
     Define a point using coordinates from one of the coordinate systems:
 
@@ -474,7 +488,7 @@ class Point(Basic):
     Matrix([
     [     r],
     [3*pi/4]])
-    >>> p.coords(rect)
+    >>> p.coords(rect, transforms=transforms)
     Matrix([
     [-sqrt(2)*r/2],
     [ sqrt(2)*r/2]])
@@ -487,13 +501,14 @@ class Point(Basic):
         obj._coords = coords
         return obj
 
-    def coords(self, to_sys=None):
+    def coords(self, to_sys=None, transforms={}):
         """Coordinates of the point in a given coordinate system.
 
         If ``to_sys`` is ``None`` it returns the coordinates in the system in
         which the point was defined."""
         if to_sys:
-            return self._coord_sys.coord_tuple_transform_to(to_sys, self._coords)
+            return self._coord_sys.coord_tuple_transform_to(
+                to_sys, self._coords, transforms=transforms)
         else:
             return self._coords
 
@@ -537,31 +552,38 @@ class BaseScalarField(Expr):
     Define boilerplate Manifold, Patch and coordinate systems:
 
     >>> from sympy import symbols, sin, cos, pi, Function, Lambda
+    >>> from sympy import sqrt, atan2, Matrix
     >>> from sympy.diffgeom import (
     ...        Manifold, Patch, CoordSystem, Point, BaseScalarField)
-    >>> r0, theta0 = symbols('r0, theta0')
+    >>> r, t = symbols('r theta')
+    >>> x, y = symbols('x y')
     >>> m = Manifold('M', 2)
     >>> p = Patch('P', m)
     >>> rect = CoordSystem('rect', p)
-    >>> polar = CoordSystem(
-    ... 'polar', p, transforms={rect: Lambda((r0,theta0), [r0*cos(theta0), r0*sin(theta0)])}
-    ... )
+    >>> polar = CoordSystem('polar', p)
+
+    >>> transforms = {
+    ...     polar: (
+    ...         Lambda((r, t), Matrix([r*cos(t), r*sin(t)])),
+    ...         Lambda((x, y), Matrix([sqrt(x**2 + y**2), atan2(y, x)])),
+    ...     )
+    ... }
 
     Point to be used as an argument for the filed:
 
-    >>> point = polar.point([r0, 0])
+    >>> point = polar.point([r, 0])
 
     Examples of fields:
 
     >>> fx = BaseScalarField(rect, 0)
     >>> fy = BaseScalarField(rect, 1)
-    >>> (fx**2+fy**2).rcall(point)
-    r0**2
+    >>> (fx**2+fy**2).rcall(point, transforms=transforms)
+    r**2 + atan2(0, r)**2
 
     >>> g = Function('g')
     >>> ftheta = BaseScalarField(polar, 1)
     >>> fg = g(ftheta-pi)
-    >>> fg.rcall(point)
+    >>> fg.rcall(point, transforms=transforms)
     g(-pi)
 
     """
@@ -575,7 +597,7 @@ class BaseScalarField(Expr):
         obj._index = index
         return obj
 
-    def __call__(self, *args):
+    def __call__(self, *args, transforms={}):
         """Evaluating the field at a point or doing nothing.
 
         If the argument is a ``Point`` instance, the field is evaluated at that
@@ -586,7 +608,7 @@ class BaseScalarField(Expr):
         point = args[0]
         if len(args) != 1 or not isinstance(point, Point):
             return self
-        coords = point.coords(self._coord_sys)
+        coords = point.coords(self._coord_sys, transforms=transforms)
         # XXX Calling doit  is necessary with all the Subs expressions
         # XXX Calling simplify is necessary with all the trig expressions
         return simplify(coords[self._index]).doit()
@@ -636,6 +658,16 @@ class BaseVectorField(Expr):
     >>> from sympy import pprint
     >>> x0, y0, r0, theta0 = symbols('x0, y0, r0, theta0')
 
+    >>> from sympy import symbols, Lambda, cos, sin, sqrt, atan2, Matrix
+    >>> r, t = symbols('r t')
+    >>> x, y = symbols('x y')
+    >>> transforms = {
+    ...     R2_p: (
+    ...         Lambda((x, y), Matrix([sqrt(x**2 + y**2), atan2(y, x)])),
+    ...         Lambda((r, t), Matrix([r*cos(t), r*sin(t)]))
+    ...     )
+    ... }
+
     Points to be used as arguments for the field:
 
     >>> point_p = R2_p.point([r0, theta0])
@@ -645,23 +677,23 @@ class BaseVectorField(Expr):
 
     >>> g = Function('g')
     >>> s_field = g(R2.x, R2.y)
-    >>> s_field.rcall(point_r)
+    >>> s_field.rcall(point_r, transforms=transforms)
     g(x0, y0)
-    >>> s_field.rcall(point_p)
+    >>> s_field.rcall(point_p, transforms=transforms)
     g(r0*cos(theta0), r0*sin(theta0))
 
     Vector field:
 
     >>> v = BaseVectorField(R2_r, 1)
-    >>> pprint(v(s_field))
+    >>> pprint(v(s_field, transforms=transforms))
     / d           \|
     |---(g(x, xi))||
     \dxi          /|xi=y
-    >>> pprint(v(s_field).rcall(point_r).doit())
+    >>> pprint(v(s_field, transforms=transforms).rcall(point_r, transforms=transforms).doit())
      d
     ---(g(x0, y0))
     dy0
-    >>> pprint(v(s_field).rcall(point_p))
+    >>> pprint(v(s_field, transforms=transforms).rcall(point_p, transforms=transforms))
     / d                        \|
     |---(g(r0*cos(theta0), xi))||
     \dxi                       /|xi=r0*sin(theta0)
@@ -677,7 +709,7 @@ class BaseVectorField(Expr):
         obj._index = index
         return obj
 
-    def __call__(self, scalar_field):
+    def __call__(self, scalar_field, transforms={}):
         """Apply on a scalar field.
 
         The action of a vector field on a scalar field is a directional
@@ -706,7 +738,8 @@ class BaseVectorField(Expr):
         d_funcs_deriv = [f.diff(d_var) for f in d_funcs]
         d_funcs_deriv_sub = []
         for b in base_scalars:
-            jac = self._coord_sys.jacobian(b._coord_sys, coords)
+            jac = self._coord_sys.jacobian(
+                b._coord_sys, coords, transforms=transforms)
             d_funcs_deriv_sub.append(jac[b._index, self._index])
         d_result = d_result.subs(list(zip(d_funcs_deriv, d_funcs_deriv_sub)))
 
@@ -735,10 +768,20 @@ class Commutator(Expr):
 
     Use the predefined R2 manifold, setup some boilerplate.
 
-    >>> from sympy.diffgeom.rn import R2
+    >>> from sympy.diffgeom.rn import R2, R2_p
     >>> from sympy.diffgeom import Commutator
     >>> from sympy import pprint
     >>> from sympy.simplify import simplify
+
+    >>> from sympy import symbols, Lambda, cos, sin, sqrt, atan2, Matrix
+    >>> r, t = symbols('r t')
+    >>> x, y = symbols('x y')
+    >>> transforms = {
+    ...     R2_p: (
+    ...         Lambda((x, y), Matrix([sqrt(x**2 + y**2), atan2(y, x)])),
+    ...         Lambda((r, t), Matrix([r*cos(t), r*sin(t)]))
+    ...     )
+    ... }
 
     Vector fields:
 
@@ -753,7 +796,7 @@ class Commutator(Expr):
     >>> c_xr
     Commutator(e_x, e_r)
 
-    >>> simplify(c_xr(R2.y**2))
+    >>> simplify(c_xr(R2.y**2, transforms=transforms))
     -2*cos(theta)*y**2/(x**2 + y**2)
 
     """
@@ -788,12 +831,14 @@ class Commutator(Expr):
         self._v1 = v1
         self._v2 = v2
 
-    def __call__(self, scalar_field):
+    def __call__(self, scalar_field, transforms={}):
         """Apply on a scalar field.
 
         If the argument is not a scalar field an error is raised.
         """
-        return self._v1(self._v2(scalar_field)) - self._v2(self._v1(scalar_field))
+        l = self._v1(self._v2(scalar_field, transforms=transforms), transforms=transforms)
+        r = self._v2(self._v1(scalar_field, transforms=transforms), transforms=transforms)
+        return l - r
 
 
 class Differential(Expr):
@@ -861,7 +906,7 @@ class Differential(Expr):
         self._form_field = form_field
         self._args = (self._form_field, )
 
-    def __call__(self, *vector_fields):
+    def __call__(self, *vector_fields, transforms={}):
         """Apply on a list of vector_fields.
 
         If the number of vector fields supplied is not equal to 1 + the order of
@@ -886,7 +931,7 @@ class Differential(Expr):
         k = len(vector_fields)
         if k == 1:
             if vector_fields[0]:
-                return vector_fields[0].rcall(self._form_field)
+                return vector_fields[0].rcall(self._form_field, transforms=transforms)
             return self
         else:
             # For higher form it is more complicated:
@@ -898,13 +943,13 @@ class Differential(Expr):
             v = vector_fields
             ret = 0
             for i in range(k):
-                t = v[i].rcall(f.rcall(*v[:i] + v[i + 1:]))
+                t = v[i].rcall(f.rcall(*v[:i] + v[i + 1:], transforms=transforms), transforms=transforms)
                 ret += (-1)**i*t
                 for j in range(i + 1, k):
                     c = Commutator(v[i], v[j])
                     if c:  # TODO this is ugly - the Commutator can be Zero and
                         # this causes the next line to fail
-                        t = f.rcall(*(c,) + v[:i] + v[i + 1:j] + v[j + 1:])
+                        t = f.rcall(*(c,) + v[:i] + v[i + 1:j] + v[j + 1:], transforms=transforms)
                         ret += (-1)**(i + j)*t
             return ret
 
@@ -1213,7 +1258,14 @@ class CovarDerivativeOp(Expr):
 ###############################################################################
 # Integral curves on vector fields
 ###############################################################################
-def intcurve_series(vector_field, param, start_point, n=6, coord_sys=None, coeffs=False):
+def intcurve_series(
+    vector_field,
+    param,
+    start_point,
+    n=6,
+    coord_sys=None,
+    coeffs=False,
+    transforms={}):
     r"""Return the series expansion for an integral curve of the field.
 
     Integral curve is a function `\gamma` taking a parameter in `R` to a point
@@ -1263,6 +1315,16 @@ def intcurve_series(vector_field, param, start_point, n=6, coord_sys=None, coeff
     >>> from sympy.diffgeom.rn import R2, R2_p, R2_r
     >>> from sympy.diffgeom import intcurve_series
 
+    >>> from sympy import symbols, Lambda, cos, sin, sqrt, atan2, Matrix
+    >>> r, t = symbols('r t')
+    >>> x, y = symbols('x y')
+    >>> transforms = {
+    ...     R2_r: (
+    ...         Lambda((r, t), Matrix([r*cos(t), r*sin(t)])),
+    ...         Lambda((x, y), Matrix([sqrt(x**2 + y**2), atan2(y, x)]))
+    ...     )
+    ... }
+
     Specify a starting point and a vector field:
 
     >>> start_point = R2_r.point([x, y])
@@ -1270,14 +1332,14 @@ def intcurve_series(vector_field, param, start_point, n=6, coord_sys=None, coeff
 
     Calculate the series:
 
-    >>> intcurve_series(vector_field, t, start_point, n=3)
+    >>> intcurve_series(vector_field, t, start_point, n=3, transforms=transforms)
     Matrix([
     [t + x],
     [    y]])
 
     Or get the elements of the expansion in a list:
 
-    >>> series = intcurve_series(vector_field, t, start_point, n=3, coeffs=True)
+    >>> series = intcurve_series(vector_field, t, start_point, n=3, coeffs=True, transforms=transforms)
     >>> series[0]
     Matrix([
     [x],
@@ -1294,7 +1356,7 @@ def intcurve_series(vector_field, param, start_point, n=6, coord_sys=None, coeff
     The series in the polar coordinate system:
 
     >>> series = intcurve_series(vector_field, t, start_point,
-    ...             n=3, coord_sys=R2_p, coeffs=True)
+    ...             n=3, coord_sys=R2_p, coeffs=True, transforms=transforms)
     >>> series[0]
     Matrix([
     [sqrt(x**2 + y**2)],
@@ -1314,11 +1376,11 @@ def intcurve_series(vector_field, param, start_point, n=6, coord_sys=None, coeff
 
     def iter_vfield(scalar_field, i):
         """Return ``vector_field`` called `i` times on ``scalar_field``."""
-        return reduce(lambda s, v: v.rcall(s), [vector_field, ]*i, scalar_field)
+        return reduce(lambda s, v: v.rcall(s, transforms=transforms), [vector_field, ]*i, scalar_field)
 
     def taylor_terms_per_coord(coord_function):
         """Return the series for one of the coordinates."""
-        return [param**i*iter_vfield(coord_function, i).rcall(start_point)/factorial(i)
+        return [param**i*iter_vfield(coord_function, i).rcall(start_point, transforms=transforms)/factorial(i)
                 for i in range(n)]
     coord_sys = coord_sys if coord_sys else start_point._coord_sys
     coord_functions = coord_sys.coord_functions()
@@ -1329,7 +1391,7 @@ def intcurve_series(vector_field, param, start_point, n=6, coord_sys=None, coeff
         return Matrix([sum(c) for c in taylor_terms])
 
 
-def intcurve_diffequ(vector_field, param, start_point, coord_sys=None):
+def intcurve_diffequ(vector_field, param, start_point, coord_sys=None, transforms={}):
     r"""Return the differential equation for an integral curve of the field.
 
     Integral curve is a function `\gamma` taking a parameter in `R` to a point
@@ -1376,6 +1438,16 @@ def intcurve_diffequ(vector_field, param, start_point, coord_sys=None):
     >>> from sympy.diffgeom.rn import R2, R2_p, R2_r
     >>> from sympy.diffgeom import intcurve_diffequ
 
+    >>> from sympy import symbols, Lambda, cos, sin, sqrt, atan2, Matrix
+    >>> r, t = symbols('r t')
+    >>> x, y = symbols('x y')
+    >>> transforms = {
+    ...     R2_r: (
+    ...         Lambda((r, t), Matrix([r*cos(t), r*sin(t)])),
+    ...         Lambda((x, y), Matrix([sqrt(x**2 + y**2), atan2(y, x)]))
+    ...     )
+    ... }
+
     Specify a starting point and a vector field:
 
     >>> start_point = R2_r.point([0, 1])
@@ -1383,7 +1455,7 @@ def intcurve_diffequ(vector_field, param, start_point, coord_sys=None):
 
     Get the equation:
 
-    >>> equations, init_cond = intcurve_diffequ(vector_field, t, start_point)
+    >>> equations, init_cond = intcurve_diffequ(vector_field, t, start_point, transforms=transforms)
     >>> equations
     [f_1(t) + Derivative(f_0(t), t), -f_0(t) + Derivative(f_1(t), t)]
     >>> init_cond
@@ -1391,7 +1463,7 @@ def intcurve_diffequ(vector_field, param, start_point, coord_sys=None):
 
     The series in the polar coordinate system:
 
-    >>> equations, init_cond = intcurve_diffequ(vector_field, t, start_point, R2_p)
+    >>> equations, init_cond = intcurve_diffequ(vector_field, t, start_point, coord_sys=R2_p, transforms=transforms)
     >>> equations
     [Derivative(f_0(t), t), Derivative(f_1(t), t) - 1]
     >>> init_cond
@@ -1405,9 +1477,9 @@ def intcurve_diffequ(vector_field, param, start_point, coord_sys=None):
         start_point._coord_sys.dim)]
     arbitrary_p = Point(coord_sys, gammas)
     coord_functions = coord_sys.coord_functions()
-    equations = [simplify(diff(cf.rcall(arbitrary_p), param) - vector_field.rcall(cf).rcall(arbitrary_p))
+    equations = [simplify(diff(cf.rcall(arbitrary_p, transforms=transforms), param) - vector_field.rcall(cf, transforms=transforms).rcall(arbitrary_p, transforms=transforms))
                  for cf in coord_functions]
-    init_cond = [simplify(cf.rcall(arbitrary_p).subs(param, 0) - cf.rcall(start_point))
+    init_cond = [simplify(cf.rcall(arbitrary_p, transforms=transforms).subs(param, 0) - cf.rcall(start_point, transforms=transforms))
                  for cf in coord_functions]
     return equations, init_cond
 
@@ -1519,7 +1591,7 @@ def covariant_order(expr, _strict=False):
 ###############################################################################
 # Coordinate transformation functions
 ###############################################################################
-def vectors_in_basis(expr, to_sys):
+def vectors_in_basis(expr, to_sys, transforms={}):
     """Transform all base vectors in base vectors of a specified coord basis.
 
     While the new base vectors are in the new coordinate system basis, any
@@ -1530,16 +1602,27 @@ def vectors_in_basis(expr, to_sys):
 
     >>> from sympy.diffgeom import vectors_in_basis
     >>> from sympy.diffgeom.rn import R2_r, R2_p
-    >>> vectors_in_basis(R2_r.e_x, R2_p)
+
+    >>> from sympy import symbols, Lambda, cos, sin, sqrt, atan2, Matrix
+    >>> r, t = symbols('r t')
+    >>> x, y = symbols('x y')
+    >>> transforms = {
+    ...     R2_r: (
+    ...         Lambda((r, t), Matrix([r*cos(t), r*sin(t)])),
+    ...         Lambda((x, y), Matrix([sqrt(x**2 + y**2), atan2(y, x)]))
+    ...     )
+    ... }
+
+    >>> vectors_in_basis(R2_r.e_x, R2_p, transforms=transforms)
     -y*e_theta/(x**2 + y**2) + x*e_r/sqrt(x**2 + y**2)
-    >>> vectors_in_basis(R2_p.e_r, R2_r)
+    >>> vectors_in_basis(R2_p.e_r, R2_r, transforms=transforms)
     sin(theta)*e_y + cos(theta)*e_x
     """
     vectors = list(expr.atoms(BaseVectorField))
     new_vectors = []
     for v in vectors:
         cs = v._coord_sys
-        jac = cs.jacobian(to_sys, cs.coord_functions())
+        jac = cs.jacobian(to_sys, cs.coord_functions(), transforms=transforms)
         new = (jac.T*Matrix(to_sys.base_vectors()))[v._index]
         new_vectors.append(new)
     return expr.subs(list(zip(vectors, new_vectors)))
