@@ -244,6 +244,17 @@ def test_geometry():
             RegularPolygon(p1, 4, 5), Triangle, Triangle(p1, p2, p3)):
         check(c, check_attr=False)
 
+#================== diffgeom ====================
+from sympy.diffgeom.diffgeom import Manifold, Patch, CoordSystem
+def test_diffgeom():
+    manifold = Manifold('M', 2)
+    check(manifold)
+    patch = Patch('P', manifold)
+    check(patch)
+    coordsys = CoordSystem('C', patch, ['x', 'y'])
+    check(coordsys)
+
+
 #================== integrals ====================
 from sympy.integrals.integrals import Integral
 

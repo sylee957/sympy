@@ -4,11 +4,13 @@ from itertools import permutations
 
 from sympy.combinatorics import Permutation
 from sympy.core import (
-    Basic, Expr, Dummy, Function,  diff,
+    Basic, Expr, Function,  diff,
     Pow, Mul, Add, Atom, Lambda
 )
 from sympy.core.compatibility import reduce
+from sympy.core.containers import Tuple
 from sympy.core.numbers import Zero
+from sympy.core.symbol import Symbol, Dummy
 from sympy.core.sympify import _sympify
 from sympy.functions import factorial
 from sympy.matrices import ImmutableDenseMatrix as Matrix
@@ -24,7 +26,18 @@ from sympy.utilities.exceptions import SymPyDeprecationWarning
 # tests and find out why
 from sympy.tensor.array import ImmutableDenseNDimArray
 
-class Manifold(Atom):
+
+def _normalize_name_arg(name):
+    if isinstance(name, str):
+        name = Dummy(name)
+    else:
+        name = _sympify(name)
+    if not isinstance(name, Symbol):
+        raise ValueError("{} must be a string or a symbol.".format(name))
+    return name
+
+
+class Manifold(Basic):
     """A mathematical manifold.
 
     Parameters
@@ -49,9 +62,12 @@ class Manifold(Atom):
     """
 
     def __new__(cls, name, dim):
-        obj = super().__new__(cls)
-        obj.name = name
-        obj.dim = dim
+        name = _normalize_name_arg(name)
+        dim = _sympify(dim)
+        if not dim.is_Integer:
+            raise ValueError("{} must be an integer.".format(dim))
+
+        obj = super().__new__(cls, name, dim)
         obj.patches = _deprecated_list(
             "Using Manifold.patches for registry",
             "external container",
@@ -61,10 +77,16 @@ class Manifold(Atom):
         )
         return obj
 
-    def _hashable_content(self):
-        return self.name, self.dim
+    @property
+    def name(self):
+        return self.args[0].name
 
-class Patch(Atom):
+    @property
+    def dim(self):
+        return self.args[1]
+
+
+class Patch(Basic):
     """A patch on a manifold.
 
     Explanation
@@ -97,9 +119,13 @@ class Patch(Atom):
 
     """
     def __new__(cls, name, manifold):
-        obj = super().__new__(cls)
-        obj.name = name
-        obj.manifold = manifold
+        name = _normalize_name_arg(name)
+        manifold = _sympify(manifold)
+        if not isinstance(manifold, Manifold):
+            raise ValueError(
+                "{} must be a manifold instance.".format(manifold))
+
+        obj = super().__new__(cls, name, manifold)
         obj.manifold.patches.append(obj) # deprecated
         obj.coord_systems = _deprecated_list(
             "Using Patch.coord_systems for registry",
@@ -114,10 +140,16 @@ class Patch(Atom):
     def dim(self):
         return self.manifold.dim
 
-    def _hashable_content(self):
-        return self.name, self.manifold
+    @property
+    def name(self):
+        return self.args[0].name
 
-class CoordSystem(Atom):
+    @property
+    def manifold(self):
+        return self.args[1]
+
+
+class CoordSystem(Basic):
     """A coordinate system defined on the patch.
 
     Explanation
@@ -136,11 +168,6 @@ class CoordSystem(Atom):
 
     names : list of strings, optional
         Determines how base scalar fields will be printed.
-
-    transforms : dict, optional
-        Contains the coordinate transform relation to other coordinate.
-        - key = other coordinate system
-        - value = tuple of two Lambda, each are relation from other system and to other system
 
     Examples
     ========
@@ -234,12 +261,19 @@ class CoordSystem(Atom):
 
     """
     def __new__(cls, name, patch, names=None):
+        name = _normalize_name_arg(name)
         if not names:
-            names = ['%s_%d' % (name, i) for i in range(patch.dim)]
-        obj = super().__new__(cls)
-        obj.name = name
-        obj._names = tuple(str(i) for i in names)
-        obj.patch = patch
+            names = ['%s_%d' % (name.name, i) for i in range(patch.dim)]
+        names = (_normalize_name_arg(name) for name in names)
+        names = Tuple(*names)
+
+        patch = _sympify(patch)
+        if not isinstance(patch, Patch):
+            raise ValueError(
+                "{} must be a patch instance.".format(patch))
+
+        obj = super().__new__(cls, name, patch, names)
+        obj._names = tuple(n.name for n in names)
         obj.patch.coord_systems.append(obj) # deprecated
         obj.transforms = _deprecated_dict(
             "Using CoordSystem.transforms for storing transform relations",
@@ -248,49 +282,20 @@ class CoordSystem(Atom):
             "1.7",
             {}
         ) # deprecated
-        # All the coordinate transformation logic is in this dictionary in the
-        # form of:
-        #  key = other coordinate system
-        #  value = tuple of two Lambda, each are relation from other system and to other system
-        #          - signature : Tuple of `Dummy` coordinates in this coordinate system
-        #          - expr : Matrix of expressions as a function of the Dummies giving
-        #          the coordinates in another coordinate system
-        obj._dummies = [Dummy(str(n)) for n in names]
-        obj._dummy = Dummy()
+        obj._dummy = name
         return obj
-
-    @classmethod
-    def _handle_transforms(cls, transforms):
-        # Allow non-matrix expr of Lambdas as value
-        # Also allow single Lambda as value, which evokes _inv_transf
-
-        def handle_lambda(l):
-            # Convert non-matrix expr of Lambda to matrix
-            if not isinstance(l.expr, Matrix):
-                expr = Matrix(l.expr)
-                return Lambda(l.signature, expr)
-            return l
-
-        result = {}
-        for k,v in transforms.items():
-            if isinstance(v, Lambda):
-                v_0 = handle_lambda(v)
-                signature, expr = cls._inv_transf(v_0.signature, v_0.expr)
-                v_1 = Lambda(tuple(signature), expr)
-                v = v_0, v_1
-            elif len(v) == 2 and all(isinstance(l,Lambda) for l in v):
-                v = handle_lambda(v[0]), handle_lambda(v[1])
-            else:
-                raise TypeError('Wrong types are given to transforms')
-            result[k] = v
-        return _sympify(result)
 
     @property
     def dim(self):
         return self.patch.dim
 
-    def _hashable_content(self):
-        return self.name, self.patch, self._names
+    @property
+    def name(self):
+        return self.args[0].name
+
+    @property
+    def patch(self):
+        return self.args[1]
 
     ##########################################################################
     # Coordinate transformations.
@@ -364,9 +369,10 @@ class CoordSystem(Atom):
 
     def jacobian(self, to_sys, coords, transforms={}):
         """Return the jacobian matrix of a transformation."""
+        coord = [Dummy() for _ in range(self.dim)]
         with_dummies = self.coord_tuple_transform_to(
-            to_sys, self._dummies, transforms=transforms).jacobian(self._dummies)
-        return with_dummies.subs(list(zip(self._dummies, coords)))
+            to_sys, coord, transforms=transforms).jacobian(coord)
+        return with_dummies.subs(list(zip(coord, coords)))
 
     ##########################################################################
     # Base fields.
@@ -722,9 +728,8 @@ class BaseVectorField(Expr):
                    b in enumerate(base_scalars)]
         d_result = scalar_field.subs(list(zip(base_scalars, d_funcs)))
         d_result = d_result.diff(d_var)
-
         # Second step: e_x(x) -> 1 and e_x(r) -> cos(atan2(x, y))
-        coords = self._coord_sys._dummies
+        coords = [Dummy() for _ in range(self._coord_sys.dim)]
         d_funcs_deriv = [f.diff(d_var) for f in d_funcs]
         d_funcs_deriv_sub = []
         for b in base_scalars:
@@ -1171,7 +1176,7 @@ class BaseCovarDerivativeOp(Expr):
         # First step: replace all vectors with something susceptible to
         # derivation and do the derivation
         # TODO: you need a real dummy function for the next line
-        d_funcs = [Function('_#_%s' % i)(wrt_scalar) for i,
+        d_funcs = [Function('f_%s' % i)(wrt_scalar) for i,
                    b in enumerate(vectors)]
         d_result = field.subs(list(zip(vectors, d_funcs)))
         d_result = wrt_vector(d_result)
@@ -1694,7 +1699,7 @@ def metric_to_Christoffel_2nd(expr):
     for e in matrix:
         s_fields.update(e.atoms(BaseScalarField))
     s_fields = list(s_fields)
-    dums = coord_sys._dummies
+    dums = [Dummy() for _ in range(coord_sys.dim)]
     matrix = matrix.subs(list(zip(s_fields, dums))).inv().subs(list(zip(dums, s_fields)))
     # XXX end of workaround
     christoffel = [[[Add(*[matrix[i, l]*ch_1st[l, j, k] for l in indices])

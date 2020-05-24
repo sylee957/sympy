@@ -342,8 +342,7 @@ class ReprPrinter(Printer):
         name = self._print(coords.name)
         patch = self._print(coords.patch)
         names = self._print(coords._names)
-        transforms = self._print(coords.transform_dict)
-        return "%s(%s, %s, %s, %s)" % (class_name, name, patch, names, transforms)
+        return "%s(%s, %s, %s)" % (class_name, name, patch, names)
 
     def _print_BaseScalarField(self, bsf):
         class_name = bsf.func.__name__

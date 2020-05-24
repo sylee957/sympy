@@ -311,13 +311,13 @@ def test_Permutation():
 def test_diffgeom():
     from sympy.diffgeom import Manifold, Patch, CoordSystem, BaseScalarField
     m = Manifold('M', 2)
-    assert srepr(m) == "Manifold('M', 2)"
+    assert srepr(m) == "Manifold('M', Integer(2))"
     p = Patch('P', m)
-    assert srepr(p) == "Patch('P', Manifold('M', 2))"
+    assert srepr(p) == "Patch('P', Manifold('M', Integer(2)))"
     rect = CoordSystem('rect', p)
-    assert srepr(rect) == "CoordSystem('rect', Patch('P', Manifold('M', 2)), ('rect_0', 'rect_1'), Dict())"
+    assert srepr(rect) == "CoordSystem('rect', Patch('P', Manifold('M', Integer(2))), ('rect_0', 'rect_1'))"
     b = BaseScalarField(rect, 0)
-    assert srepr(b) == "BaseScalarField(CoordSystem('rect', Patch('P', Manifold('M', 2)), ('rect_0', 'rect_1'), Dict()), Integer(0))"
+    assert srepr(b) == "BaseScalarField(CoordSystem('rect', Patch('P', Manifold('M', Integer(2))), ('rect_0', 'rect_1')), Integer(0))"
 
 def test_dict():
     from sympy import srepr
