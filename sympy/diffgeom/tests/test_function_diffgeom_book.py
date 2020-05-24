@@ -1,4 +1,4 @@
-from sympy.diffgeom.rn import R2, R2_p, R2_r, R3_r
+from sympy.diffgeom.rn import R2, R2_p, R2_r, R3_r, transforms_2d
 from sympy.diffgeom import intcurve_series, Differential, WedgeProduct
 from sympy.core import symbols, Function, Derivative
 from sympy.simplify import trigsimp, simplify
@@ -14,53 +14,42 @@ from sympy.matrices import Matrix
 # From "Functional Differential Geometry" as of 2011
 # by Sussman and Wisdom.
 
-from sympy import symbols, Lambda, cos, sin, sqrt, atan2, Matrix
-r, t = symbols('r t')
-x, y = symbols('x y')
-R2_r_R2_p = {
-    R2_p: (
-        Lambda((x, y), Matrix([sqrt(x**2 + y**2), atan2(y, x)])),
-        Lambda((r, t), Matrix([r*cos(t), r*sin(t)]))
-    )
-}
-R2_p_R2_r = {
-    R2_p: (
-        Lambda((x, y), Matrix([sqrt(x**2 + y**2), atan2(y, x)])),
-        Lambda((r, t), Matrix([r*cos(t), r*sin(t)]))
-    )
-}
-
-
 def test_functional_diffgeom_ch2():
     x0, y0, r0, theta0 = symbols('x0, y0, r0, theta0', real=True)
     x, y = symbols('x, y', real=True)
     f = Function('f')
 
-    assert (R2_p.point_to_coords(R2_r.point([x0, y0]), transforms=R2_r_R2_p) ==
-           Matrix([sqrt(x0**2 + y0**2), atan2(y0, x0)]))
-    assert (R2_r.point_to_coords(R2_p.point([r0, theta0]), transforms=R2_r_R2_p) ==
-           Matrix([r0*cos(theta0), r0*sin(theta0)]))
+    p = R2_r.point([x0, y0])
+    assert R2_p.point_to_coords(p, transforms=transforms_2d) == \
+        Matrix([sqrt(x0**2 + y0**2), atan2(y0, x0)])
+    p = R2_p.point([r0, theta0])
+    assert R2_r.point_to_coords(p, transforms=transforms_2d) == \
+        Matrix([r0*cos(theta0), r0*sin(theta0)])
 
-    assert R2_p.jacobian(R2_r, [r0, theta0], transforms=R2_r_R2_p) == Matrix(
-        [[cos(theta0), -r0*sin(theta0)], [sin(theta0), r0*cos(theta0)]])
+    assert R2_p.jacobian(R2_r, [r0, theta0], transforms=transforms_2d) == \
+        Matrix([
+            [cos(theta0), -r0*sin(theta0)],
+            [sin(theta0), r0*cos(theta0)]])
 
     field = f(R2.x, R2.y)
     p1_in_rect = R2_r.point([x0, y0])
     p1_in_polar = R2_p.point([sqrt(x0**2 + y0**2), atan2(y0, x0)])
     assert field.rcall(p1_in_rect) == f(x0, y0)
-    assert field.rcall(p1_in_polar, transforms=R2_r_R2_p) == f(x0, y0)
+    assert field.rcall(p1_in_polar, transforms=transforms_2d) == f(x0, y0)
 
     p_r = R2_r.point([x0, y0])
     p_p = R2_p.point([r0, theta0])
     assert R2.x(p_r) == x0
-    assert R2.x(p_p, transforms=R2_r_R2_p) == r0*cos(theta0)
+    assert R2.x(p_p, transforms=transforms_2d) == r0*cos(theta0)
     assert R2.r(p_p) == r0
-    assert R2.r(p_r, transforms=R2_r_R2_p) == sqrt(x0**2 + y0**2)
-    assert R2.theta(p_r, transforms=R2_r_R2_p) == atan2(y0, x0)
+    assert R2.r(p_r, transforms=transforms_2d) == sqrt(x0**2 + y0**2)
+    assert R2.theta(p_r, transforms=transforms_2d) == atan2(y0, x0)
 
     h = R2.x*R2.r**2 + R2.y**3
-    assert h.rcall(p_r, transforms=R2_r_R2_p) == x0*(x0**2 + y0**2) + y0**3
-    assert h.rcall(p_p, transforms=R2_r_R2_p) == r0**3*sin(theta0)**3 + r0**3*cos(theta0)
+    assert h.rcall(p_r, transforms=transforms_2d) == \
+        x0*(x0**2 + y0**2) + y0**3
+    assert h.rcall(p_p, transforms=transforms_2d) == \
+        r0**3*sin(theta0)**3 + r0**3*cos(theta0)
 
 
 def test_functional_diffgeom_ch3():
@@ -76,10 +65,10 @@ def test_functional_diffgeom_ch3():
     assert v_field.rcall(s_field).rcall(p_r).doit() == b1(
         x0)*Derivative(f(x0, y0), x0) + b2(y0)*Derivative(f(x0, y0), y0)
 
-    assert R2.e_x(R2.r**2, transforms=R2_r_R2_p).rcall(p_r, transforms=R2_r_R2_p) == 2*x0
-    v = R2.e_x + 2*R2.e_y
-    s = R2.r**2 + 3*R2.x
-    assert v.rcall(s, transforms=R2_r_R2_p).rcall(p_r, transforms=R2_r_R2_p).doit() == 2*x0 + 4*y0 + 3
+    v = R2.e_x(R2.r**2, transforms=transforms_2d)
+    assert v.rcall(p_r, transforms=transforms_2d) == 2*x0
+    v = (R2.e_x + 2*R2.e_y).rcall(R2.r**2 + 3*R2.x, transforms=transforms_2d)
+    assert v.rcall(p_r, transforms=transforms_2d).doit() == 2*x0 + 4*y0 + 3
 
     circ = -R2.y*R2.e_x + R2.x*R2.e_y
     series = intcurve_series(circ, t, R2_r.point([1, 0]), coeffs=True)
@@ -111,10 +100,12 @@ def test_functional_diffgeom_ch4():
 
     s_field_p = f(R2.r, R2.theta)
     df = Differential(s_field_p)
-    assert trigsimp(df(R2.e_x, transforms=R2_r_R2_p).rcall(p_p, transforms=R2_r_R2_p).doit()) == (
+    df_e_x = df(R2.e_x, transforms=transforms_2d)
+    assert trigsimp(df_e_x.rcall(p_p, transforms=transforms_2d).doit()) == (
         cos(theta0)*Derivative(f(r0, theta0), r0) -
         sin(theta0)*Derivative(f(r0, theta0), theta0)/r0)
-    assert trigsimp(df(R2.e_y, transforms=R2_r_R2_p).rcall(p_p, transforms=R2_r_R2_p).doit()) == (
+    df_e_y = df(R2.e_y, transforms=transforms_2d)
+    assert trigsimp(df_e_y.rcall(p_p, transforms=transforms_2d).doit()) == (
         sin(theta0)*Derivative(f(r0, theta0), r0) +
         cos(theta0)*Derivative(f(r0, theta0), theta0)/r0)
 
@@ -124,12 +115,17 @@ def test_functional_diffgeom_ch4():
     assert R2.dx(R2.e_y) == 0
 
     circ = -R2.y*R2.e_x + R2.x*R2.e_y
-    assert R2.dx(circ, transforms=R2_r_R2_p).rcall(p_r, transforms=R2_r_R2_p).doit() == -y0
-    assert R2.dy(circ, transforms=R2_r_R2_p).rcall(p_r, transforms=R2_r_R2_p) == x0
-    assert R2.dr(circ, transforms=R2_r_R2_p).rcall(p_r, transforms=R2_r_R2_p) == 0
-    assert simplify(R2.dtheta(circ, transforms=R2_r_R2_p).rcall(p_r, transforms=R2_r_R2_p)) == 1
+    dx_circ = R2.dx(circ, transforms=transforms_2d)
+    assert dx_circ.rcall(p_r, transforms=transforms_2d).doit() == -y0
+    dy_circ = R2.dy(circ, transforms=transforms_2d)
+    assert dy_circ.rcall(p_r, transforms=transforms_2d) == x0
+    dr_circ = R2.dr(circ, transforms=transforms_2d)
+    assert dr_circ.rcall(p_r, transforms=transforms_2d) == 0
+    dt_circ = R2.dtheta(circ, transforms=transforms_2d)
+    assert simplify(dt_circ.rcall(p_r, transforms=transforms_2d)) == 1
 
-    assert (circ - R2.e_theta).rcall(s_field_r, transforms=R2_r_R2_p).rcall(p_r, transforms=R2_r_R2_p) == 0
+    new = (circ - R2.e_theta).rcall(s_field_r, transforms=transforms_2d)
+    assert new.rcall(p_r, transforms=transforms_2d) == 0
 
 
 def test_functional_diffgeom_ch6():
