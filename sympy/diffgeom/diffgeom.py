@@ -351,10 +351,29 @@ class CoordSystem(Basic):
         raise NotImplementedError
         # TODO
 
+    @property
+    def _default_transform_dict(self):
+        """Returns the default coordinate transformation dictionary.
+
+        You may define your own subclass of CoordSystem and override
+        this to change the default.
+        """
+        from .rn import R2_r, R2_p, R3_r, R3_c, R3_s
+        from .rn import transforms_2d, transforms_3d
+
+        if self in (R2_r, R2_p):
+            return transforms_2d
+        elif self in (R3_r, R3_c, R3_s):
+            return transforms_3d
+        return {}
+
     def coord_tuple_transform_to(self, to_sys, coords, transforms={}):
         """Transform ``coords`` to coord system ``to_sys``.
 
         See the docstring of ``CoordSystem`` for examples."""
+        if not transforms:
+            transforms = self._default_transform_dict
+
         if self != to_sys:
             if (self, to_sys) in transforms:
                 transf = transforms[(self, to_sys)]
@@ -658,7 +677,7 @@ class BaseVectorField(Expr):
     Use the predefined R2 manifold, setup some boilerplate.
 
     >>> from sympy import symbols, pi, Function
-    >>> from sympy.diffgeom.rn import R2, R2_p, R2_r, transforms_2d
+    >>> from sympy.diffgeom.rn import R2, R2_p, R2_r
     >>> from sympy.diffgeom import BaseVectorField
     >>> from sympy import pprint
     >>> x0, y0, r0, theta0 = symbols('x0, y0, r0, theta0')
@@ -672,24 +691,24 @@ class BaseVectorField(Expr):
 
     >>> g = Function('g')
     >>> s_field = g(R2.x, R2.y)
-    >>> s_field.rcall(point_r, transforms=transforms_2d)
+    >>> s_field.rcall(point_r)
     g(x0, y0)
-    >>> s_field.rcall(point_p, transforms=transforms_2d)
+    >>> s_field.rcall(point_p)
     g(r0*cos(theta0), r0*sin(theta0))
 
     Vector field:
 
     >>> v = BaseVectorField(R2_r, 1)
-    >>> v = v(s_field, transforms=transforms_2d)
+    >>> v = v(s_field)
     >>> pprint(v)
     / d           \|
     |---(g(x, xi))||
     \dxi          /|xi=y
-    >>> pprint(v.rcall(point_r, transforms=transforms_2d).doit())
+    >>> pprint(v.rcall(point_r).doit())
      d
     ---(g(x0, y0))
     dy0
-    >>> pprint(v.rcall(point_p, transforms=transforms_2d))
+    >>> pprint(v.rcall(point_p))
     / d                        \|
     |---(g(r0*cos(theta0), xi))||
     \dxi                       /|xi=r0*sin(theta0)
@@ -763,7 +782,7 @@ class Commutator(Expr):
 
     Use the predefined R2 manifold, setup some boilerplate.
 
-    >>> from sympy.diffgeom.rn import R2, R2_p, transforms_2d
+    >>> from sympy.diffgeom.rn import R2, R2_p
     >>> from sympy.diffgeom import Commutator
     >>> from sympy import pprint
     >>> from sympy.simplify import simplify
@@ -781,7 +800,7 @@ class Commutator(Expr):
     >>> c_xr
     Commutator(e_x, e_r)
 
-    >>> simplify(c_xr(R2.y**2, transforms=transforms_2d))
+    >>> simplify(c_xr(R2.y**2))
     -2*cos(theta)*y**2/(x**2 + y**2)
 
     """
@@ -1297,7 +1316,7 @@ def intcurve_series(
     Use the predefined R2 manifold:
 
     >>> from sympy.abc import t, x, y
-    >>> from sympy.diffgeom.rn import R2, R2_p, R2_r, transforms_2d
+    >>> from sympy.diffgeom.rn import R2, R2_p, R2_r
     >>> from sympy.diffgeom import intcurve_series
 
     Specify a starting point and a vector field:
@@ -1308,7 +1327,7 @@ def intcurve_series(
     Calculate the series:
 
     >>> series = intcurve_series(
-    ...     vector_field, t, start_point, n=3, transforms=transforms_2d)
+    ...     vector_field, t, start_point, n=3)
     >>> series
     Matrix([
     [t + x],
@@ -1317,8 +1336,7 @@ def intcurve_series(
     Or get the elements of the expansion in a list:
 
     >>> series = intcurve_series(
-    ...     vector_field, t, start_point, n=3, coeffs=True,
-    ...     transforms=transforms_2d)
+    ...     vector_field, t, start_point, n=3, coeffs=True)
     >>> series[0]
     Matrix([
     [x],
@@ -1336,7 +1354,7 @@ def intcurve_series(
 
     >>> series = intcurve_series(
     ...     vector_field, t, start_point, n=3, coord_sys=R2_p,
-    ...     coeffs=True, transforms=transforms_2d)
+    ...     coeffs=True)
     >>> series[0]
     Matrix([
     [sqrt(x**2 + y**2)],
@@ -1415,7 +1433,7 @@ def intcurve_diffequ(vector_field, param, start_point, coord_sys=None, transform
     Use the predefined R2 manifold:
 
     >>> from sympy.abc import t
-    >>> from sympy.diffgeom.rn import R2, R2_p, R2_r, transforms_2d
+    >>> from sympy.diffgeom.rn import R2, R2_p, R2_r
     >>> from sympy.diffgeom import intcurve_diffequ
 
     Specify a starting point and a vector field:
@@ -1426,7 +1444,7 @@ def intcurve_diffequ(vector_field, param, start_point, coord_sys=None, transform
     Get the equation:
 
     >>> equations, init_cond = intcurve_diffequ(
-    ...     vector_field, t, start_point, transforms=transforms_2d)
+    ...     vector_field, t, start_point)
     >>> equations
     [f_1(t) + Derivative(f_0(t), t), -f_0(t) + Derivative(f_1(t), t)]
     >>> init_cond
@@ -1435,8 +1453,7 @@ def intcurve_diffequ(vector_field, param, start_point, coord_sys=None, transform
     The series in the polar coordinate system:
 
     >>> equations, init_cond = intcurve_diffequ(
-    ...     vector_field, t, start_point, coord_sys=R2_p,
-    ...     transforms=transforms_2d)
+    ...     vector_field, t, start_point, coord_sys=R2_p)
     >>> equations
     [Derivative(f_0(t), t), Derivative(f_1(t), t) - 1]
     >>> init_cond
@@ -1574,12 +1591,12 @@ def vectors_in_basis(expr, to_sys, transforms={}):
     ========
 
     >>> from sympy.diffgeom import vectors_in_basis
-    >>> from sympy.diffgeom.rn import R2_r, R2_p, transforms_2d
+    >>> from sympy.diffgeom.rn import R2_r, R2_p
     >>> from sympy import symbols, Lambda, cos, sin, sqrt, atan2, Matrix
 
-    >>> vectors_in_basis(R2_r.e_x, R2_p, transforms=transforms_2d)
+    >>> vectors_in_basis(R2_r.e_x, R2_p)
     -y*e_theta/(x**2 + y**2) + x*e_r/sqrt(x**2 + y**2)
-    >>> vectors_in_basis(R2_p.e_r, R2_r, transforms=transforms_2d)
+    >>> vectors_in_basis(R2_p.e_r, R2_r)
     sin(theta)*e_y + cos(theta)*e_x
     """
     vectors = list(expr.atoms(BaseVectorField))

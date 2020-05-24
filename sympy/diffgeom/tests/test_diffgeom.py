@@ -1,5 +1,5 @@
 from sympy.diffgeom.rn import (
-    R2, R2_p, R2_r, R3_r, R3_c, R3_s, transforms_2d, transforms_3d)
+    R2, R2_p, R2_r, R3_r, R3_c, R3_s)
 from sympy.diffgeom import (Commutator, Differential, TensorProduct,
         WedgeProduct, BaseCovarDerivativeOp, CovarDerivativeOp, LieDerivative,
         covariant_order, contravariant_order, twoform_to_matrix, metric_to_Christoffel_1st,
@@ -21,11 +21,11 @@ def test_R2():
 
     # r**2 = x**2 + y**2
     scalar = (R2.r**2 - R2.x**2 - R2.y**2)
-    scalar = scalar.rcall(point_r, transforms=transforms_2d)
+    scalar = scalar.rcall(point_r)
     assert scalar == trigsimp(scalar) == 0
 
-    scalar = R2.e_r(R2.x**2 + R2.y**2, transforms=transforms_2d)
-    scalar = scalar.rcall(point_p, transforms=transforms_2d)
+    scalar = R2.e_r(R2.x**2 + R2.y**2)
+    scalar = scalar.rcall(point_p)
     assert trigsimp(scalar.doit()) == 2*r0
 
     # polar->rect->polar == Id
@@ -33,28 +33,24 @@ def test_R2():
     m = Matrix([[a], [b]])
     #TODO assert m == R2_r.coord_tuple_transform_to(R2_p, R2_p.coord_tuple_transform_to(R2_r, [a, b])).applyfunc(simplify)
 
-    coord = R2_r.coord_tuple_transform_to(R2_p, m, transforms=transforms_2d)
-    coord = R2_p.coord_tuple_transform_to(
-        R2_r, coord, transforms=transforms_2d)
+    coord = R2_r.coord_tuple_transform_to(R2_p, m)
+    coord = R2_p.coord_tuple_transform_to(R2_r, coord)
     assert m == coord.applyfunc(simplify)
 
 
 def test_R3():
     a, b, c = symbols('a b c', positive=True)
     m = Matrix([[a], [b], [c]])
-    forward = R3_r.coord_tuple_transform_to(R3_c, m, transforms=transforms_3d)
-    backward = R3_c.coord_tuple_transform_to(
-        R3_r, forward, transforms=transforms_3d)
+    forward = R3_r.coord_tuple_transform_to(R3_c, m)
+    backward = R3_c.coord_tuple_transform_to(R3_r, forward)
     assert m == backward.applyfunc(simplify)
     #TODO assert m == R3_r.coord_tuple_transform_to(R3_c, R3_c.coord_tuple_transform_to(R3_r, m)).applyfunc(simplify)
-    forward = R3_r.coord_tuple_transform_to(R3_s, m, transforms=transforms_3d)
-    backward = R3_s.coord_tuple_transform_to(
-        R3_r, forward, transforms=transforms_3d)
+    forward = R3_r.coord_tuple_transform_to(R3_s, m)
+    backward = R3_s.coord_tuple_transform_to(R3_r, forward)
     assert m == backward.applyfunc(simplify)
     #TODO assert m == R3_r.coord_tuple_transform_to(R3_s, R3_s.coord_tuple_transform_to(R3_r, m)).applyfunc(simplify)
-    forward = R3_c.coord_tuple_transform_to(R3_s, m, transforms=transforms_3d)
-    backward = R3_s.coord_tuple_transform_to(
-        R3_c, forward, transforms=transforms_3d)
+    forward = R3_c.coord_tuple_transform_to(R3_s, m)
+    backward = R3_s.coord_tuple_transform_to(R3_c, forward)
     assert m == backward.applyfunc(simplify)
     #TODO assert m == R3_c.coord_tuple_transform_to(R3_s, R3_s.coord_tuple_transform_to(R3_c, m)).applyfunc(simplify)
 
@@ -63,10 +59,8 @@ def test_point():
     x, y = symbols('x, y')
     p = R2_r.point([x, y])
     assert p.free_symbols == {x, y}
-    assert p.coords(R2_r, transforms=transforms_2d) == \
-        p.coords() == Matrix([x, y])
-    assert p.coords(R2_p, transforms=transforms_2d) == \
-        Matrix([sqrt(x**2 + y**2), atan2(y, x)])
+    assert p.coords(R2_r) == p.coords() == Matrix([x, y])
+    assert p.coords(R2_p) == Matrix([sqrt(x**2 + y**2), atan2(y, x)])
 
 
 def test_commutator():
@@ -74,8 +68,7 @@ def test_commutator():
     assert Commutator(R2.x*R2.e_x, R2.x*R2.e_x) == 0
     assert Commutator(R2.x*R2.e_x, R2.x*R2.e_y) == R2.x*R2.e_y
     c = Commutator(R2.e_x, R2.e_r)
-    assert c(R2.x, transforms=transforms_2d) == \
-        R2.y*(R2.x**2 + R2.y**2)**(-1)*sin(R2.theta)
+    assert c(R2.x) == R2.y*(R2.x**2 + R2.y**2)**(-1)*sin(R2.theta)
 
 
 def test_differential():
@@ -144,12 +137,12 @@ def test_intcurve_diffequ():
     start_point = R2_r.point([1, 0])
     vector_field = -R2.y*R2.e_x + R2.x*R2.e_y
     equations, init_cond = intcurve_diffequ(
-        vector_field, t, start_point, transforms=transforms_2d)
+        vector_field, t, start_point)
     assert str(equations) == \
         '[f_1(t) + Derivative(f_0(t), t), -f_0(t) + Derivative(f_1(t), t)]'
     assert str(init_cond) == '[f_0(0) - 1, f_1(0)]'
     equations, init_cond = intcurve_diffequ(
-        vector_field, t, start_point, R2_p, transforms=transforms_2d)
+        vector_field, t, start_point, R2_p)
     assert str(
         equations) == '[Derivative(f_0(t), t), Derivative(f_1(t), t) - 1]'
     assert str(init_cond) == '[f_0(0) - 1, f_1(0)]'
