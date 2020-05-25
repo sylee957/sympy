@@ -5,7 +5,7 @@ from sympy import (
     Symbol, Mul, Add, Eq, Abs, sin, asin, cos, Pow,
     csc, sec, Limit, oo, Derivative, Integral, factorial,
     sqrt, root, StrictLessThan, LessThan, StrictGreaterThan,
-    GreaterThan, Sum, Product, E, log, tan, Function, binomial
+    GreaterThan, Sum, Product, E, log, tan, Function, binomial, pi
 )
 from sympy.abc import x, y, z, a, b, c, t, k, n
 antlr4 = import_module("antlr4")
@@ -61,6 +61,8 @@ GOOD_PAIRS = [
     ("0", 0),
     ("1", 1),
     ("-3.14", _Mul(-1, 3.14)),
+    ("\\pi", pi),
+    ("\\pi_1", Symbol('\\pi_{1}')),
     ("(-7.13)(1.5)", _Mul(_Mul(-1, 7.13), 1.5)),
     ("x", x),
     ("2x", 2*x),
@@ -73,6 +75,7 @@ GOOD_PAIRS = [
     ("a + b", a + b),
     ("a + b - a", _Add(a+b, -a)),
     ("a^2 + b^2 = c^2", Eq(a**2 + b**2, c**2)),
+    ("\\alpha", Symbol('alpha')),
     ("\\sin \\theta", sin(theta)),
     ("\\sin(\\theta)", sin(theta)),
     ("\\sin^{-1} a", asin(a)),
@@ -91,6 +94,7 @@ GOOD_PAIRS = [
     ("\\lim_{x \\to 3^{+}} a", Limit(a, x, 3, dir='+')),
     ("\\lim_{x \\to 3^{-}} a", Limit(a, x, 3, dir='-')),
     ("\\infty", oo),
+    ("\\infty_1", Symbol('\\infty_{1}')),
     ("\\lim_{x \\to \\infty} \\frac{1}{x}",
      Limit(_Mul(1, _Pow(x, -1)), x, oo)),
     ("\\frac{d}{dx} x", Derivative(x, x)),
@@ -104,7 +108,7 @@ GOOD_PAIRS = [
     ("||x||", _Abs(Abs(x))),
     ("|x||y|", _Abs(x)*_Abs(y)),
     ("||x||y||", _Abs(_Abs(x)*_Abs(y))),
-    ("\\pi^{|xy|}", Symbol('pi')**_Abs(x*y)),
+    ("\\pi^{|xy|}", pi**_Abs(x*y)),
     ("\\int x dx", Integral(x, x)),
     ("\\int x d\\theta", Integral(x, theta)),
     ("\\int (x^2 - y)dx", Integral(x**2 - y, x)),
@@ -132,10 +136,10 @@ GOOD_PAIRS = [
     ("x_{1}", Symbol('x_{1}')),
     ("x_a", Symbol('x_{a}')),
     ("x_{b}", Symbol('x_{b}')),
-    ("h_\\theta", Symbol('h_{theta}')),
-    ("h_{\\theta}", Symbol('h_{theta}')),
+    ("h_\\theta", Symbol(r'h_{\theta}')),
+    ("h_{\\theta}", Symbol(r'h_{\theta}')),
     ("h_{\\theta}(x_0, x_1)",
-     Function('h_{theta}')(Symbol('x_{0}'), Symbol('x_{1}'))),
+     Function(r'h_{\theta}')(Symbol('x_{0}'), Symbol('x_{1}'))),
     ("x!", _factorial(x)),
     ("100!", _factorial(100)),
     ("\\theta!", _factorial(theta)),

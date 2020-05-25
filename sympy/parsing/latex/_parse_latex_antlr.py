@@ -3,8 +3,8 @@
 # See license in LICENSE.txt
 
 import sympy
+from sympy.core.alphabets import greeks
 from sympy.external import import_module
-from sympy.printing.str import StrPrinter
 
 from .errors import LaTeXParsingError
 
@@ -284,27 +284,34 @@ def convert_atom(atom):
     if atom.LETTER():
         subscriptName = ''
         if atom.subexpr():
-            subscript = None
-            if atom.subexpr().expr():  # subscript is expr
-                subscript = convert_expr(atom.subexpr().expr())
-            else:  # subscript is atom
-                subscript = convert_atom(atom.subexpr().atom())
-            subscriptName = '_{' + StrPrinter().doprint(subscript) + '}'
+            subexpr = atom.subexpr()
+            if subexpr.expr():
+                subexpr_text = subexpr.expr().getText()
+            else:
+                subexpr_text = subexpr.atom().getText()
+            subscriptName = '_{' + subexpr_text + '}'
         return sympy.Symbol(atom.LETTER().getText() + subscriptName)
+
     elif atom.SYMBOL():
-        s = atom.SYMBOL().getText()[1:]
-        if s == "infty":
-            return sympy.oo
-        else:
-            if atom.subexpr():
-                subscript = None
-                if atom.subexpr().expr():  # subscript is expr
-                    subscript = convert_expr(atom.subexpr().expr())
-                else:  # subscript is atom
-                    subscript = convert_atom(atom.subexpr().atom())
-                subscriptName = StrPrinter().doprint(subscript)
-                s += '_{' + subscriptName + '}'
+        s = atom.SYMBOL().getText()
+        if atom.subexpr():
+            subexpr = atom.subexpr()
+            if subexpr.expr():
+                subexpr_text = subexpr.expr().getText()
+            else:
+                subexpr_text = subexpr.atom().getText()
+
+            if s[1:].lower() in greeks or s[1:] == "infty":
+                s += '_{' + subexpr_text + '}'
+            else:
+                s = s[1:] + '_{' + subexpr_text + '}'
             return sympy.Symbol(s)
+        if s[1:] == "infty":
+            return sympy.oo
+        elif s[1:] == "pi":
+            return sympy.pi
+        return sympy.Symbol(s[1:])
+
     elif atom.NUMBER():
         s = atom.NUMBER().getText().replace(",", "")
         return sympy.Number(s)
@@ -430,13 +437,12 @@ def convert_func(func):
             fname = func.SYMBOL().getText()[1:]
         fname = str(fname)  # can't be unicode
         if func.subexpr():
-            subscript = None
-            if func.subexpr().expr():  # subscript is expr
-                subscript = convert_expr(func.subexpr().expr())
-            else:  # subscript is atom
-                subscript = convert_atom(func.subexpr().atom())
-            subscriptName = StrPrinter().doprint(subscript)
-            fname += '_{' + subscriptName + '}'
+            subexpr = func.subexpr()
+            if subexpr.expr():
+                subexpr_text = subexpr.expr().getText()
+            else:
+                subexpr_text = subexpr.atom().getText()
+            fname += '_{' + subexpr_text + '}'
         input_args = func.args()
         output_args = []
         while input_args.args():  # handle multiple arguments to function
@@ -553,6 +559,6 @@ def get_differential_var_str(text):
             idx = i
             break
     text = text[idx:]
-    if text[0] == "\\":
+    if text[0] == "\\" and '_' not in text[1:]:
         text = text[1:]
     return text
