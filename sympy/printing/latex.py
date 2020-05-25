@@ -980,18 +980,14 @@ class LatexPrinter(Printer):
 
     def _print_log(self, expr, exp=None):
         args = expr.args
-        if not self._settings["ln_notation"]:
-            if len(args) == 1:
-                tex = r"\log{\left(%s \right)}" % self._print(args[0])
-            else:
-                tex = r"\log_{%s}{\left(%s \right)}" \
-                    % (self._print(args[1]), self._print(args[0]))
-        else:
-            if len(args) == 1:
+        if len(args) == 1:
+            if self._settings["ln_notation"]:
                 tex = r"\ln{\left(%s \right)}" % self._print(args[0])
             else:
-                tex = r"\log_{%s}{\left(%s \right)}" \
-                    % (self._print(args[1]), self._print(args[0]))
+                tex = r"\log{\left(%s \right)}" % self._print(args[0])
+        else:
+            tex = r"\log_{%s}{\left(%s \right)}" \
+                % (self._print(args[1]), self._print(args[0]))
 
         if exp is not None:
             return r"%s^{%s}" % (tex, exp)
