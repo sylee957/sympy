@@ -987,11 +987,11 @@ class LatexPrinter(Printer):
                 tex = r"\log_{%s}{\left(%s \right)}" \
                     % (self._print(args[1]), self._print(args[0]))
         else:
-            if len(args) != 1:
-                raise ValueError(
-                    "'ln_notation'=True cannot be used because"
-                    "the logarithm doesn't have the exponential base.")
-            tex = r"\ln{\left(%s \right)}" % self._print(args[0])
+            if len(args) == 1:
+                tex = r"\ln{\left(%s \right)}" % self._print(args[0])
+            else:
+                tex = r"\log_{%s}{\left(%s \right)}" \
+                    % (self._print(args[1]), self._print(args[0]))
 
         if exp is not None:
             return r"%s^{%s}" % (tex, exp)
@@ -2637,7 +2637,8 @@ def latex(expr, full_prec=False, min=None, max=None, fold_frac_powers=False,
         Specifies if itex-specific syntax is used, including emitting
         ``$$...$$``.
     ln_notation : boolean, optional
-        If set to ``True``, ``\ln`` is used instead of default ``\log``.
+        If set to ``True``, ``\ln`` is used instead of default ``\log``
+        when the base is exponential constant.
     long_frac_ratio : float or None, optional
         The allowed ratio of the width of the numerator to the width of the
         denominator before the printer breaks off long fractions. If ``None``
