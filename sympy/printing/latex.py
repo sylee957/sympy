@@ -2791,9 +2791,9 @@ def latex(expr, full_prec=False, min=None, max=None, fold_frac_powers=False,
     Logarithms:
 
     >>> print(latex(log(10)))
-    \log{\left(10 \right)}
+    \log{\left(10\right)}
     >>> print(latex(log(10), ln_notation=True))
-    \ln{\left(10 \right)}
+    \ln{\left(10\right)}
 
     ``latex()`` also supports the builtin container types list, tuple, and
     dictionary.
@@ -2875,21 +2875,21 @@ def multiline_latex(lhs, rhs, terms_per_line=1, environment="align*", use_dots=F
     \begin{align*}
     x = & e^{i \alpha} \\
     & + \sin{\left(\alpha y \right)} \\
-    & - \cos{\left(\log{\left(y \right)} \right)}
+    & - \cos{\left(\log{\left(y\right)} \right)}
     \end{align*}
 
     Using at most two terms per line:
     >>> print(multiline_latex(x, expr, 2))
     \begin{align*}
     x = & e^{i \alpha} + \sin{\left(\alpha y \right)} \\
-    & - \cos{\left(\log{\left(y \right)} \right)}
+    & - \cos{\left(\log{\left(y\right)} \right)}
     \end{align*}
 
     Using ``eqnarray`` and dots:
     >>> print(multiline_latex(x, expr, terms_per_line=2, environment="eqnarray", use_dots=True))
     \begin{eqnarray}
     x & = & e^{i \alpha} + \sin{\left(\alpha y \right)} \dots\nonumber\\
-    & & - \cos{\left(\log{\left(y \right)} \right)}
+    & & - \cos{\left(\log{\left(y\right)} \right)}
     \end{eqnarray}
 
     Using ``IEEEeqnarray``:
@@ -2897,7 +2897,7 @@ def multiline_latex(lhs, rhs, terms_per_line=1, environment="align*", use_dots=F
     \begin{IEEEeqnarray}{rCl}
     x & = & e^{i \alpha} \nonumber\\
     & & + \sin{\left(\alpha y \right)} \nonumber\\
-    & & - \cos{\left(\log{\left(y \right)} \right)}
+    & & - \cos{\left(\log{\left(y\right)} \right)}
     \end{IEEEeqnarray}
 
     Notes
