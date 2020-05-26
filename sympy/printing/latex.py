@@ -2634,7 +2634,7 @@ def latex(expr, full_prec=False, min=None, max=None, fold_frac_powers=False,
         ``$$...$$``.
     ln_notation : boolean, optional
         If set to ``True``, ``\ln`` is used instead of default ``\log``
-        when the base is exponential constant.
+        when the base is the exponential constant :math:`e`.
     long_frac_ratio : float or None, optional
         The allowed ratio of the width of the numerator to the width of the
         denominator before the printer breaks off long fractions. If ``None``
