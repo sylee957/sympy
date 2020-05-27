@@ -155,14 +155,7 @@ class DenseMatrix(MatrixBase):
                 row_indices = range(self_cols*row, self_cols*(row+1))
                 col_indices = range(col, other_len, other.cols)
                 vec = [mat[a]*other_mat[b] for a, b in zip(row_indices, col_indices)]
-                try:
-                    new_mat[i] = Add(*vec)
-                except (TypeError, SympifyError):
-                    # Some matrices don't work with `sum` or `Add`
-                    # They don't work with `sum` because `sum` tries to add `0`
-                    # Fall back to a safe way to multiply if the `Add` fails.
-                    new_mat[i] = reduce(lambda a, b: a + b, vec)
-
+                new_mat[i] = reduce(lambda a, b: a.__add__(b), vec)
         return classof(self, other)._new(self.rows, other.cols, new_mat, copy=False)
 
     def _eval_matrix_mul_elementwise(self, other):

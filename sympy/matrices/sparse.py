@@ -393,14 +393,7 @@ class SparseMatrix(MatrixBase):
                 indices = set(col_lookup[col].keys()) & set(row_lookup[row].keys())
                 if indices:
                     vec = [row_lookup[row][k]*col_lookup[col][k] for k in indices]
-                    try:
-                        smat[row, col] = Add(*vec)
-                    except (TypeError, SympifyError):
-                        # Some matrices don't work with `sum` or `Add`
-                        # They don't work with `sum` because `sum` tries to add `0`
-                        # Fall back to a safe way to multiply if the `Add` fails.
-                        smat[row, col] = reduce(lambda a, b: a + b, vec)
-
+                    smat[row, col] = reduce(lambda a, b: a.__add__(b), vec)
         return self._new(self.rows, other.cols, smat)
 
     def _eval_row_insert(self, irow, other):

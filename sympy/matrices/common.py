@@ -2380,14 +2380,7 @@ class MatrixArithmetic(MatrixRequired):
     def _eval_matrix_mul(self, other):
         def entry(i, j):
             vec = [self[i,k]*other[k,j] for k in range(self.cols)]
-            try:
-                return Add(*vec)
-            except (TypeError, SympifyError):
-                # Some matrices don't work with `sum` or `Add`
-                # They don't work with `sum` because `sum` tries to add `0`
-                # Fall back to a safe way to multiply if the `Add` fails.
-                return reduce(lambda a, b: a + b, vec)
-
+            return reduce(lambda a, b: a.__add__(b), vec)
         return self._new(self.rows, other.cols, entry)
 
     def _eval_matrix_mul_elementwise(self, other):

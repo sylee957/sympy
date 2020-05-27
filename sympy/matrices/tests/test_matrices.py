@@ -2889,3 +2889,10 @@ def test_func():
 
     A = Matrix([[0, 2, 1, 6], [0, 0, 1, 2], [0, 0, 0, 3], [0, 0, 0, 0]])
     assert A.analytic_func(exp(x*t), x) == expand(simplify((A*t).exp()))
+
+def test_poly():
+    x = Symbol('x')
+    for Matrix in classes:
+        a = Matrix([Poly([1, 1], x)])
+        b = Matrix([Poly([1, 1], x)])
+        assert a * b == Matrix([Poly([1, 2, 1], x)])
