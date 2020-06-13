@@ -4,6 +4,7 @@ from sympy.matrices import (Identity, Inverse, Matrix, MatrixSymbol, ZeroMatrix,
         eye, ImmutableMatrix)
 from sympy.matrices.expressions import Adjoint, Transpose, det, MatPow
 from sympy.matrices.expressions.matexpr import GenericIdentity
+from sympy.matrices.expressions.matadd import MatAdd
 from sympy.matrices.expressions.matmul import (factor_in_front, remove_ids,
         MatMul, combine_powers, any_zeros, unpack, only_squares)
 from sympy.strategies import null_safe
@@ -156,3 +157,7 @@ def test_construction_with_Mul():
 def test_generic_identity():
     assert MatMul.identity == GenericIdentity()
     assert MatMul.identity != S.One
+
+def test_unary_negation():
+    assert MatMul(-1, C + D).doit() == MatAdd(-C, -D)
+    assert MatMul(-1, C - D).doit() == MatAdd(D, -C)

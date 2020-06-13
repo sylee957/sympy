@@ -299,6 +299,20 @@ def factor_in_front(mul):
         return newmul(factor, *matrices)
     return mul
 
+def expand_negation_matadd(mul):
+    """Distribute unary negation with matrix addition."""
+    from .matadd import MatAdd
+    factor, matrices = mul.as_coeff_matrices()
+    if not factor == S.NegativeOne:
+        return mul
+    if len(matrices) != 1:
+        return mul
+    matrices = matrices[0]
+    if not isinstance(matrices, MatAdd):
+        return mul
+    new_args = (factor * m for m in matrices.args)
+    return MatAdd(*new_args)
+
 def combine_powers(mul):
     """Combine consecutive powers with the same base into one
 
@@ -388,8 +402,9 @@ def combine_one_matrices(mul):
     return newmul(factor, *new_args)
 
 rules = (
-    any_zeros, remove_ids, combine_one_matrices, combine_powers, unpack, rm_id(lambda x: x == 1),
-    merge_explicit, factor_in_front, flatten, combine_permutations)
+    any_zeros, remove_ids, combine_one_matrices, combine_powers, unpack,
+    rm_id(lambda x: x == 1), merge_explicit, factor_in_front,
+    expand_negation_matadd, flatten, combine_permutations)
 
 canonicalize = exhaust(typed({MatMul: do_one(*rules)}))
 
