@@ -80,10 +80,8 @@ def parse_latex(sympy):
     parser.removeErrorListeners()
     parser.addErrorListener(matherror)
 
-    relation = parser.math().relation()
-    expr = convert_relation(relation)
-
-    return expr
+    expr = parser.math().expr()
+    return convert_expr(expr)
 
 
 def convert_relation(rel):
@@ -105,68 +103,209 @@ def convert_relation(rel):
 
 
 def convert_expr(expr):
-    return convert_add(expr.additive())
+    if isinstance(expr, LaTeXParser.PowContext):
+        return convert_pow(expr)
+    if isinstance(expr, LaTeXParser.MulContext):
+        return convert_mul(expr)
+    if isinstance(expr, LaTeXParser.DivContext):
+        return convert_div(expr)
+
+    if isinstance(expr, LaTeXParser.AddContext):
+        return convert_add(expr)
+    if isinstance(expr, LaTeXParser.SubContext):
+        return convert_sub(expr)
+
+    if isinstance(expr, LaTeXParser.EqualsContext):
+        return convert_eq(expr)
+    if isinstance(expr, LaTeXParser.LessEqualContext):
+        return convert_le(expr)
+    if isinstance(expr, LaTeXParser.LessThanContext):
+        return convert_lt(expr)
+    if isinstance(expr, LaTeXParser.GreaterEqualContext):
+        return convert_ge(expr)
+    if isinstance(expr, LaTeXParser.GreaterThanContext):
+        return convert_gt(expr)
+
+    if isinstance(expr, LaTeXParser.SpecialsContext):
+        return convert_special(expr.special())
+    if isinstance(expr, LaTeXParser.ImplicitMulContext):
+        return convert_mul(expr)
 
 
-def convert_add(add):
-    if add.ADD():
-        lh = convert_add(add.additive(0))
-        rh = convert_add(add.additive(1))
-        return sympy.Add(lh, rh, evaluate=False)
-    elif add.SUB():
-        lh = convert_add(add.additive(0))
-        rh = convert_add(add.additive(1))
-        return sympy.Add(lh, -1 * rh, evaluate=False)
-    else:
-        return convert_mp(add.mp())
+def convert_pow(expr):
+    base, exp = expr.base, expr.exp
+    base, exp = convert_expr(base), convert_expr(exp)
+    return sympy.Pow(base, exp, evaluate=False)
 
 
-def convert_mp(mp):
-    if hasattr(mp, 'mp'):
-        mp_left = mp.mp(0)
-        mp_right = mp.mp(1)
-    else:
-        mp_left = mp.mp_nofunc(0)
-        mp_right = mp.mp_nofunc(1)
-
-    if mp.MUL() or mp.CMD_TIMES() or mp.CMD_CDOT():
-        lh = convert_mp(mp_left)
-        rh = convert_mp(mp_right)
-        return sympy.Mul(lh, rh, evaluate=False)
-    elif mp.DIV() or mp.CMD_DIV() or mp.COLON():
-        lh = convert_mp(mp_left)
-        rh = convert_mp(mp_right)
-        return sympy.Mul(lh, sympy.Pow(rh, -1, evaluate=False), evaluate=False)
-    else:
-        if hasattr(mp, 'unary'):
-            return convert_unary(mp.unary())
-        else:
-            return convert_unary(mp.unary_nofunc())
+def convert_mul(expr):
+    lhs, rhs = expr.lhs, expr.rhs
+    lhs, rhs = convert_expr(lhs), convert_expr(rhs)
+    return sympy.Mul(lhs, rhs, evaluate=False)
 
 
-def convert_unary(unary):
-    if hasattr(unary, 'unary'):
-        nested_unary = unary.unary()
-    else:
-        nested_unary = unary.unary_nofunc()
-    if hasattr(unary, 'postfix_nofunc'):
-        first = unary.postfix()
-        tail = unary.postfix_nofunc()
-        postfix = [first] + tail
-    else:
-        postfix = unary.postfix()
+def convert_div(expr):
+    lhs, rhs = expr.lhs, expr.rhs
+    lhs, rhs = convert_expr(lhs), convert_expr(rhs)
+    rhs = sympy.Pow(rhs, -1, evaluate=False)
+    return sympy.Mul(lhs, rhs, evaluate=False)
 
-    if unary.ADD():
-        return convert_unary(nested_unary)
-    elif unary.SUB():
-        numabs = convert_unary(nested_unary)
-        if numabs == 1:
-            # Use Integer(-1) instead of Mul(-1, 1)
-            return -numabs
-        else:
-            return sympy.Mul(-1, convert_unary(nested_unary), evaluate=False)
-    elif postfix:
-        return convert_postfix_list(postfix)
+
+def convert_add(expr):
+    lhs, rhs = expr.lhs, expr.rhs
+    lhs, rhs = convert_expr(lhs), convert_expr(rhs)
+    return sympy.Add(lhs, rhs, evaluate=False)
+
+
+def convert_sub(expr):
+    lhs, rhs = expr.lhs, expr.rhs
+    lhs, rhs = convert_expr(lhs), convert_expr(rhs)
+    rhs = sympy.Mul(-1, rhs, evaluate=False)
+    return sympy.Add(lhs, rhs, evaluate=False)
+
+
+def convert_rel(expr, rel_op):
+    lhs, rhs = expr.lhs, expr.rhs
+    lhs, rhs = convert_expr(lhs), convert_expr(rhs)
+    return rel_op(lhs, rhs, evaluate=False)
+
+
+convert_eq = lambda expr: convert_rel(expr, sympy.Eq)
+convert_le = lambda expr: convert_rel(expr, sympy.Le)
+convert_lt = lambda expr: convert_rel(expr, sympy.Lt)
+convert_ge = lambda expr: convert_rel(expr, sympy.Ge)
+convert_gt = lambda expr: convert_rel(expr, sympy.Gt)
+
+
+def convert_special(special):
+    if special.unary_add():
+        return convert_unary_add(special.unary_add())
+    if special.unary_sub():
+        return convert_unary_sub(special.unary_sub())
+    if special.paren():
+        return convert_paren(special.paren())
+    if special.atom():
+        return convert_atom(special.atom())
+    if special.log():
+        return convert_log(special.log())
+    if special.amsmath_func():
+        return convert_amsmath_func(special.amsmath_func())
+    if special.frac():
+        return convert_frac(special.frac())
+
+
+def convert_unary_add(unary):
+    return convert_expr(unary.expr())
+
+
+def convert_unary_sub(unary):
+    return sympy.Mul(-1, convert_expr(unary.expr()), evaluate=False)
+
+
+def convert_paren(paren):
+    return convert_expr(paren.expr())
+
+
+def convert_log(log):
+    base = sympy.Integer(10)
+    if log.base:
+        base = convert_subexpr(log.base)
+    exp = None
+    if log.exp:
+        exp = convert_supexpr(log.exp)
+
+    if log.func_arg_noparens():
+        arg = convert_special(log.func_arg_noparens().special())
+    elif log.func_arg_parens():
+        arg = convert_expr(log.func_arg_parens().expr())
+
+    result = sympy.log(arg, base, evaluate=False)
+    if exp is not None:
+        return sympy.Pow(result, exp, evaluate=False)
+    return result
+
+
+def convert_amsmath_func(func):
+    exp = None
+    if func.exp:
+        exp = convert_supexpr(func.exp)
+
+    if func.func_arg_noparens():
+        arg = convert_special(func.func_arg_noparens().special())
+    elif func.func_arg_parens():
+        arg = convert_expr(func.func_arg_parens().expr())
+
+    sympy_func = convert_func_normal(func.func_normal())
+    result = sympy_func(arg)
+    if exp is not None:
+        return sympy.Pow(result, exp, evaluate=False)
+    return result
+
+
+def convert_func_normal(func_normal):
+    if func_normal.FUNC_EXP():
+        return sympy.exp
+    if func_normal.FUNC_LN():
+        return sympy.log
+
+    if func_normal.FUNC_SIN():
+        return sympy.sin
+    if func_normal.FUNC_COS():
+        return sympy.cos
+    if func_normal.FUNC_TAN():
+        return sympy.tan
+
+    if func_normal.FUNC_CSC():
+        return sympy.csc
+    if func_normal.FUNC_SEC():
+        return sympy.sec
+    if func_normal.FUNC_COT():
+        return sympy.cot
+
+    if func_normal.FUNC_ARCSIN():
+        return sympy.asin
+    if func_normal.FUNC_ARCCOS():
+        return sympy.acos
+    if func_normal.FUNC_ARCTAN():
+        return sympy.atan
+
+    if func_normal.FUNC_ARCCSC():
+        return sympy.acsc
+    if func_normal.FUNC_ARCSEC():
+        return sympy.asec
+    if func_normal.FUNC_ARCCOT():
+        return sympy.acot
+
+    if func_normal.FUNC_SINH():
+        return sympy.sinh
+    if func_normal.FUNC_COSH():
+        return sympy.cosh
+    if func_normal.FUNC_TANH():
+        return sympy.tanh
+
+    if func_normal.FUNC_ARSINH():
+        return sympy.asinh
+    if func_normal.FUNC_ARCOSH():
+        return sympy.acosh
+    if func_normal.FUNC_ARTANH():
+        return sympy.atanh
+
+
+def convert_subsupexpr(subexpr):
+    if subexpr.expr():
+        return convert_expr(subexpr.expr())
+    elif subexpr.atom():
+        return convert_atom(subexpr.atom())
+
+convert_subexpr = convert_subsupexpr
+convert_supexpr = convert_subsupexpr
+
+
+def convert_frac(frac):
+    upper, lower = frac.upper, frac.lower
+    upper, lower = convert_expr(upper), convert_expr(lower)
+    lower = sympy.Pow(lower, -1, evaluate=False)
+    return sympy.Mul(upper, lower, evaluate=False)
 
 
 def convert_postfix_list(arr, i=0):
@@ -330,52 +469,6 @@ def rule2text(ctx):
 
     return stream.getText(startIdx, stopIdx)
 
-
-def convert_frac(frac):
-    diff_op = False
-    partial_op = False
-    lower_itv = frac.lower.getSourceInterval()
-    lower_itv_len = lower_itv[1] - lower_itv[0] + 1
-    if (frac.lower.start == frac.lower.stop
-            and frac.lower.start.type == LaTeXLexer.DIFFERENTIAL):
-        wrt = get_differential_var_str(frac.lower.start.text)
-        diff_op = True
-    elif (lower_itv_len == 2 and frac.lower.start.type == LaTeXLexer.SYMBOL
-          and frac.lower.start.text == '\\partial'
-          and (frac.lower.stop.type == LaTeXLexer.LETTER
-               or frac.lower.stop.type == LaTeXLexer.SYMBOL)):
-        partial_op = True
-        wrt = frac.lower.stop.text
-        if frac.lower.stop.type == LaTeXLexer.SYMBOL:
-            wrt = wrt[1:]
-
-    if diff_op or partial_op:
-        wrt = sympy.Symbol(wrt)
-        if (diff_op and frac.upper.start == frac.upper.stop
-                and frac.upper.start.type == LaTeXLexer.LETTER
-                and frac.upper.start.text == 'd'):
-            return [wrt]
-        elif (partial_op and frac.upper.start == frac.upper.stop
-              and frac.upper.start.type == LaTeXLexer.SYMBOL
-              and frac.upper.start.text == '\\partial'):
-            return [wrt]
-        upper_text = rule2text(frac.upper)
-
-        expr_top = None
-        if diff_op and upper_text.startswith('d'):
-            expr_top = parse_latex(upper_text[1:])
-        elif partial_op and frac.upper.start.text == '\\partial':
-            expr_top = parse_latex(upper_text[len('\\partial'):])
-        if expr_top:
-            return sympy.Derivative(expr_top, wrt)
-
-    expr_top = convert_expr(frac.upper)
-    expr_bot = convert_expr(frac.lower)
-    inverse_denom = sympy.Pow(expr_bot, -1, evaluate=False)
-    if expr_top == 1:
-        return inverse_denom
-    else:
-        return sympy.Mul(expr_top, inverse_denom, evaluate=False)
 
 def convert_binom(binom):
     expr_n = convert_expr(binom.n)
