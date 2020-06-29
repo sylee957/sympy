@@ -190,9 +190,18 @@ def convert_special(special):
         return convert_log(special.log())
     if special.amsmath_func():
         return convert_amsmath_func(special.amsmath_func())
+    if special.user_func():
+        return convert_user_func(special.user_func())
     if special.frac():
         return convert_frac(special.frac())
-
+    if special.limit():
+        return convert_limit(special.limit())
+    if special.derivative():
+        return convert_derivative(special.derivative())
+    if special.absolute():
+        return convert_abs(special.absolute())
+    if special.integral():
+        return convert_integral(special.integral())
 
 def convert_unary_add(unary):
     return convert_expr(unary.expr())
@@ -204,6 +213,11 @@ def convert_unary_sub(unary):
 
 def convert_paren(paren):
     return convert_expr(paren.expr())
+
+
+def convert_abs(expr):
+    expr = convert_expr(expr.expr())
+    return sympy.Abs(expr, evaluate=False)
 
 
 def convert_log(log):
@@ -291,21 +305,97 @@ def convert_func_normal(func_normal):
         return sympy.atanh
 
 
-def convert_subsupexpr(subexpr):
-    if subexpr.expr():
-        return convert_expr(subexpr.expr())
-    elif subexpr.atom():
-        return convert_atom(subexpr.atom())
+def convert_subsupexpr(expr):
+    if expr.expr():
+        return convert_expr(expr.expr())
+    elif expr.atom():
+        return convert_atom(expr.atom())
 
 convert_subexpr = convert_subsupexpr
 convert_supexpr = convert_subsupexpr
 
 
+def convert_user_func(func):
+    name = func.user_func_name()
+    args = func.user_func_args()
+    func = sympy.Function(name.getText())
+    args = (convert_expr(x) for x in args.expr())
+    return func(*args, evaluate=False)
+
+
 def convert_frac(frac):
     upper, lower = frac.upper, frac.lower
+    if upper.getText() == '1':
+        lower = convert_expr(lower)
+        return sympy.Pow(lower, -1, evaluate=False)
     upper, lower = convert_expr(upper), convert_expr(lower)
     lower = sympy.Pow(lower, -1, evaluate=False)
     return sympy.Mul(upper, lower, evaluate=False)
+
+
+def convert_limit(limit):
+    content = convert_expr(limit.expr())
+    limit_sub = limit.limit_sub()
+    var = convert_expr(limit_sub.var)
+    approaching = convert_expr(limit_sub.approaching)
+
+    direction = '+-'
+    if limit_sub.limit_left():
+        direction = '+'
+    elif limit_sub.limit_right():
+        direction = '-'
+
+    return sympy.Limit(content, var, approaching, direction)
+
+
+def convert_derivative(diff):
+    if diff.derivative_type_1():
+        diff = diff.derivative_type_1()
+    elif diff.derivative_type_2():
+        diff = diff.derivative_type_2()
+    upper, lower = diff.upper, diff.lower
+    upper, lower = convert_expr(upper), convert_expr(lower)
+    return sympy.Derivative(upper, lower)
+
+
+def convert_integral(integral):
+    if integral.integral_indefinite():
+        integral = integral.integral_indefinite()
+        expr, wrt = convert_integrand(integral.integrand())
+        return sympy.Integral(expr, wrt)
+    elif integral.integral_definite():
+        integral = integral.integral_definite()
+        expr, wrt = convert_integrand(integral.integrand())
+        start, stop = integral.subexpr(), integral.supexpr()
+        start = convert_subexpr(start)
+        stop = convert_supexpr(stop)
+        return sympy.Integral(expr, (wrt, start, stop))
+
+
+def convert_integrand(integrand):
+    if integrand.differential():
+        return convert_differential(integrand.differential())
+    elif integrand.differential_frac():
+        differential_frac = integrand.differential_frac()
+        expr, wrt = convert_differential(differential_frac.differential())
+        lower = differential_frac.differential_denom
+        lower = convert_expr(lower)
+        if expr is sympy.S.One:
+            expr = sympy.Pow(lower, -1, evaluate=False)
+        else:
+            lower = sympy.Pow(lower, -1, evaluate=False)
+            expr = sympy.Mul(expr, lower, evaluate=False)
+        return expr, wrt
+
+
+def convert_differential(differential):
+    expr = sympy.S.One
+    if differential.differential_numer:
+        expr = convert_expr(differential.differential_numer)
+
+    wrt = differential.wrt
+    wrt = convert_expr(wrt)
+    return expr, wrt
 
 
 def convert_postfix_list(arr, i=0):

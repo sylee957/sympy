@@ -18,155 +18,188 @@ import sys
 def serializedATN():
     with StringIO() as buf:
         buf.write(u"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3")
-        buf.write(u"K\u014c\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t")
+        buf.write(u"K\u0193\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t")
         buf.write(u"\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r")
         buf.write(u"\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22\4")
         buf.write(u"\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30")
         buf.write(u"\t\30\4\31\t\31\4\32\t\32\4\33\t\33\4\34\t\34\4\35\t")
-        buf.write(u"\35\3\2\3\2\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3")
+        buf.write(u"\35\4\36\t\36\4\37\t\37\4 \t \4!\t!\4\"\t\"\4#\t#\4$")
+        buf.write(u"\t$\4%\t%\4&\t&\4\'\t\'\4(\t(\3\2\3\2\3\3\3\3\3\3\3\3")
         buf.write(u"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3")
         buf.write(u"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3")
-        buf.write(u"\3\7\3b\n\3\f\3\16\3e\13\3\3\4\3\4\3\4\3\4\3\4\3\4\3")
-        buf.write(u"\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\5\4v\n\4\3\5\3\5\5")
-        buf.write(u"\5z\n\5\3\5\3\5\3\5\5\5\177\n\5\3\6\3\6\3\6\3\6\3\6\3")
-        buf.write(u"\7\7\7\u0087\n\7\f\7\16\7\u008a\13\7\3\b\3\b\3\b\3\b")
-        buf.write(u"\3\t\3\t\3\t\3\n\3\n\3\n\3\13\3\13\3\13\3\13\3\13\3\13")
-        buf.write(u"\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\5")
-        buf.write(u"\13\u00a6\n\13\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\r\3")
-        buf.write(u"\r\3\r\3\r\3\r\3\r\3\r\3\r\3\16\3\16\3\17\3\17\5\17\u00bc")
-        buf.write(u"\n\17\3\17\3\17\5\17\u00c0\n\17\3\20\3\20\5\20\u00c4")
-        buf.write(u"\n\20\3\20\5\20\u00c7\n\20\3\20\5\20\u00ca\n\20\3\20")
-        buf.write(u"\5\20\u00cd\n\20\5\20\u00cf\n\20\3\20\3\20\5\20\u00d3")
-        buf.write(u"\n\20\3\21\3\21\3\21\3\21\3\21\5\21\u00da\n\21\3\21\3")
-        buf.write(u"\21\3\21\3\21\3\22\3\22\5\22\u00e2\n\22\3\22\3\22\3\22")
-        buf.write(u"\3\22\7\22\u00e8\n\22\f\22\16\22\u00eb\13\22\3\22\3\22")
-        buf.write(u"\3\23\3\23\3\23\3\23\3\23\3\23\3\23\5\23\u00f6\n\23\3")
-        buf.write(u"\23\5\23\u00f9\n\23\3\23\3\23\3\24\3\24\3\24\3\24\3\25")
-        buf.write(u"\3\25\3\25\3\25\3\25\3\25\3\25\3\25\3\25\5\25\u010a\n")
-        buf.write(u"\25\3\25\3\25\3\26\3\26\3\26\3\26\7\26\u0112\n\26\f\26")
-        buf.write(u"\16\26\u0115\13\26\3\26\3\26\3\27\3\27\3\27\3\27\3\30")
-        buf.write(u"\3\30\3\31\3\31\3\31\3\31\3\31\3\31\3\31\5\31\u0126\n")
-        buf.write(u"\31\3\31\3\31\3\32\3\32\3\32\3\32\3\32\3\32\3\32\5\32")
-        buf.write(u"\u0131\n\32\3\32\3\32\3\33\3\33\3\33\3\33\3\33\3\33\5")
-        buf.write(u"\33\u013b\n\33\3\34\3\34\3\34\3\34\3\34\3\34\5\34\u0143")
-        buf.write(u"\n\34\3\35\3\35\3\35\3\35\3\35\3\35\3\35\3\35\2\3\4\36")
-        buf.write(u"\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&(*,.\60\62")
-        buf.write(u"\64\668\2\b\4\2\17\17\678\5\2\20\2099AA\4\2CCKK\3\2;")
-        buf.write(u"=\4\2!!#\65\3\2\r\16\2\u0165\2:\3\2\2\2\4<\3\2\2\2\6")
-        buf.write(u"u\3\2\2\2\b~\3\2\2\2\n\u0080\3\2\2\2\f\u0088\3\2\2\2")
-        buf.write(u"\16\u008b\3\2\2\2\20\u008f\3\2\2\2\22\u0092\3\2\2\2\24")
-        buf.write(u"\u00a5\3\2\2\2\26\u00a7\3\2\2\2\30\u00af\3\2\2\2\32\u00b7")
-        buf.write(u"\3\2\2\2\34\u00b9\3\2\2\2\36\u00c1\3\2\2\2 \u00d4\3\2")
-        buf.write(u"\2\2\"\u00df\3\2\2\2$\u00ee\3\2\2\2&\u00fc\3\2\2\2(\u0100")
-        buf.write(u"\3\2\2\2*\u010d\3\2\2\2,\u0118\3\2\2\2.\u011c\3\2\2\2")
-        buf.write(u"\60\u011e\3\2\2\2\62\u0129\3\2\2\2\64\u0134\3\2\2\2\66")
-        buf.write(u"\u013c\3\2\2\28\u0144\3\2\2\2:;\5\4\3\2;\3\3\2\2\2<=")
-        buf.write(u"\b\3\1\2=>\5\6\4\2>c\3\2\2\2?@\f\17\2\2@A\7@\2\2Ab\5")
-        buf.write(u"\4\3\20BC\f\r\2\2CD\t\2\2\2Db\5\4\3\16EF\f\f\2\2FG\t")
-        buf.write(u"\3\2\2Gb\5\4\3\rHI\f\13\2\2IJ\7\r\2\2Jb\5\4\3\fKL\f\n")
-        buf.write(u"\2\2LM\7\16\2\2Mb\5\4\3\13NO\f\t\2\2OP\7E\2\2Pb\5\4\3")
-        buf.write(u"\nQR\f\b\2\2RS\7F\2\2Sb\5\4\3\tTU\f\7\2\2UV\7G\2\2Vb")
-        buf.write(u"\5\4\3\bWX\f\6\2\2XY\7H\2\2Yb\5\4\3\7Z[\f\5\2\2[\\\7")
-        buf.write(u"I\2\2\\b\5\4\3\6]^\f\4\2\2^b\5\4\3\5_`\f\16\2\2`b\7J")
-        buf.write(u"\2\2a?\3\2\2\2aB\3\2\2\2aE\3\2\2\2aH\3\2\2\2aK\3\2\2")
-        buf.write(u"\2aN\3\2\2\2aQ\3\2\2\2aT\3\2\2\2aW\3\2\2\2aZ\3\2\2\2")
-        buf.write(u"a]\3\2\2\2a_\3\2\2\2be\3\2\2\2ca\3\2\2\2cd\3\2\2\2d\5")
-        buf.write(u"\3\2\2\2ec\3\2\2\2fv\5\20\t\2gv\5\22\n\2hv\5\24\13\2")
-        buf.write(u"iv\5\16\b\2jv\5\26\f\2kv\5\30\r\2lv\5 \21\2mv\5\36\20")
-        buf.write(u"\2nv\5&\24\2ov\5$\23\2pv\5\60\31\2qv\5\62\32\2rv\5\34")
-        buf.write(u"\17\2sv\5\"\22\2tv\5\b\5\2uf\3\2\2\2ug\3\2\2\2uh\3\2")
-        buf.write(u"\2\2ui\3\2\2\2uj\3\2\2\2uk\3\2\2\2ul\3\2\2\2um\3\2\2")
-        buf.write(u"\2un\3\2\2\2uo\3\2\2\2up\3\2\2\2uq\3\2\2\2ur\3\2\2\2")
-        buf.write(u"us\3\2\2\2ut\3\2\2\2v\7\3\2\2\2wy\t\4\2\2xz\5\64\33\2")
-        buf.write(u"yx\3\2\2\2yz\3\2\2\2z\177\3\2\2\2{\177\7D\2\2|\177\7")
-        buf.write(u"B\2\2}\177\5\n\6\2~w\3\2\2\2~{\3\2\2\2~|\3\2\2\2~}\3")
-        buf.write(u"\2\2\2\177\t\3\2\2\2\u0080\u0081\7>\2\2\u0081\u0082\7")
-        buf.write(u"\23\2\2\u0082\u0083\5\f\7\2\u0083\u0084\7\24\2\2\u0084")
-        buf.write(u"\13\3\2\2\2\u0085\u0087\7C\2\2\u0086\u0085\3\2\2\2\u0087")
-        buf.write(u"\u008a\3\2\2\2\u0088\u0086\3\2\2\2\u0088\u0089\3\2\2")
-        buf.write(u"\2\u0089\r\3\2\2\2\u008a\u0088\3\2\2\2\u008b\u008c\7")
-        buf.write(u"\33\2\2\u008c\u008d\5\4\3\2\u008d\u008e\7\33\2\2\u008e")
-        buf.write(u"\17\3\2\2\2\u008f\u0090\7\r\2\2\u0090\u0091\5\4\3\2\u0091")
-        buf.write(u"\21\3\2\2\2\u0092\u0093\7\16\2\2\u0093\u0094\5\4\3\2")
-        buf.write(u"\u0094\23\3\2\2\2\u0095\u0096\7\23\2\2\u0096\u0097\5")
-        buf.write(u"\4\3\2\u0097\u0098\7\24\2\2\u0098\u00a6\3\2\2\2\u0099")
-        buf.write(u"\u009a\7\21\2\2\u009a\u009b\5\4\3\2\u009b\u009c\7\22")
-        buf.write(u"\2\2\u009c\u00a6\3\2\2\2\u009d\u009e\7\27\2\2\u009e\u009f")
-        buf.write(u"\5\4\3\2\u009f\u00a0\7\30\2\2\u00a0\u00a6\3\2\2\2\u00a1")
-        buf.write(u"\u00a2\7\25\2\2\u00a2\u00a3\5\4\3\2\u00a3\u00a4\7\26")
-        buf.write(u"\2\2\u00a4\u00a6\3\2\2\2\u00a5\u0095\3\2\2\2\u00a5\u0099")
-        buf.write(u"\3\2\2\2\u00a5\u009d\3\2\2\2\u00a5\u00a1\3\2\2\2\u00a6")
-        buf.write(u"\25\3\2\2\2\u00a7\u00a8\7:\2\2\u00a8\u00a9\7\23\2\2\u00a9")
-        buf.write(u"\u00aa\5\4\3\2\u00aa\u00ab\7\24\2\2\u00ab\u00ac\7\23")
-        buf.write(u"\2\2\u00ac\u00ad\5\4\3\2\u00ad\u00ae\7\24\2\2\u00ae\27")
-        buf.write(u"\3\2\2\2\u00af\u00b0\t\5\2\2\u00b0\u00b1\7\23\2\2\u00b1")
-        buf.write(u"\u00b2\5\4\3\2\u00b2\u00b3\7\24\2\2\u00b3\u00b4\7\23")
-        buf.write(u"\2\2\u00b4\u00b5\5\4\3\2\u00b5\u00b6\7\24\2\2\u00b6\31")
-        buf.write(u"\3\2\2\2\u00b7\u00b8\t\6\2\2\u00b8\33\3\2\2\2\u00b9\u00bb")
-        buf.write(u"\5\32\16\2\u00ba\u00bc\5\66\34\2\u00bb\u00ba\3\2\2\2")
-        buf.write(u"\u00bb\u00bc\3\2\2\2\u00bc\u00bf\3\2\2\2\u00bd\u00c0")
-        buf.write(u"\5,\27\2\u00be\u00c0\5.\30\2\u00bf\u00bd\3\2\2\2\u00bf")
-        buf.write(u"\u00be\3\2\2\2\u00c0\35\3\2\2\2\u00c1\u00ce\7\"\2\2\u00c2")
-        buf.write(u"\u00c4\5\64\33\2\u00c3\u00c2\3\2\2\2\u00c3\u00c4\3\2")
-        buf.write(u"\2\2\u00c4\u00c6\3\2\2\2\u00c5\u00c7\5\66\34\2\u00c6")
-        buf.write(u"\u00c5\3\2\2\2\u00c6\u00c7\3\2\2\2\u00c7\u00cf\3\2\2")
-        buf.write(u"\2\u00c8\u00ca\5\66\34\2\u00c9\u00c8\3\2\2\2\u00c9\u00ca")
-        buf.write(u"\3\2\2\2\u00ca\u00cc\3\2\2\2\u00cb\u00cd\5\64\33\2\u00cc")
-        buf.write(u"\u00cb\3\2\2\2\u00cc\u00cd\3\2\2\2\u00cd\u00cf\3\2\2")
-        buf.write(u"\2\u00ce\u00c3\3\2\2\2\u00ce\u00c9\3\2\2\2\u00cf\u00d2")
-        buf.write(u"\3\2\2\2\u00d0\u00d3\5,\27\2\u00d1\u00d3\5.\30\2\u00d2")
-        buf.write(u"\u00d0\3\2\2\2\u00d2\u00d1\3\2\2\2\u00d3\37\3\2\2\2\u00d4")
-        buf.write(u"\u00d9\7\66\2\2\u00d5\u00d6\7\27\2\2\u00d6\u00d7\5\4")
-        buf.write(u"\3\2\u00d7\u00d8\7\30\2\2\u00d8\u00da\3\2\2\2\u00d9\u00d5")
-        buf.write(u"\3\2\2\2\u00d9\u00da\3\2\2\2\u00da\u00db\3\2\2\2\u00db")
-        buf.write(u"\u00dc\7\23\2\2\u00dc\u00dd\5\4\3\2\u00dd\u00de\7\24")
-        buf.write(u"\2\2\u00de!\3\2\2\2\u00df\u00e1\t\4\2\2\u00e0\u00e2\5")
-        buf.write(u"\64\33\2\u00e1\u00e0\3\2\2\2\u00e1\u00e2\3\2\2\2\u00e2")
-        buf.write(u"\u00e3\3\2\2\2\u00e3\u00e4\7\21\2\2\u00e4\u00e9\5\4\3")
-        buf.write(u"\2\u00e5\u00e6\7\3\2\2\u00e6\u00e8\5\4\3\2\u00e7\u00e5")
-        buf.write(u"\3\2\2\2\u00e8\u00eb\3\2\2\2\u00e9\u00e7\3\2\2\2\u00e9")
-        buf.write(u"\u00ea\3\2\2\2\u00ea\u00ec\3\2\2\2\u00eb\u00e9\3\2\2")
-        buf.write(u"\2\u00ec\u00ed\7\22\2\2\u00ed#\3\2\2\2\u00ee\u00f5\7")
-        buf.write(u"\36\2\2\u00ef\u00f0\5\64\33\2\u00f0\u00f1\5\66\34\2\u00f1")
-        buf.write(u"\u00f6\3\2\2\2\u00f2\u00f3\5\66\34\2\u00f3\u00f4\5\64")
-        buf.write(u"\33\2\u00f4\u00f6\3\2\2\2\u00f5\u00ef\3\2\2\2\u00f5\u00f2")
-        buf.write(u"\3\2\2\2\u00f5\u00f6\3\2\2\2\u00f6\u00f8\3\2\2\2\u00f7")
-        buf.write(u"\u00f9\5\4\3\2\u00f8\u00f7\3\2\2\2\u00f8\u00f9\3\2\2")
-        buf.write(u"\2\u00f9\u00fa\3\2\2\2\u00fa\u00fb\7B\2\2\u00fb%\3\2")
-        buf.write(u"\2\2\u00fc\u00fd\7\34\2\2\u00fd\u00fe\5(\25\2\u00fe\u00ff")
-        buf.write(u"\5\4\3\2\u00ff\'\3\2\2\2\u0100\u0101\7?\2\2\u0101\u0102")
-        buf.write(u"\7\23\2\2\u0102\u0103\t\4\2\2\u0103\u0104\7\35\2\2\u0104")
-        buf.write(u"\u0109\5\4\3\2\u0105\u0106\7@\2\2\u0106\u0107\7\23\2")
-        buf.write(u"\2\u0107\u0108\t\7\2\2\u0108\u010a\7\24\2\2\u0109\u0105")
-        buf.write(u"\3\2\2\2\u0109\u010a\3\2\2\2\u010a\u010b\3\2\2\2\u010b")
-        buf.write(u"\u010c\7\24\2\2\u010c)\3\2\2\2\u010d\u010e\7\21\2\2\u010e")
-        buf.write(u"\u0113\5\4\3\2\u010f\u0110\7\3\2\2\u0110\u0112\5\4\3")
-        buf.write(u"\2\u0111\u010f\3\2\2\2\u0112\u0115\3\2\2\2\u0113\u0111")
-        buf.write(u"\3\2\2\2\u0113\u0114\3\2\2\2\u0114\u0116\3\2\2\2\u0115")
-        buf.write(u"\u0113\3\2\2\2\u0116\u0117\7\22\2\2\u0117+\3\2\2\2\u0118")
-        buf.write(u"\u0119\7\21\2\2\u0119\u011a\5\4\3\2\u011a\u011b\7\22")
-        buf.write(u"\2\2\u011b-\3\2\2\2\u011c\u011d\5\6\4\2\u011d/\3\2\2")
-        buf.write(u"\2\u011e\u0125\7\37\2\2\u011f\u0120\58\35\2\u0120\u0121")
-        buf.write(u"\5\66\34\2\u0121\u0126\3\2\2\2\u0122\u0123\5\66\34\2")
-        buf.write(u"\u0123\u0124\58\35\2\u0124\u0126\3\2\2\2\u0125\u011f")
-        buf.write(u"\3\2\2\2\u0125\u0122\3\2\2\2\u0126\u0127\3\2\2\2\u0127")
-        buf.write(u"\u0128\5\4\3\2\u0128\61\3\2\2\2\u0129\u0130\7 \2\2\u012a")
-        buf.write(u"\u012b\58\35\2\u012b\u012c\5\66\34\2\u012c\u0131\3\2")
-        buf.write(u"\2\2\u012d\u012e\5\66\34\2\u012e\u012f\58\35\2\u012f")
-        buf.write(u"\u0131\3\2\2\2\u0130\u012a\3\2\2\2\u0130\u012d\3\2\2")
-        buf.write(u"\2\u0131\u0132\3\2\2\2\u0132\u0133\5\4\3\2\u0133\63\3")
-        buf.write(u"\2\2\2\u0134\u013a\7?\2\2\u0135\u013b\5\b\5\2\u0136\u0137")
-        buf.write(u"\7\23\2\2\u0137\u0138\5\4\3\2\u0138\u0139\7\24\2\2\u0139")
-        buf.write(u"\u013b\3\2\2\2\u013a\u0135\3\2\2\2\u013a\u0136\3\2\2")
-        buf.write(u"\2\u013b\65\3\2\2\2\u013c\u0142\7@\2\2\u013d\u0143\5")
-        buf.write(u"\b\5\2\u013e\u013f\7\23\2\2\u013f\u0140\5\4\3\2\u0140")
-        buf.write(u"\u0141\7\24\2\2\u0141\u0143\3\2\2\2\u0142\u013d\3\2\2")
-        buf.write(u"\2\u0142\u013e\3\2\2\2\u0143\67\3\2\2\2\u0144\u0145\7")
-        buf.write(u"?\2\2\u0145\u0146\7\23\2\2\u0146\u0147\5\4\3\2\u0147")
-        buf.write(u"\u0148\7E\2\2\u0148\u0149\5\4\3\2\u0149\u014a\7\24\2")
-        buf.write(u"\2\u014a9\3\2\2\2\34acuy~\u0088\u00a5\u00bb\u00bf\u00c3")
-        buf.write(u"\u00c6\u00c9\u00cc\u00ce\u00d2\u00d9\u00e1\u00e9\u00f5")
-        buf.write(u"\u00f8\u0109\u0113\u0125\u0130\u013a\u0142")
+        buf.write(u"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\7\3x\n\3\f\3\16\3{\13\3")
+        buf.write(u"\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4")
+        buf.write(u"\3\4\3\4\3\4\5\4\u008d\n\4\3\5\3\5\5\5\u0091\n\5\3\5")
+        buf.write(u"\3\5\5\5\u0095\n\5\3\6\3\6\3\6\3\6\3\6\3\7\7\7\u009d")
+        buf.write(u"\n\7\f\7\16\7\u00a0\13\7\3\b\3\b\3\b\3\b\3\t\3\t\3\t")
+        buf.write(u"\3\n\3\n\3\n\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13")
+        buf.write(u"\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\5\13\u00bc\n")
+        buf.write(u"\13\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\r\3\r\5\r\u00c8")
+        buf.write(u"\n\r\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16")
+        buf.write(u"\3\17\3\17\3\17\3\17\3\17\3\17\3\17\3\17\3\17\3\17\3")
+        buf.write(u"\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\21\3\21\3\22")
+        buf.write(u"\3\22\5\22\u00ea\n\22\3\22\3\22\5\22\u00ee\n\22\3\23")
+        buf.write(u"\3\23\5\23\u00f2\n\23\3\23\5\23\u00f5\n\23\3\23\5\23")
+        buf.write(u"\u00f8\n\23\3\23\5\23\u00fb\n\23\5\23\u00fd\n\23\3\23")
+        buf.write(u"\3\23\5\23\u0101\n\23\3\24\3\24\3\24\3\24\3\24\5\24\u0108")
+        buf.write(u"\n\24\3\24\3\24\3\24\3\24\3\25\3\25\3\25\3\26\3\26\5")
+        buf.write(u"\26\u0113\n\26\3\27\3\27\3\27\3\27\7\27\u0119\n\27\f")
+        buf.write(u"\27\16\27\u011c\13\27\3\27\3\27\3\30\3\30\5\30\u0122")
+        buf.write(u"\n\30\3\31\3\31\3\31\3\32\3\32\3\32\3\32\3\32\3\32\3")
+        buf.write(u"\32\5\32\u012e\n\32\3\32\3\32\3\33\3\33\5\33\u0134\n")
+        buf.write(u"\33\3\34\5\34\u0137\n\34\3\34\5\34\u013a\n\34\3\34\3")
+        buf.write(u"\34\3\34\3\35\3\35\3\35\3\35\3\35\3\35\3\35\3\35\3\36")
+        buf.write(u"\3\36\3\36\3\36\3\37\3\37\3\37\3\37\3\37\3\37\3\37\5")
+        buf.write(u"\37\u0152\n\37\3\37\3\37\3 \3 \3 \3 \3 \3!\3!\3!\3!\3")
+        buf.write(u"!\3\"\3\"\3\"\3\"\3#\3#\3$\3$\3$\3$\3$\3$\3$\5$\u016d")
+        buf.write(u"\n$\3$\3$\3%\3%\3%\3%\3%\3%\3%\5%\u0178\n%\3%\3%\3&\3")
+        buf.write(u"&\3&\3&\3&\3&\5&\u0182\n&\3\'\3\'\3\'\3\'\3\'\3\'\5\'")
+        buf.write(u"\u018a\n\'\3(\3(\3(\3(\3(\3(\3(\3(\2\3\4)\2\4\6\b\n\f")
+        buf.write(u"\16\20\22\24\26\30\32\34\36 \"$&(*,.\60\62\64\668:<>")
+        buf.write(u"@BDFHJLN\2\7\4\2\17\17\678\5\2\20\2099AA\4\2CCKK\3\2")
+        buf.write(u";=\4\2!!#\65\2\u01a4\2P\3\2\2\2\4R\3\2\2\2\6\u008c\3")
+        buf.write(u"\2\2\2\b\u0094\3\2\2\2\n\u0096\3\2\2\2\f\u009e\3\2\2")
+        buf.write(u"\2\16\u00a1\3\2\2\2\20\u00a5\3\2\2\2\22\u00a8\3\2\2\2")
+        buf.write(u"\24\u00bb\3\2\2\2\26\u00bd\3\2\2\2\30\u00c7\3\2\2\2\32")
+        buf.write(u"\u00c9\3\2\2\2\34\u00d3\3\2\2\2\36\u00dd\3\2\2\2 \u00e5")
+        buf.write(u"\3\2\2\2\"\u00e7\3\2\2\2$\u00ef\3\2\2\2&\u0102\3\2\2")
+        buf.write(u"\2(\u010d\3\2\2\2*\u0110\3\2\2\2,\u0114\3\2\2\2.\u0121")
+        buf.write(u"\3\2\2\2\60\u0123\3\2\2\2\62\u0126\3\2\2\2\64\u0133\3")
+        buf.write(u"\2\2\2\66\u0136\3\2\2\28\u013e\3\2\2\2:\u0146\3\2\2\2")
+        buf.write(u"<\u014a\3\2\2\2>\u0155\3\2\2\2@\u015a\3\2\2\2B\u015f")
+        buf.write(u"\3\2\2\2D\u0163\3\2\2\2F\u0165\3\2\2\2H\u0170\3\2\2\2")
+        buf.write(u"J\u017b\3\2\2\2L\u0183\3\2\2\2N\u018b\3\2\2\2PQ\5\4\3")
+        buf.write(u"\2Q\3\3\2\2\2RS\b\3\1\2ST\5\6\4\2Ty\3\2\2\2UV\f\17\2")
+        buf.write(u"\2VW\7@\2\2Wx\5\4\3\20XY\f\r\2\2YZ\t\2\2\2Zx\5\4\3\16")
+        buf.write(u"[\\\f\f\2\2\\]\t\3\2\2]x\5\4\3\r^_\f\13\2\2_`\7\r\2\2")
+        buf.write(u"`x\5\4\3\fab\f\n\2\2bc\7\16\2\2cx\5\4\3\13de\f\t\2\2")
+        buf.write(u"ef\7E\2\2fx\5\4\3\ngh\f\b\2\2hi\7F\2\2ix\5\4\3\tjk\f")
+        buf.write(u"\7\2\2kl\7G\2\2lx\5\4\3\bmn\f\6\2\2no\7H\2\2ox\5\4\3")
+        buf.write(u"\7pq\f\5\2\2qr\7I\2\2rx\5\4\3\6st\f\4\2\2tx\5\4\3\5u")
+        buf.write(u"v\f\16\2\2vx\7J\2\2wU\3\2\2\2wX\3\2\2\2w[\3\2\2\2w^\3")
+        buf.write(u"\2\2\2wa\3\2\2\2wd\3\2\2\2wg\3\2\2\2wj\3\2\2\2wm\3\2")
+        buf.write(u"\2\2wp\3\2\2\2ws\3\2\2\2wu\3\2\2\2x{\3\2\2\2yw\3\2\2")
+        buf.write(u"\2yz\3\2\2\2z\5\3\2\2\2{y\3\2\2\2|\u008d\5\20\t\2}\u008d")
+        buf.write(u"\5\22\n\2~\u008d\5\24\13\2\177\u008d\5\16\b\2\u0080\u008d")
+        buf.write(u"\5:\36\2\u0081\u008d\5\30\r\2\u0082\u008d\5.\30\2\u0083")
+        buf.write(u"\u008d\5\26\f\2\u0084\u008d\5F$\2\u0085\u008d\5H%\2\u0086")
+        buf.write(u"\u008d\5&\24\2\u0087\u008d\5$\23\2\u0088\u008d\5\36\20")
+        buf.write(u"\2\u0089\u008d\5\"\22\2\u008a\u008d\5(\25\2\u008b\u008d")
+        buf.write(u"\5\b\5\2\u008c|\3\2\2\2\u008c}\3\2\2\2\u008c~\3\2\2\2")
+        buf.write(u"\u008c\177\3\2\2\2\u008c\u0080\3\2\2\2\u008c\u0081\3")
+        buf.write(u"\2\2\2\u008c\u0082\3\2\2\2\u008c\u0083\3\2\2\2\u008c")
+        buf.write(u"\u0084\3\2\2\2\u008c\u0085\3\2\2\2\u008c\u0086\3\2\2")
+        buf.write(u"\2\u008c\u0087\3\2\2\2\u008c\u0088\3\2\2\2\u008c\u0089")
+        buf.write(u"\3\2\2\2\u008c\u008a\3\2\2\2\u008c\u008b\3\2\2\2\u008d")
+        buf.write(u"\7\3\2\2\2\u008e\u0090\t\4\2\2\u008f\u0091\5J&\2\u0090")
+        buf.write(u"\u008f\3\2\2\2\u0090\u0091\3\2\2\2\u0091\u0095\3\2\2")
+        buf.write(u"\2\u0092\u0095\7D\2\2\u0093\u0095\5\n\6\2\u0094\u008e")
+        buf.write(u"\3\2\2\2\u0094\u0092\3\2\2\2\u0094\u0093\3\2\2\2\u0095")
+        buf.write(u"\t\3\2\2\2\u0096\u0097\7>\2\2\u0097\u0098\7\23\2\2\u0098")
+        buf.write(u"\u0099\5\f\7\2\u0099\u009a\7\24\2\2\u009a\13\3\2\2\2")
+        buf.write(u"\u009b\u009d\7C\2\2\u009c\u009b\3\2\2\2\u009d\u00a0\3")
+        buf.write(u"\2\2\2\u009e\u009c\3\2\2\2\u009e\u009f\3\2\2\2\u009f")
+        buf.write(u"\r\3\2\2\2\u00a0\u009e\3\2\2\2\u00a1\u00a2\7\33\2\2\u00a2")
+        buf.write(u"\u00a3\5\4\3\2\u00a3\u00a4\7\33\2\2\u00a4\17\3\2\2\2")
+        buf.write(u"\u00a5\u00a6\7\r\2\2\u00a6\u00a7\5\4\3\2\u00a7\21\3\2")
+        buf.write(u"\2\2\u00a8\u00a9\7\16\2\2\u00a9\u00aa\5\4\3\2\u00aa\23")
+        buf.write(u"\3\2\2\2\u00ab\u00ac\7\23\2\2\u00ac\u00ad\5\4\3\2\u00ad")
+        buf.write(u"\u00ae\7\24\2\2\u00ae\u00bc\3\2\2\2\u00af\u00b0\7\21")
+        buf.write(u"\2\2\u00b0\u00b1\5\4\3\2\u00b1\u00b2\7\22\2\2\u00b2\u00bc")
+        buf.write(u"\3\2\2\2\u00b3\u00b4\7\27\2\2\u00b4\u00b5\5\4\3\2\u00b5")
+        buf.write(u"\u00b6\7\30\2\2\u00b6\u00bc\3\2\2\2\u00b7\u00b8\7\25")
+        buf.write(u"\2\2\u00b8\u00b9\5\4\3\2\u00b9\u00ba\7\26\2\2\u00ba\u00bc")
+        buf.write(u"\3\2\2\2\u00bb\u00ab\3\2\2\2\u00bb\u00af\3\2\2\2\u00bb")
+        buf.write(u"\u00b3\3\2\2\2\u00bb\u00b7\3\2\2\2\u00bc\25\3\2\2\2\u00bd")
+        buf.write(u"\u00be\7:\2\2\u00be\u00bf\7\23\2\2\u00bf\u00c0\5\4\3")
+        buf.write(u"\2\u00c0\u00c1\7\24\2\2\u00c1\u00c2\7\23\2\2\u00c2\u00c3")
+        buf.write(u"\5\4\3\2\u00c3\u00c4\7\24\2\2\u00c4\27\3\2\2\2\u00c5")
+        buf.write(u"\u00c8\5\32\16\2\u00c6\u00c8\5\34\17\2\u00c7\u00c5\3")
+        buf.write(u"\2\2\2\u00c7\u00c6\3\2\2\2\u00c8\31\3\2\2\2\u00c9\u00ca")
+        buf.write(u"\7:\2\2\u00ca\u00cb\7\23\2\2\u00cb\u00cc\7B\2\2\u00cc")
+        buf.write(u"\u00cd\7\24\2\2\u00cd\u00ce\7\23\2\2\u00ce\u00cf\7B\2")
+        buf.write(u"\2\u00cf\u00d0\5\4\3\2\u00d0\u00d1\7\24\2\2\u00d1\u00d2")
+        buf.write(u"\5\4\3\2\u00d2\33\3\2\2\2\u00d3\u00d4\7:\2\2\u00d4\u00d5")
+        buf.write(u"\7\23\2\2\u00d5\u00d6\7B\2\2\u00d6\u00d7\5\4\3\2\u00d7")
+        buf.write(u"\u00d8\7\24\2\2\u00d8\u00d9\7\23\2\2\u00d9\u00da\7B\2")
+        buf.write(u"\2\u00da\u00db\5\4\3\2\u00db\u00dc\7\24\2\2\u00dc\35")
+        buf.write(u"\3\2\2\2\u00dd\u00de\t\5\2\2\u00de\u00df\7\23\2\2\u00df")
+        buf.write(u"\u00e0\5\4\3\2\u00e0\u00e1\7\24\2\2\u00e1\u00e2\7\23")
+        buf.write(u"\2\2\u00e2\u00e3\5\4\3\2\u00e3\u00e4\7\24\2\2\u00e4\37")
+        buf.write(u"\3\2\2\2\u00e5\u00e6\t\6\2\2\u00e6!\3\2\2\2\u00e7\u00e9")
+        buf.write(u"\5 \21\2\u00e8\u00ea\5L\'\2\u00e9\u00e8\3\2\2\2\u00e9")
+        buf.write(u"\u00ea\3\2\2\2\u00ea\u00ed\3\2\2\2\u00eb\u00ee\5B\"\2")
+        buf.write(u"\u00ec\u00ee\5D#\2\u00ed\u00eb\3\2\2\2\u00ed\u00ec\3")
+        buf.write(u"\2\2\2\u00ee#\3\2\2\2\u00ef\u00fc\7\"\2\2\u00f0\u00f2")
+        buf.write(u"\5J&\2\u00f1\u00f0\3\2\2\2\u00f1\u00f2\3\2\2\2\u00f2")
+        buf.write(u"\u00f4\3\2\2\2\u00f3\u00f5\5L\'\2\u00f4\u00f3\3\2\2\2")
+        buf.write(u"\u00f4\u00f5\3\2\2\2\u00f5\u00fd\3\2\2\2\u00f6\u00f8")
+        buf.write(u"\5L\'\2\u00f7\u00f6\3\2\2\2\u00f7\u00f8\3\2\2\2\u00f8")
+        buf.write(u"\u00fa\3\2\2\2\u00f9\u00fb\5J&\2\u00fa\u00f9\3\2\2\2")
+        buf.write(u"\u00fa\u00fb\3\2\2\2\u00fb\u00fd\3\2\2\2\u00fc\u00f1")
+        buf.write(u"\3\2\2\2\u00fc\u00f7\3\2\2\2\u00fd\u0100\3\2\2\2\u00fe")
+        buf.write(u"\u0101\5B\"\2\u00ff\u0101\5D#\2\u0100\u00fe\3\2\2\2\u0100")
+        buf.write(u"\u00ff\3\2\2\2\u0101%\3\2\2\2\u0102\u0107\7\66\2\2\u0103")
+        buf.write(u"\u0104\7\27\2\2\u0104\u0105\5\4\3\2\u0105\u0106\7\30")
+        buf.write(u"\2\2\u0106\u0108\3\2\2\2\u0107\u0103\3\2\2\2\u0107\u0108")
+        buf.write(u"\3\2\2\2\u0108\u0109\3\2\2\2\u0109\u010a\7\23\2\2\u010a")
+        buf.write(u"\u010b\5\4\3\2\u010b\u010c\7\24\2\2\u010c\'\3\2\2\2\u010d")
+        buf.write(u"\u010e\5*\26\2\u010e\u010f\5,\27\2\u010f)\3\2\2\2\u0110")
+        buf.write(u"\u0112\t\4\2\2\u0111\u0113\5J&\2\u0112\u0111\3\2\2\2")
+        buf.write(u"\u0112\u0113\3\2\2\2\u0113+\3\2\2\2\u0114\u0115\7\21")
+        buf.write(u"\2\2\u0115\u011a\5\4\3\2\u0116\u0117\7\3\2\2\u0117\u0119")
+        buf.write(u"\5\4\3\2\u0118\u0116\3\2\2\2\u0119\u011c\3\2\2\2\u011a")
+        buf.write(u"\u0118\3\2\2\2\u011a\u011b\3\2\2\2\u011b\u011d\3\2\2")
+        buf.write(u"\2\u011c\u011a\3\2\2\2\u011d\u011e\7\22\2\2\u011e-\3")
+        buf.write(u"\2\2\2\u011f\u0122\5\60\31\2\u0120\u0122\5\62\32\2\u0121")
+        buf.write(u"\u011f\3\2\2\2\u0121\u0120\3\2\2\2\u0122/\3\2\2\2\u0123")
+        buf.write(u"\u0124\7\36\2\2\u0124\u0125\5\64\33\2\u0125\61\3\2\2")
+        buf.write(u"\2\u0126\u012d\7\36\2\2\u0127\u0128\5J&\2\u0128\u0129")
+        buf.write(u"\5L\'\2\u0129\u012e\3\2\2\2\u012a\u012b\5L\'\2\u012b")
+        buf.write(u"\u012c\5J&\2\u012c\u012e\3\2\2\2\u012d\u0127\3\2\2\2")
+        buf.write(u"\u012d\u012a\3\2\2\2\u012e\u012f\3\2\2\2\u012f\u0130")
+        buf.write(u"\5\64\33\2\u0130\63\3\2\2\2\u0131\u0134\5\66\34\2\u0132")
+        buf.write(u"\u0134\58\35\2\u0133\u0131\3\2\2\2\u0133\u0132\3\2\2")
+        buf.write(u"\2\u0134\65\3\2\2\2\u0135\u0137\5\4\3\2\u0136\u0135\3")
+        buf.write(u"\2\2\2\u0136\u0137\3\2\2\2\u0137\u0139\3\2\2\2\u0138")
+        buf.write(u"\u013a\t\2\2\2\u0139\u0138\3\2\2\2\u0139\u013a\3\2\2")
+        buf.write(u"\2\u013a\u013b\3\2\2\2\u013b\u013c\7B\2\2\u013c\u013d")
+        buf.write(u"\5\4\3\2\u013d\67\3\2\2\2\u013e\u013f\7:\2\2\u013f\u0140")
+        buf.write(u"\7\23\2\2\u0140\u0141\5\66\34\2\u0141\u0142\7\24\2\2")
+        buf.write(u"\u0142\u0143\7\23\2\2\u0143\u0144\5\4\3\2\u0144\u0145")
+        buf.write(u"\7\24\2\2\u01459\3\2\2\2\u0146\u0147\7\34\2\2\u0147\u0148")
+        buf.write(u"\5<\37\2\u0148\u0149\5\4\3\2\u0149;\3\2\2\2\u014a\u014b")
+        buf.write(u"\7?\2\2\u014b\u014c\7\23\2\2\u014c\u014d\5\4\3\2\u014d")
+        buf.write(u"\u014e\7\35\2\2\u014e\u0151\5\4\3\2\u014f\u0152\5> \2")
+        buf.write(u"\u0150\u0152\5@!\2\u0151\u014f\3\2\2\2\u0151\u0150\3")
+        buf.write(u"\2\2\2\u0151\u0152\3\2\2\2\u0152\u0153\3\2\2\2\u0153")
+        buf.write(u"\u0154\7\24\2\2\u0154=\3\2\2\2\u0155\u0156\7@\2\2\u0156")
+        buf.write(u"\u0157\7\23\2\2\u0157\u0158\7\r\2\2\u0158\u0159\7\24")
+        buf.write(u"\2\2\u0159?\3\2\2\2\u015a\u015b\7@\2\2\u015b\u015c\7")
+        buf.write(u"\23\2\2\u015c\u015d\7\16\2\2\u015d\u015e\7\24\2\2\u015e")
+        buf.write(u"A\3\2\2\2\u015f\u0160\7\21\2\2\u0160\u0161\5\4\3\2\u0161")
+        buf.write(u"\u0162\7\22\2\2\u0162C\3\2\2\2\u0163\u0164\5\6\4\2\u0164")
+        buf.write(u"E\3\2\2\2\u0165\u016c\7\37\2\2\u0166\u0167\5N(\2\u0167")
+        buf.write(u"\u0168\5L\'\2\u0168\u016d\3\2\2\2\u0169\u016a\5L\'\2")
+        buf.write(u"\u016a\u016b\5N(\2\u016b\u016d\3\2\2\2\u016c\u0166\3")
+        buf.write(u"\2\2\2\u016c\u0169\3\2\2\2\u016d\u016e\3\2\2\2\u016e")
+        buf.write(u"\u016f\5\4\3\2\u016fG\3\2\2\2\u0170\u0177\7 \2\2\u0171")
+        buf.write(u"\u0172\5N(\2\u0172\u0173\5L\'\2\u0173\u0178\3\2\2\2\u0174")
+        buf.write(u"\u0175\5L\'\2\u0175\u0176\5N(\2\u0176\u0178\3\2\2\2\u0177")
+        buf.write(u"\u0171\3\2\2\2\u0177\u0174\3\2\2\2\u0178\u0179\3\2\2")
+        buf.write(u"\2\u0179\u017a\5\4\3\2\u017aI\3\2\2\2\u017b\u0181\7?")
+        buf.write(u"\2\2\u017c\u0182\5\b\5\2\u017d\u017e\7\23\2\2\u017e\u017f")
+        buf.write(u"\5\4\3\2\u017f\u0180\7\24\2\2\u0180\u0182\3\2\2\2\u0181")
+        buf.write(u"\u017c\3\2\2\2\u0181\u017d\3\2\2\2\u0182K\3\2\2\2\u0183")
+        buf.write(u"\u0189\7@\2\2\u0184\u018a\5\b\5\2\u0185\u0186\7\23\2")
+        buf.write(u"\2\u0186\u0187\5\4\3\2\u0187\u0188\7\24\2\2\u0188\u018a")
+        buf.write(u"\3\2\2\2\u0189\u0184\3\2\2\2\u0189\u0185\3\2\2\2\u018a")
+        buf.write(u"M\3\2\2\2\u018b\u018c\7?\2\2\u018c\u018d\7\23\2\2\u018d")
+        buf.write(u"\u018e\5\4\3\2\u018e\u018f\7E\2\2\u018f\u0190\5\4\3\2")
+        buf.write(u"\u0190\u0191\7\24\2\2\u0191O\3\2\2\2\37wy\u008c\u0090")
+        buf.write(u"\u0094\u009e\u00bb\u00c7\u00e9\u00ed\u00f1\u00f4\u00f7")
+        buf.write(u"\u00fa\u00fc\u0100\u0107\u0112\u011a\u0121\u012d\u0133")
+        buf.write(u"\u0136\u0139\u0151\u016c\u0177\u0181\u0189")
         return buf.getvalue()
 
 
@@ -193,9 +226,9 @@ class LaTeXParser ( Parser ):
                      u"'\\tanh'", u"'\\arsinh'", u"'\\arcosh'", u"'\\artanh'",
                      u"'\\sqrt'", u"'\\times'", u"'\\cdot'", u"'\\div'",
                      u"'\\frac'", u"'\\binom'", u"'\\dbinom'", u"'\\tbinom'",
-                     u"'\\mathit'", u"'_'", u"'^'", u"':'", u"<INVALID>",
-                     u"<INVALID>", u"<INVALID>", u"'='", u"'<'", u"'\\leq'",
-                     u"'>'", u"'\\geq'", u"'!'" ]
+                     u"'\\mathit'", u"'_'", u"'^'", u"':'", u"'d'", u"<INVALID>",
+                     u"<INVALID>", u"'='", u"'<'", u"'\\leq'", u"'>'", u"'\\geq'",
+                     u"'!'" ]
 
     symbolicNames = [ u"<INVALID>", u"<INVALID>", u"WS", u"THINSPACE", u"MEDSPACE",
                       u"THICKSPACE", u"QUAD", u"QQUAD", u"NEGTHINSPACE",
@@ -212,9 +245,9 @@ class LaTeXParser ( Parser ):
                       u"FUNC_ARSINH", u"FUNC_ARCOSH", u"FUNC_ARTANH", u"FUNC_SQRT",
                       u"CMD_TIMES", u"CMD_CDOT", u"CMD_DIV", u"CMD_FRAC",
                       u"CMD_BINOM", u"CMD_DBINOM", u"CMD_TBINOM", u"CMD_MATHIT",
-                      u"UNDERSCORE", u"CARET", u"COLON", u"DIFFERENTIAL",
-                      u"LETTER", u"NUMBER", u"EQUAL", u"LT", u"LTE", u"GT",
-                      u"GTE", u"BANG", u"SYMBOL" ]
+                      u"UNDERSCORE", u"CARET", u"COLON", u"DIFF_D", u"LETTER",
+                      u"NUMBER", u"EQUAL", u"LT", u"LTE", u"GT", u"GTE",
+                      u"BANG", u"SYMBOL" ]
 
     RULE_math = 0
     RULE_expr = 1
@@ -222,34 +255,48 @@ class LaTeXParser ( Parser ):
     RULE_atom = 3
     RULE_mathit = 4
     RULE_mathit_text = 5
-    RULE_absolute_value = 6
+    RULE_absolute = 6
     RULE_unary_add = 7
     RULE_unary_sub = 8
     RULE_paren = 9
     RULE_frac = 10
-    RULE_binom = 11
-    RULE_func_normal = 12
-    RULE_amsmath_func = 13
-    RULE_log = 14
-    RULE_sqrt = 15
-    RULE_user_func = 16
-    RULE_integral = 17
-    RULE_limit = 18
-    RULE_limit_sub = 19
-    RULE_func_args_parens = 20
-    RULE_func_arg_parens = 21
-    RULE_func_arg_noparens = 22
-    RULE_summation = 23
-    RULE_product = 24
-    RULE_subexpr = 25
-    RULE_supexpr = 26
-    RULE_subeq = 27
+    RULE_derivative = 11
+    RULE_derivative_type_1 = 12
+    RULE_derivative_type_2 = 13
+    RULE_binom = 14
+    RULE_func_normal = 15
+    RULE_amsmath_func = 16
+    RULE_log = 17
+    RULE_sqrt = 18
+    RULE_user_func = 19
+    RULE_user_func_name = 20
+    RULE_user_func_args = 21
+    RULE_integral = 22
+    RULE_integral_indefinite = 23
+    RULE_integral_definite = 24
+    RULE_integrand = 25
+    RULE_differential = 26
+    RULE_differential_frac = 27
+    RULE_limit = 28
+    RULE_limit_sub = 29
+    RULE_limit_left = 30
+    RULE_limit_right = 31
+    RULE_func_arg_parens = 32
+    RULE_func_arg_noparens = 33
+    RULE_summation = 34
+    RULE_product = 35
+    RULE_subexpr = 36
+    RULE_supexpr = 37
+    RULE_subeq = 38
 
     ruleNames =  [ u"math", u"expr", u"special", u"atom", u"mathit", u"mathit_text",
-                   u"absolute_value", u"unary_add", u"unary_sub", u"paren",
-                   u"frac", u"binom", u"func_normal", u"amsmath_func", u"log",
-                   u"sqrt", u"user_func", u"integral", u"limit", u"limit_sub",
-                   u"func_args_parens", u"func_arg_parens", u"func_arg_noparens",
+                   u"absolute", u"unary_add", u"unary_sub", u"paren", u"frac",
+                   u"derivative", u"derivative_type_1", u"derivative_type_2",
+                   u"binom", u"func_normal", u"amsmath_func", u"log", u"sqrt",
+                   u"user_func", u"user_func_name", u"user_func_args", u"integral",
+                   u"integral_indefinite", u"integral_definite", u"integrand",
+                   u"differential", u"differential_frac", u"limit", u"limit_sub",
+                   u"limit_left", u"limit_right", u"func_arg_parens", u"func_arg_noparens",
                    u"summation", u"product", u"subexpr", u"supexpr", u"subeq" ]
 
     EOF = Token.EOF
@@ -316,7 +363,7 @@ class LaTeXParser ( Parser ):
     UNDERSCORE=61
     CARET=62
     COLON=63
-    DIFFERENTIAL=64
+    DIFF_D=64
     LETTER=65
     NUMBER=66
     EQUAL=67
@@ -357,7 +404,7 @@ class LaTeXParser ( Parser ):
         self.enterRule(localctx, 0, self.RULE_math)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 56
+            self.state = 78
             self.expr(0)
         except RecognitionException as re:
             localctx.exception = re
@@ -625,10 +672,10 @@ class LaTeXParser ( Parser ):
             self._ctx = localctx
             _prevctx = localctx
 
-            self.state = 59
+            self.state = 81
             self.special()
             self._ctx.stop = self._input.LT(-1)
-            self.state = 97
+            self.state = 119
             self._errHandler.sync(self)
             _alt = self._interp.adaptivePredict(self._input,1,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
@@ -636,20 +683,20 @@ class LaTeXParser ( Parser ):
                     if self._parseListeners is not None:
                         self.triggerExitRuleEvent()
                     _prevctx = localctx
-                    self.state = 95
+                    self.state = 117
                     self._errHandler.sync(self)
                     la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
                     if la_ == 1:
                         localctx = LaTeXParser.PowContext(self, LaTeXParser.ExprContext(self, _parentctx, _parentState))
                         localctx.base = _prevctx
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 61
+                        self.state = 83
                         if not self.precpred(self._ctx, 13):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 13)")
-                        self.state = 62
+                        self.state = 84
                         self.match(LaTeXParser.CARET)
-                        self.state = 63
+                        self.state = 85
                         localctx.exp = self.expr(14)
                         pass
 
@@ -657,18 +704,18 @@ class LaTeXParser ( Parser ):
                         localctx = LaTeXParser.MulContext(self, LaTeXParser.ExprContext(self, _parentctx, _parentState))
                         localctx.lhs = _prevctx
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 64
+                        self.state = 86
                         if not self.precpred(self._ctx, 11):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 11)")
-                        self.state = 65
+                        self.state = 87
                         _la = self._input.LA(1)
                         if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LaTeXParser.MUL) | (1 << LaTeXParser.CMD_TIMES) | (1 << LaTeXParser.CMD_CDOT))) != 0)):
                             self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 66
+                        self.state = 88
                         localctx.rhs = self.expr(12)
                         pass
 
@@ -676,18 +723,18 @@ class LaTeXParser ( Parser ):
                         localctx = LaTeXParser.DivContext(self, LaTeXParser.ExprContext(self, _parentctx, _parentState))
                         localctx.lhs = _prevctx
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 67
+                        self.state = 89
                         if not self.precpred(self._ctx, 10):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 10)")
-                        self.state = 68
+                        self.state = 90
                         _la = self._input.LA(1)
                         if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LaTeXParser.DIV) | (1 << LaTeXParser.CMD_DIV) | (1 << LaTeXParser.COLON))) != 0)):
                             self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 69
+                        self.state = 91
                         localctx.rhs = self.expr(11)
                         pass
 
@@ -695,13 +742,13 @@ class LaTeXParser ( Parser ):
                         localctx = LaTeXParser.AddContext(self, LaTeXParser.ExprContext(self, _parentctx, _parentState))
                         localctx.lhs = _prevctx
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 70
+                        self.state = 92
                         if not self.precpred(self._ctx, 9):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 9)")
-                        self.state = 71
+                        self.state = 93
                         self.match(LaTeXParser.ADD)
-                        self.state = 72
+                        self.state = 94
                         localctx.rhs = self.expr(10)
                         pass
 
@@ -709,13 +756,13 @@ class LaTeXParser ( Parser ):
                         localctx = LaTeXParser.SubContext(self, LaTeXParser.ExprContext(self, _parentctx, _parentState))
                         localctx.lhs = _prevctx
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 73
+                        self.state = 95
                         if not self.precpred(self._ctx, 8):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 8)")
-                        self.state = 74
+                        self.state = 96
                         self.match(LaTeXParser.SUB)
-                        self.state = 75
+                        self.state = 97
                         localctx.rhs = self.expr(9)
                         pass
 
@@ -723,13 +770,13 @@ class LaTeXParser ( Parser ):
                         localctx = LaTeXParser.EqualsContext(self, LaTeXParser.ExprContext(self, _parentctx, _parentState))
                         localctx.lhs = _prevctx
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 76
+                        self.state = 98
                         if not self.precpred(self._ctx, 7):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 7)")
-                        self.state = 77
+                        self.state = 99
                         self.match(LaTeXParser.EQUAL)
-                        self.state = 78
+                        self.state = 100
                         localctx.rhs = self.expr(8)
                         pass
 
@@ -737,13 +784,13 @@ class LaTeXParser ( Parser ):
                         localctx = LaTeXParser.LessThanContext(self, LaTeXParser.ExprContext(self, _parentctx, _parentState))
                         localctx.lhs = _prevctx
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 79
+                        self.state = 101
                         if not self.precpred(self._ctx, 6):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 6)")
-                        self.state = 80
+                        self.state = 102
                         self.match(LaTeXParser.LT)
-                        self.state = 81
+                        self.state = 103
                         localctx.rhs = self.expr(7)
                         pass
 
@@ -751,13 +798,13 @@ class LaTeXParser ( Parser ):
                         localctx = LaTeXParser.LessEqualContext(self, LaTeXParser.ExprContext(self, _parentctx, _parentState))
                         localctx.lhs = _prevctx
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 82
+                        self.state = 104
                         if not self.precpred(self._ctx, 5):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 5)")
-                        self.state = 83
+                        self.state = 105
                         self.match(LaTeXParser.LTE)
-                        self.state = 84
+                        self.state = 106
                         localctx.rhs = self.expr(6)
                         pass
 
@@ -765,13 +812,13 @@ class LaTeXParser ( Parser ):
                         localctx = LaTeXParser.GreaterThanContext(self, LaTeXParser.ExprContext(self, _parentctx, _parentState))
                         localctx.lhs = _prevctx
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 85
+                        self.state = 107
                         if not self.precpred(self._ctx, 4):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 4)")
-                        self.state = 86
+                        self.state = 108
                         self.match(LaTeXParser.GT)
-                        self.state = 87
+                        self.state = 109
                         localctx.rhs = self.expr(5)
                         pass
 
@@ -779,13 +826,13 @@ class LaTeXParser ( Parser ):
                         localctx = LaTeXParser.GreaterEqualContext(self, LaTeXParser.ExprContext(self, _parentctx, _parentState))
                         localctx.lhs = _prevctx
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 88
+                        self.state = 110
                         if not self.precpred(self._ctx, 3):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
-                        self.state = 89
+                        self.state = 111
                         self.match(LaTeXParser.GTE)
-                        self.state = 90
+                        self.state = 112
                         localctx.rhs = self.expr(4)
                         pass
 
@@ -793,27 +840,27 @@ class LaTeXParser ( Parser ):
                         localctx = LaTeXParser.ImplicitMulContext(self, LaTeXParser.ExprContext(self, _parentctx, _parentState))
                         localctx.lhs = _prevctx
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 91
+                        self.state = 113
                         if not self.precpred(self._ctx, 2):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 2)")
-                        self.state = 92
+                        self.state = 114
                         localctx.rhs = self.expr(3)
                         pass
 
                     elif la_ == 12:
                         localctx = LaTeXParser.FactorialContext(self, LaTeXParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 93
+                        self.state = 115
                         if not self.precpred(self._ctx, 12):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 12)")
-                        self.state = 94
+                        self.state = 116
                         self.match(LaTeXParser.BANG)
                         pass
 
 
-                self.state = 99
+                self.state = 121
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,1,self._ctx)
 
@@ -843,16 +890,32 @@ class LaTeXParser ( Parser ):
             return self.getTypedRuleContext(LaTeXParser.ParenContext,0)
 
 
-        def absolute_value(self):
-            return self.getTypedRuleContext(LaTeXParser.Absolute_valueContext,0)
+        def absolute(self):
+            return self.getTypedRuleContext(LaTeXParser.AbsoluteContext,0)
+
+
+        def limit(self):
+            return self.getTypedRuleContext(LaTeXParser.LimitContext,0)
+
+
+        def derivative(self):
+            return self.getTypedRuleContext(LaTeXParser.DerivativeContext,0)
+
+
+        def integral(self):
+            return self.getTypedRuleContext(LaTeXParser.IntegralContext,0)
 
 
         def frac(self):
             return self.getTypedRuleContext(LaTeXParser.FracContext,0)
 
 
-        def binom(self):
-            return self.getTypedRuleContext(LaTeXParser.BinomContext,0)
+        def summation(self):
+            return self.getTypedRuleContext(LaTeXParser.SummationContext,0)
+
+
+        def product(self):
+            return self.getTypedRuleContext(LaTeXParser.ProductContext,0)
 
 
         def sqrt(self):
@@ -863,20 +926,8 @@ class LaTeXParser ( Parser ):
             return self.getTypedRuleContext(LaTeXParser.LogContext,0)
 
 
-        def limit(self):
-            return self.getTypedRuleContext(LaTeXParser.LimitContext,0)
-
-
-        def integral(self):
-            return self.getTypedRuleContext(LaTeXParser.IntegralContext,0)
-
-
-        def summation(self):
-            return self.getTypedRuleContext(LaTeXParser.SummationContext,0)
-
-
-        def product(self):
-            return self.getTypedRuleContext(LaTeXParser.ProductContext,0)
+        def binom(self):
+            return self.getTypedRuleContext(LaTeXParser.BinomContext,0)
 
 
         def amsmath_func(self):
@@ -902,96 +953,102 @@ class LaTeXParser ( Parser ):
         localctx = LaTeXParser.SpecialContext(self, self._ctx, self.state)
         self.enterRule(localctx, 4, self.RULE_special)
         try:
-            self.state = 115
+            self.state = 138
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,2,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 100
+                self.state = 122
                 self.unary_add()
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 101
+                self.state = 123
                 self.unary_sub()
                 pass
 
             elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 102
+                self.state = 124
                 self.paren()
                 pass
 
             elif la_ == 4:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 103
-                self.absolute_value()
+                self.state = 125
+                self.absolute()
                 pass
 
             elif la_ == 5:
                 self.enterOuterAlt(localctx, 5)
-                self.state = 104
-                self.frac()
+                self.state = 126
+                self.limit()
                 pass
 
             elif la_ == 6:
                 self.enterOuterAlt(localctx, 6)
-                self.state = 105
-                self.binom()
+                self.state = 127
+                self.derivative()
                 pass
 
             elif la_ == 7:
                 self.enterOuterAlt(localctx, 7)
-                self.state = 106
-                self.sqrt()
+                self.state = 128
+                self.integral()
                 pass
 
             elif la_ == 8:
                 self.enterOuterAlt(localctx, 8)
-                self.state = 107
-                self.log()
+                self.state = 129
+                self.frac()
                 pass
 
             elif la_ == 9:
                 self.enterOuterAlt(localctx, 9)
-                self.state = 108
-                self.limit()
+                self.state = 130
+                self.summation()
                 pass
 
             elif la_ == 10:
                 self.enterOuterAlt(localctx, 10)
-                self.state = 109
-                self.integral()
+                self.state = 131
+                self.product()
                 pass
 
             elif la_ == 11:
                 self.enterOuterAlt(localctx, 11)
-                self.state = 110
-                self.summation()
+                self.state = 132
+                self.sqrt()
                 pass
 
             elif la_ == 12:
                 self.enterOuterAlt(localctx, 12)
-                self.state = 111
-                self.product()
+                self.state = 133
+                self.log()
                 pass
 
             elif la_ == 13:
                 self.enterOuterAlt(localctx, 13)
-                self.state = 112
-                self.amsmath_func()
+                self.state = 134
+                self.binom()
                 pass
 
             elif la_ == 14:
                 self.enterOuterAlt(localctx, 14)
-                self.state = 113
-                self.user_func()
+                self.state = 135
+                self.amsmath_func()
                 pass
 
             elif la_ == 15:
                 self.enterOuterAlt(localctx, 15)
-                self.state = 114
+                self.state = 136
+                self.user_func()
+                pass
+
+            elif la_ == 16:
+                self.enterOuterAlt(localctx, 16)
+                self.state = 137
                 self.atom()
                 pass
 
@@ -1023,9 +1080,6 @@ class LaTeXParser ( Parser ):
         def NUMBER(self):
             return self.getToken(LaTeXParser.NUMBER, 0)
 
-        def DIFFERENTIAL(self):
-            return self.getToken(LaTeXParser.DIFFERENTIAL, 0)
-
         def mathit(self):
             return self.getTypedRuleContext(LaTeXParser.MathitContext,0)
 
@@ -1042,40 +1096,35 @@ class LaTeXParser ( Parser ):
         self.enterRule(localctx, 6, self.RULE_atom)
         self._la = 0 # Token type
         try:
-            self.state = 124
+            self.state = 146
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [LaTeXParser.LETTER, LaTeXParser.SYMBOL]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 117
+                self.state = 140
                 _la = self._input.LA(1)
                 if not(_la==LaTeXParser.LETTER or _la==LaTeXParser.SYMBOL):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 119
+                self.state = 142
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,3,self._ctx)
                 if la_ == 1:
-                    self.state = 118
+                    self.state = 141
                     self.subexpr()
 
 
                 pass
             elif token in [LaTeXParser.NUMBER]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 121
+                self.state = 144
                 self.match(LaTeXParser.NUMBER)
                 pass
-            elif token in [LaTeXParser.DIFFERENTIAL]:
-                self.enterOuterAlt(localctx, 3)
-                self.state = 122
-                self.match(LaTeXParser.DIFFERENTIAL)
-                pass
             elif token in [LaTeXParser.CMD_MATHIT]:
-                self.enterOuterAlt(localctx, 4)
-                self.state = 123
+                self.enterOuterAlt(localctx, 3)
+                self.state = 145
                 self.mathit()
                 pass
             else:
@@ -1120,13 +1169,13 @@ class LaTeXParser ( Parser ):
         self.enterRule(localctx, 8, self.RULE_mathit)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 126
+            self.state = 148
             self.match(LaTeXParser.CMD_MATHIT)
-            self.state = 127
+            self.state = 149
             self.match(LaTeXParser.L_BRACE)
-            self.state = 128
+            self.state = 150
             self.mathit_text()
-            self.state = 129
+            self.state = 151
             self.match(LaTeXParser.R_BRACE)
         except RecognitionException as re:
             localctx.exception = re
@@ -1161,13 +1210,13 @@ class LaTeXParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 134
+            self.state = 156
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==LaTeXParser.LETTER:
-                self.state = 131
+                self.state = 153
                 self.match(LaTeXParser.LETTER)
-                self.state = 136
+                self.state = 158
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -1179,10 +1228,10 @@ class LaTeXParser ( Parser ):
             self.exitRule()
         return localctx
 
-    class Absolute_valueContext(ParserRuleContext):
+    class AbsoluteContext(ParserRuleContext):
 
         def __init__(self, parser, parent=None, invokingState=-1):
-            super(LaTeXParser.Absolute_valueContext, self).__init__(parent, invokingState)
+            super(LaTeXParser.AbsoluteContext, self).__init__(parent, invokingState)
             self.parser = parser
 
         def BAR(self, i=None):
@@ -1196,22 +1245,22 @@ class LaTeXParser ( Parser ):
 
 
         def getRuleIndex(self):
-            return LaTeXParser.RULE_absolute_value
+            return LaTeXParser.RULE_absolute
 
 
 
 
-    def absolute_value(self):
+    def absolute(self):
 
-        localctx = LaTeXParser.Absolute_valueContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 12, self.RULE_absolute_value)
+        localctx = LaTeXParser.AbsoluteContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 12, self.RULE_absolute)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 137
+            self.state = 159
             self.match(LaTeXParser.BAR)
-            self.state = 138
+            self.state = 160
             self.expr(0)
-            self.state = 139
+            self.state = 161
             self.match(LaTeXParser.BAR)
         except RecognitionException as re:
             localctx.exception = re
@@ -1246,9 +1295,9 @@ class LaTeXParser ( Parser ):
         self.enterRule(localctx, 14, self.RULE_unary_add)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 141
+            self.state = 163
             self.match(LaTeXParser.ADD)
-            self.state = 142
+            self.state = 164
             self.expr(0)
         except RecognitionException as re:
             localctx.exception = re
@@ -1283,9 +1332,9 @@ class LaTeXParser ( Parser ):
         self.enterRule(localctx, 16, self.RULE_unary_sub)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 144
+            self.state = 166
             self.match(LaTeXParser.SUB)
-            self.state = 145
+            self.state = 167
             self.expr(0)
         except RecognitionException as re:
             localctx.exception = re
@@ -1340,43 +1389,43 @@ class LaTeXParser ( Parser ):
         localctx = LaTeXParser.ParenContext(self, self._ctx, self.state)
         self.enterRule(localctx, 18, self.RULE_paren)
         try:
-            self.state = 163
+            self.state = 185
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [LaTeXParser.L_BRACE]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 147
+                self.state = 169
                 self.match(LaTeXParser.L_BRACE)
-                self.state = 148
+                self.state = 170
                 self.expr(0)
-                self.state = 149
+                self.state = 171
                 self.match(LaTeXParser.R_BRACE)
                 pass
             elif token in [LaTeXParser.L_PAREN]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 151
+                self.state = 173
                 self.match(LaTeXParser.L_PAREN)
-                self.state = 152
+                self.state = 174
                 self.expr(0)
-                self.state = 153
+                self.state = 175
                 self.match(LaTeXParser.R_PAREN)
                 pass
             elif token in [LaTeXParser.L_BRACKET]:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 155
+                self.state = 177
                 self.match(LaTeXParser.L_BRACKET)
-                self.state = 156
+                self.state = 178
                 self.expr(0)
-                self.state = 157
+                self.state = 179
                 self.match(LaTeXParser.R_BRACKET)
                 pass
             elif token in [LaTeXParser.L_BRACE_LITERAL]:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 159
+                self.state = 181
                 self.match(LaTeXParser.L_BRACE_LITERAL)
-                self.state = 160
+                self.state = 182
                 self.expr(0)
-                self.state = 161
+                self.state = 183
                 self.match(LaTeXParser.R_BRACE_LITERAL)
                 pass
             else:
@@ -1432,19 +1481,216 @@ class LaTeXParser ( Parser ):
         self.enterRule(localctx, 20, self.RULE_frac)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 165
+            self.state = 187
             self.match(LaTeXParser.CMD_FRAC)
-            self.state = 166
+            self.state = 188
             self.match(LaTeXParser.L_BRACE)
-            self.state = 167
+            self.state = 189
             localctx.upper = self.expr(0)
-            self.state = 168
+            self.state = 190
             self.match(LaTeXParser.R_BRACE)
-            self.state = 169
+            self.state = 191
             self.match(LaTeXParser.L_BRACE)
-            self.state = 170
+            self.state = 192
             localctx.lower = self.expr(0)
-            self.state = 171
+            self.state = 193
+            self.match(LaTeXParser.R_BRACE)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class DerivativeContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(LaTeXParser.DerivativeContext, self).__init__(parent, invokingState)
+            self.parser = parser
+
+        def derivative_type_1(self):
+            return self.getTypedRuleContext(LaTeXParser.Derivative_type_1Context,0)
+
+
+        def derivative_type_2(self):
+            return self.getTypedRuleContext(LaTeXParser.Derivative_type_2Context,0)
+
+
+        def getRuleIndex(self):
+            return LaTeXParser.RULE_derivative
+
+
+
+
+    def derivative(self):
+
+        localctx = LaTeXParser.DerivativeContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 22, self.RULE_derivative)
+        try:
+            self.state = 197
+            self._errHandler.sync(self)
+            la_ = self._interp.adaptivePredict(self._input,7,self._ctx)
+            if la_ == 1:
+                self.enterOuterAlt(localctx, 1)
+                self.state = 195
+                self.derivative_type_1()
+                pass
+
+            elif la_ == 2:
+                self.enterOuterAlt(localctx, 2)
+                self.state = 196
+                self.derivative_type_2()
+                pass
+
+
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class Derivative_type_1Context(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(LaTeXParser.Derivative_type_1Context, self).__init__(parent, invokingState)
+            self.parser = parser
+            self.lower = None # ExprContext
+            self.upper = None # ExprContext
+
+        def CMD_FRAC(self):
+            return self.getToken(LaTeXParser.CMD_FRAC, 0)
+
+        def L_BRACE(self, i=None):
+            if i is None:
+                return self.getTokens(LaTeXParser.L_BRACE)
+            else:
+                return self.getToken(LaTeXParser.L_BRACE, i)
+
+        def DIFF_D(self, i=None):
+            if i is None:
+                return self.getTokens(LaTeXParser.DIFF_D)
+            else:
+                return self.getToken(LaTeXParser.DIFF_D, i)
+
+        def R_BRACE(self, i=None):
+            if i is None:
+                return self.getTokens(LaTeXParser.R_BRACE)
+            else:
+                return self.getToken(LaTeXParser.R_BRACE, i)
+
+        def expr(self, i=None):
+            if i is None:
+                return self.getTypedRuleContexts(LaTeXParser.ExprContext)
+            else:
+                return self.getTypedRuleContext(LaTeXParser.ExprContext,i)
+
+
+        def getRuleIndex(self):
+            return LaTeXParser.RULE_derivative_type_1
+
+
+
+
+    def derivative_type_1(self):
+
+        localctx = LaTeXParser.Derivative_type_1Context(self, self._ctx, self.state)
+        self.enterRule(localctx, 24, self.RULE_derivative_type_1)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 199
+            self.match(LaTeXParser.CMD_FRAC)
+            self.state = 200
+            self.match(LaTeXParser.L_BRACE)
+            self.state = 201
+            self.match(LaTeXParser.DIFF_D)
+            self.state = 202
+            self.match(LaTeXParser.R_BRACE)
+            self.state = 203
+            self.match(LaTeXParser.L_BRACE)
+            self.state = 204
+            self.match(LaTeXParser.DIFF_D)
+            self.state = 205
+            localctx.lower = self.expr(0)
+            self.state = 206
+            self.match(LaTeXParser.R_BRACE)
+            self.state = 207
+            localctx.upper = self.expr(0)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class Derivative_type_2Context(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(LaTeXParser.Derivative_type_2Context, self).__init__(parent, invokingState)
+            self.parser = parser
+            self.upper = None # ExprContext
+            self.lower = None # ExprContext
+
+        def CMD_FRAC(self):
+            return self.getToken(LaTeXParser.CMD_FRAC, 0)
+
+        def L_BRACE(self, i=None):
+            if i is None:
+                return self.getTokens(LaTeXParser.L_BRACE)
+            else:
+                return self.getToken(LaTeXParser.L_BRACE, i)
+
+        def DIFF_D(self, i=None):
+            if i is None:
+                return self.getTokens(LaTeXParser.DIFF_D)
+            else:
+                return self.getToken(LaTeXParser.DIFF_D, i)
+
+        def R_BRACE(self, i=None):
+            if i is None:
+                return self.getTokens(LaTeXParser.R_BRACE)
+            else:
+                return self.getToken(LaTeXParser.R_BRACE, i)
+
+        def expr(self, i=None):
+            if i is None:
+                return self.getTypedRuleContexts(LaTeXParser.ExprContext)
+            else:
+                return self.getTypedRuleContext(LaTeXParser.ExprContext,i)
+
+
+        def getRuleIndex(self):
+            return LaTeXParser.RULE_derivative_type_2
+
+
+
+
+    def derivative_type_2(self):
+
+        localctx = LaTeXParser.Derivative_type_2Context(self, self._ctx, self.state)
+        self.enterRule(localctx, 26, self.RULE_derivative_type_2)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 209
+            self.match(LaTeXParser.CMD_FRAC)
+            self.state = 210
+            self.match(LaTeXParser.L_BRACE)
+            self.state = 211
+            self.match(LaTeXParser.DIFF_D)
+            self.state = 212
+            localctx.upper = self.expr(0)
+            self.state = 213
+            self.match(LaTeXParser.R_BRACE)
+            self.state = 214
+            self.match(LaTeXParser.L_BRACE)
+            self.state = 215
+            self.match(LaTeXParser.DIFF_D)
+            self.state = 216
+            localctx.lower = self.expr(0)
+            self.state = 217
             self.match(LaTeXParser.R_BRACE)
         except RecognitionException as re:
             localctx.exception = re
@@ -1499,28 +1745,28 @@ class LaTeXParser ( Parser ):
     def binom(self):
 
         localctx = LaTeXParser.BinomContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 22, self.RULE_binom)
+        self.enterRule(localctx, 28, self.RULE_binom)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 173
+            self.state = 219
             _la = self._input.LA(1)
             if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LaTeXParser.CMD_BINOM) | (1 << LaTeXParser.CMD_DBINOM) | (1 << LaTeXParser.CMD_TBINOM))) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
                 self.consume()
-            self.state = 174
+            self.state = 220
             self.match(LaTeXParser.L_BRACE)
-            self.state = 175
+            self.state = 221
             localctx.n = self.expr(0)
-            self.state = 176
+            self.state = 222
             self.match(LaTeXParser.R_BRACE)
-            self.state = 177
+            self.state = 223
             self.match(LaTeXParser.L_BRACE)
-            self.state = 178
+            self.state = 224
             localctx.k = self.expr(0)
-            self.state = 179
+            self.state = 225
             self.match(LaTeXParser.R_BRACE)
         except RecognitionException as re:
             localctx.exception = re
@@ -1605,11 +1851,11 @@ class LaTeXParser ( Parser ):
     def func_normal(self):
 
         localctx = LaTeXParser.Func_normalContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 24, self.RULE_func_normal)
+        self.enterRule(localctx, 30, self.RULE_func_normal)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 181
+            self.state = 227
             _la = self._input.LA(1)
             if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LaTeXParser.FUNC_EXP) | (1 << LaTeXParser.FUNC_LN) | (1 << LaTeXParser.FUNC_SIN) | (1 << LaTeXParser.FUNC_COS) | (1 << LaTeXParser.FUNC_TAN) | (1 << LaTeXParser.FUNC_CSC) | (1 << LaTeXParser.FUNC_SEC) | (1 << LaTeXParser.FUNC_COT) | (1 << LaTeXParser.FUNC_ARCSIN) | (1 << LaTeXParser.FUNC_ARCCOS) | (1 << LaTeXParser.FUNC_ARCTAN) | (1 << LaTeXParser.FUNC_ARCCSC) | (1 << LaTeXParser.FUNC_ARCSEC) | (1 << LaTeXParser.FUNC_ARCCOT) | (1 << LaTeXParser.FUNC_SINH) | (1 << LaTeXParser.FUNC_COSH) | (1 << LaTeXParser.FUNC_TANH) | (1 << LaTeXParser.FUNC_ARSINH) | (1 << LaTeXParser.FUNC_ARCOSH) | (1 << LaTeXParser.FUNC_ARTANH))) != 0)):
                 self._errHandler.recoverInline(self)
@@ -1656,30 +1902,30 @@ class LaTeXParser ( Parser ):
     def amsmath_func(self):
 
         localctx = LaTeXParser.Amsmath_funcContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 26, self.RULE_amsmath_func)
+        self.enterRule(localctx, 32, self.RULE_amsmath_func)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 183
+            self.state = 229
             self.func_normal()
-            self.state = 185
+            self.state = 231
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==LaTeXParser.CARET:
-                self.state = 184
+                self.state = 230
                 localctx.exp = self.supexpr()
 
 
-            self.state = 189
+            self.state = 235
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,8,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,9,self._ctx)
             if la_ == 1:
-                self.state = 187
+                self.state = 233
                 self.func_arg_parens()
                 pass
 
             elif la_ == 2:
-                self.state = 188
+                self.state = 234
                 self.func_arg_noparens()
                 pass
 
@@ -1728,64 +1974,64 @@ class LaTeXParser ( Parser ):
     def log(self):
 
         localctx = LaTeXParser.LogContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 28, self.RULE_log)
+        self.enterRule(localctx, 34, self.RULE_log)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 191
+            self.state = 237
             self.match(LaTeXParser.FUNC_LOG)
-            self.state = 204
+            self.state = 250
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,13,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,14,self._ctx)
             if la_ == 1:
-                self.state = 193
+                self.state = 239
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==LaTeXParser.UNDERSCORE:
-                    self.state = 192
+                    self.state = 238
                     localctx.base = self.subexpr()
 
 
-                self.state = 196
+                self.state = 242
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==LaTeXParser.CARET:
-                    self.state = 195
+                    self.state = 241
                     localctx.exp = self.supexpr()
 
 
                 pass
 
             elif la_ == 2:
-                self.state = 199
+                self.state = 245
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==LaTeXParser.CARET:
-                    self.state = 198
+                    self.state = 244
                     localctx.exp = self.supexpr()
 
 
-                self.state = 202
+                self.state = 248
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==LaTeXParser.UNDERSCORE:
-                    self.state = 201
+                    self.state = 247
                     localctx.base = self.subexpr()
 
 
                 pass
 
 
-            self.state = 208
+            self.state = 254
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,14,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,15,self._ctx)
             if la_ == 1:
-                self.state = 206
+                self.state = 252
                 self.func_arg_parens()
                 pass
 
             elif la_ == 2:
-                self.state = 207
+                self.state = 253
                 self.func_arg_noparens()
                 pass
 
@@ -1837,29 +2083,29 @@ class LaTeXParser ( Parser ):
     def sqrt(self):
 
         localctx = LaTeXParser.SqrtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 30, self.RULE_sqrt)
+        self.enterRule(localctx, 36, self.RULE_sqrt)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 210
+            self.state = 256
             self.match(LaTeXParser.FUNC_SQRT)
-            self.state = 215
+            self.state = 261
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==LaTeXParser.L_BRACKET:
-                self.state = 211
+                self.state = 257
                 self.match(LaTeXParser.L_BRACKET)
-                self.state = 212
+                self.state = 258
                 localctx.root = self.expr(0)
-                self.state = 213
+                self.state = 259
                 self.match(LaTeXParser.R_BRACKET)
 
 
-            self.state = 217
+            self.state = 263
             self.match(LaTeXParser.L_BRACE)
-            self.state = 218
+            self.state = 264
             localctx.base = self.expr(0)
-            self.state = 219
+            self.state = 265
             self.match(LaTeXParser.R_BRACE)
         except RecognitionException as re:
             localctx.exception = re
@@ -1875,6 +2121,96 @@ class LaTeXParser ( Parser ):
             super(LaTeXParser.User_funcContext, self).__init__(parent, invokingState)
             self.parser = parser
 
+        def user_func_name(self):
+            return self.getTypedRuleContext(LaTeXParser.User_func_nameContext,0)
+
+
+        def user_func_args(self):
+            return self.getTypedRuleContext(LaTeXParser.User_func_argsContext,0)
+
+
+        def getRuleIndex(self):
+            return LaTeXParser.RULE_user_func
+
+
+
+
+    def user_func(self):
+
+        localctx = LaTeXParser.User_funcContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 38, self.RULE_user_func)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 267
+            self.user_func_name()
+            self.state = 268
+            self.user_func_args()
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class User_func_nameContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(LaTeXParser.User_func_nameContext, self).__init__(parent, invokingState)
+            self.parser = parser
+
+        def LETTER(self):
+            return self.getToken(LaTeXParser.LETTER, 0)
+
+        def SYMBOL(self):
+            return self.getToken(LaTeXParser.SYMBOL, 0)
+
+        def subexpr(self):
+            return self.getTypedRuleContext(LaTeXParser.SubexprContext,0)
+
+
+        def getRuleIndex(self):
+            return LaTeXParser.RULE_user_func_name
+
+
+
+
+    def user_func_name(self):
+
+        localctx = LaTeXParser.User_func_nameContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 40, self.RULE_user_func_name)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 270
+            _la = self._input.LA(1)
+            if not(_la==LaTeXParser.LETTER or _la==LaTeXParser.SYMBOL):
+                self._errHandler.recoverInline(self)
+            else:
+                self._errHandler.reportMatch(self)
+                self.consume()
+            self.state = 272
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==LaTeXParser.UNDERSCORE:
+                self.state = 271
+                self.subexpr()
+
+
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class User_func_argsContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(LaTeXParser.User_func_argsContext, self).__init__(parent, invokingState)
+            self.parser = parser
+
         def L_PAREN(self):
             return self.getToken(LaTeXParser.L_PAREN, 0)
 
@@ -1888,61 +2224,36 @@ class LaTeXParser ( Parser ):
         def R_PAREN(self):
             return self.getToken(LaTeXParser.R_PAREN, 0)
 
-        def LETTER(self):
-            return self.getToken(LaTeXParser.LETTER, 0)
-
-        def SYMBOL(self):
-            return self.getToken(LaTeXParser.SYMBOL, 0)
-
-        def subexpr(self):
-            return self.getTypedRuleContext(LaTeXParser.SubexprContext,0)
-
-
         def getRuleIndex(self):
-            return LaTeXParser.RULE_user_func
+            return LaTeXParser.RULE_user_func_args
 
 
 
 
-    def user_func(self):
+    def user_func_args(self):
 
-        localctx = LaTeXParser.User_funcContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 32, self.RULE_user_func)
+        localctx = LaTeXParser.User_func_argsContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 42, self.RULE_user_func_args)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 221
-            _la = self._input.LA(1)
-            if not(_la==LaTeXParser.LETTER or _la==LaTeXParser.SYMBOL):
-                self._errHandler.recoverInline(self)
-            else:
-                self._errHandler.reportMatch(self)
-                self.consume()
-            self.state = 223
-            self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            if _la==LaTeXParser.UNDERSCORE:
-                self.state = 222
-                self.subexpr()
-
-
-            self.state = 225
+            self.state = 274
             self.match(LaTeXParser.L_PAREN)
-            self.state = 226
+            self.state = 275
             self.expr(0)
-            self.state = 231
+            self.state = 280
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==LaTeXParser.T__0:
-                self.state = 227
+                self.state = 276
                 self.match(LaTeXParser.T__0)
-                self.state = 228
+                self.state = 277
                 self.expr(0)
-                self.state = 233
+                self.state = 282
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 234
+            self.state = 283
             self.match(LaTeXParser.R_PAREN)
         except RecognitionException as re:
             localctx.exception = re
@@ -1958,22 +2269,12 @@ class LaTeXParser ( Parser ):
             super(LaTeXParser.IntegralContext, self).__init__(parent, invokingState)
             self.parser = parser
 
-        def FUNC_INT(self):
-            return self.getToken(LaTeXParser.FUNC_INT, 0)
-
-        def DIFFERENTIAL(self):
-            return self.getToken(LaTeXParser.DIFFERENTIAL, 0)
-
-        def subexpr(self):
-            return self.getTypedRuleContext(LaTeXParser.SubexprContext,0)
+        def integral_indefinite(self):
+            return self.getTypedRuleContext(LaTeXParser.Integral_indefiniteContext,0)
 
 
-        def supexpr(self):
-            return self.getTypedRuleContext(LaTeXParser.SupexprContext,0)
-
-
-        def expr(self):
-            return self.getTypedRuleContext(LaTeXParser.ExprContext,0)
+        def integral_definite(self):
+            return self.getTypedRuleContext(LaTeXParser.Integral_definiteContext,0)
 
 
         def getRuleIndex(self):
@@ -1985,41 +2286,310 @@ class LaTeXParser ( Parser ):
     def integral(self):
 
         localctx = LaTeXParser.IntegralContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 34, self.RULE_integral)
+        self.enterRule(localctx, 44, self.RULE_integral)
         try:
-            self.enterOuterAlt(localctx, 1)
-            self.state = 236
-            self.match(LaTeXParser.FUNC_INT)
-            self.state = 243
-            self._errHandler.sync(self)
-            token = self._input.LA(1)
-            if token in [LaTeXParser.UNDERSCORE]:
-                self.state = 237
-                self.subexpr()
-                self.state = 238
-                self.supexpr()
-                pass
-            elif token in [LaTeXParser.CARET]:
-                self.state = 240
-                self.supexpr()
-                self.state = 241
-                self.subexpr()
-                pass
-            elif token in [LaTeXParser.ADD, LaTeXParser.SUB, LaTeXParser.L_PAREN, LaTeXParser.L_BRACE, LaTeXParser.L_BRACE_LITERAL, LaTeXParser.L_BRACKET, LaTeXParser.BAR, LaTeXParser.FUNC_LIM, LaTeXParser.FUNC_INT, LaTeXParser.FUNC_SUM, LaTeXParser.FUNC_PROD, LaTeXParser.FUNC_EXP, LaTeXParser.FUNC_LOG, LaTeXParser.FUNC_LN, LaTeXParser.FUNC_SIN, LaTeXParser.FUNC_COS, LaTeXParser.FUNC_TAN, LaTeXParser.FUNC_CSC, LaTeXParser.FUNC_SEC, LaTeXParser.FUNC_COT, LaTeXParser.FUNC_ARCSIN, LaTeXParser.FUNC_ARCCOS, LaTeXParser.FUNC_ARCTAN, LaTeXParser.FUNC_ARCCSC, LaTeXParser.FUNC_ARCSEC, LaTeXParser.FUNC_ARCCOT, LaTeXParser.FUNC_SINH, LaTeXParser.FUNC_COSH, LaTeXParser.FUNC_TANH, LaTeXParser.FUNC_ARSINH, LaTeXParser.FUNC_ARCOSH, LaTeXParser.FUNC_ARTANH, LaTeXParser.FUNC_SQRT, LaTeXParser.CMD_FRAC, LaTeXParser.CMD_BINOM, LaTeXParser.CMD_DBINOM, LaTeXParser.CMD_TBINOM, LaTeXParser.CMD_MATHIT, LaTeXParser.DIFFERENTIAL, LaTeXParser.LETTER, LaTeXParser.NUMBER, LaTeXParser.SYMBOL]:
-                pass
-            else:
-                pass
-
-            self.state = 246
+            self.state = 287
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,19,self._ctx)
             if la_ == 1:
-                self.state = 245
-                self.expr(0)
+                self.enterOuterAlt(localctx, 1)
+                self.state = 285
+                self.integral_indefinite()
+                pass
+
+            elif la_ == 2:
+                self.enterOuterAlt(localctx, 2)
+                self.state = 286
+                self.integral_definite()
+                pass
 
 
-            self.state = 248
-            self.match(LaTeXParser.DIFFERENTIAL)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class Integral_indefiniteContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(LaTeXParser.Integral_indefiniteContext, self).__init__(parent, invokingState)
+            self.parser = parser
+
+        def FUNC_INT(self):
+            return self.getToken(LaTeXParser.FUNC_INT, 0)
+
+        def integrand(self):
+            return self.getTypedRuleContext(LaTeXParser.IntegrandContext,0)
+
+
+        def getRuleIndex(self):
+            return LaTeXParser.RULE_integral_indefinite
+
+
+
+
+    def integral_indefinite(self):
+
+        localctx = LaTeXParser.Integral_indefiniteContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 46, self.RULE_integral_indefinite)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 289
+            self.match(LaTeXParser.FUNC_INT)
+            self.state = 290
+            self.integrand()
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class Integral_definiteContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(LaTeXParser.Integral_definiteContext, self).__init__(parent, invokingState)
+            self.parser = parser
+
+        def FUNC_INT(self):
+            return self.getToken(LaTeXParser.FUNC_INT, 0)
+
+        def integrand(self):
+            return self.getTypedRuleContext(LaTeXParser.IntegrandContext,0)
+
+
+        def subexpr(self):
+            return self.getTypedRuleContext(LaTeXParser.SubexprContext,0)
+
+
+        def supexpr(self):
+            return self.getTypedRuleContext(LaTeXParser.SupexprContext,0)
+
+
+        def getRuleIndex(self):
+            return LaTeXParser.RULE_integral_definite
+
+
+
+
+    def integral_definite(self):
+
+        localctx = LaTeXParser.Integral_definiteContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 48, self.RULE_integral_definite)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 292
+            self.match(LaTeXParser.FUNC_INT)
+            self.state = 299
+            self._errHandler.sync(self)
+            token = self._input.LA(1)
+            if token in [LaTeXParser.UNDERSCORE]:
+                self.state = 293
+                self.subexpr()
+                self.state = 294
+                self.supexpr()
+                pass
+            elif token in [LaTeXParser.CARET]:
+                self.state = 296
+                self.supexpr()
+                self.state = 297
+                self.subexpr()
+                pass
+            else:
+                raise NoViableAltException(self)
+
+            self.state = 301
+            self.integrand()
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class IntegrandContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(LaTeXParser.IntegrandContext, self).__init__(parent, invokingState)
+            self.parser = parser
+
+        def differential(self):
+            return self.getTypedRuleContext(LaTeXParser.DifferentialContext,0)
+
+
+        def differential_frac(self):
+            return self.getTypedRuleContext(LaTeXParser.Differential_fracContext,0)
+
+
+        def getRuleIndex(self):
+            return LaTeXParser.RULE_integrand
+
+
+
+
+    def integrand(self):
+
+        localctx = LaTeXParser.IntegrandContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 50, self.RULE_integrand)
+        try:
+            self.state = 305
+            self._errHandler.sync(self)
+            la_ = self._interp.adaptivePredict(self._input,21,self._ctx)
+            if la_ == 1:
+                self.enterOuterAlt(localctx, 1)
+                self.state = 303
+                self.differential()
+                pass
+
+            elif la_ == 2:
+                self.enterOuterAlt(localctx, 2)
+                self.state = 304
+                self.differential_frac()
+                pass
+
+
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class DifferentialContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(LaTeXParser.DifferentialContext, self).__init__(parent, invokingState)
+            self.parser = parser
+            self.differential_numer = None # ExprContext
+            self.wrt = None # ExprContext
+
+        def DIFF_D(self):
+            return self.getToken(LaTeXParser.DIFF_D, 0)
+
+        def expr(self, i=None):
+            if i is None:
+                return self.getTypedRuleContexts(LaTeXParser.ExprContext)
+            else:
+                return self.getTypedRuleContext(LaTeXParser.ExprContext,i)
+
+
+        def MUL(self):
+            return self.getToken(LaTeXParser.MUL, 0)
+
+        def CMD_TIMES(self):
+            return self.getToken(LaTeXParser.CMD_TIMES, 0)
+
+        def CMD_CDOT(self):
+            return self.getToken(LaTeXParser.CMD_CDOT, 0)
+
+        def getRuleIndex(self):
+            return LaTeXParser.RULE_differential
+
+
+
+
+    def differential(self):
+
+        localctx = LaTeXParser.DifferentialContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 52, self.RULE_differential)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 308
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if ((((_la - 11)) & ~0x3f) == 0 and ((1 << (_la - 11)) & ((1 << (LaTeXParser.ADD - 11)) | (1 << (LaTeXParser.SUB - 11)) | (1 << (LaTeXParser.L_PAREN - 11)) | (1 << (LaTeXParser.L_BRACE - 11)) | (1 << (LaTeXParser.L_BRACE_LITERAL - 11)) | (1 << (LaTeXParser.L_BRACKET - 11)) | (1 << (LaTeXParser.BAR - 11)) | (1 << (LaTeXParser.FUNC_LIM - 11)) | (1 << (LaTeXParser.FUNC_INT - 11)) | (1 << (LaTeXParser.FUNC_SUM - 11)) | (1 << (LaTeXParser.FUNC_PROD - 11)) | (1 << (LaTeXParser.FUNC_EXP - 11)) | (1 << (LaTeXParser.FUNC_LOG - 11)) | (1 << (LaTeXParser.FUNC_LN - 11)) | (1 << (LaTeXParser.FUNC_SIN - 11)) | (1 << (LaTeXParser.FUNC_COS - 11)) | (1 << (LaTeXParser.FUNC_TAN - 11)) | (1 << (LaTeXParser.FUNC_CSC - 11)) | (1 << (LaTeXParser.FUNC_SEC - 11)) | (1 << (LaTeXParser.FUNC_COT - 11)) | (1 << (LaTeXParser.FUNC_ARCSIN - 11)) | (1 << (LaTeXParser.FUNC_ARCCOS - 11)) | (1 << (LaTeXParser.FUNC_ARCTAN - 11)) | (1 << (LaTeXParser.FUNC_ARCCSC - 11)) | (1 << (LaTeXParser.FUNC_ARCSEC - 11)) | (1 << (LaTeXParser.FUNC_ARCCOT - 11)) | (1 << (LaTeXParser.FUNC_SINH - 11)) | (1 << (LaTeXParser.FUNC_COSH - 11)) | (1 << (LaTeXParser.FUNC_TANH - 11)) | (1 << (LaTeXParser.FUNC_ARSINH - 11)) | (1 << (LaTeXParser.FUNC_ARCOSH - 11)) | (1 << (LaTeXParser.FUNC_ARTANH - 11)) | (1 << (LaTeXParser.FUNC_SQRT - 11)) | (1 << (LaTeXParser.CMD_FRAC - 11)) | (1 << (LaTeXParser.CMD_BINOM - 11)) | (1 << (LaTeXParser.CMD_DBINOM - 11)) | (1 << (LaTeXParser.CMD_TBINOM - 11)) | (1 << (LaTeXParser.CMD_MATHIT - 11)) | (1 << (LaTeXParser.LETTER - 11)) | (1 << (LaTeXParser.NUMBER - 11)) | (1 << (LaTeXParser.SYMBOL - 11)))) != 0):
+                self.state = 307
+                localctx.differential_numer = self.expr(0)
+
+
+            self.state = 311
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LaTeXParser.MUL) | (1 << LaTeXParser.CMD_TIMES) | (1 << LaTeXParser.CMD_CDOT))) != 0):
+                self.state = 310
+                _la = self._input.LA(1)
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LaTeXParser.MUL) | (1 << LaTeXParser.CMD_TIMES) | (1 << LaTeXParser.CMD_CDOT))) != 0)):
+                    self._errHandler.recoverInline(self)
+                else:
+                    self._errHandler.reportMatch(self)
+                    self.consume()
+
+
+            self.state = 313
+            self.match(LaTeXParser.DIFF_D)
+            self.state = 314
+            localctx.wrt = self.expr(0)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+    class Differential_fracContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(LaTeXParser.Differential_fracContext, self).__init__(parent, invokingState)
+            self.parser = parser
+            self.differential_denom = None # ExprContext
+
+        def CMD_FRAC(self):
+            return self.getToken(LaTeXParser.CMD_FRAC, 0)
+
+        def L_BRACE(self, i=None):
+            if i is None:
+                return self.getTokens(LaTeXParser.L_BRACE)
+            else:
+                return self.getToken(LaTeXParser.L_BRACE, i)
+
+        def differential(self):
+            return self.getTypedRuleContext(LaTeXParser.DifferentialContext,0)
+
+
+        def R_BRACE(self, i=None):
+            if i is None:
+                return self.getTokens(LaTeXParser.R_BRACE)
+            else:
+                return self.getToken(LaTeXParser.R_BRACE, i)
+
+        def expr(self):
+            return self.getTypedRuleContext(LaTeXParser.ExprContext,0)
+
+
+        def getRuleIndex(self):
+            return LaTeXParser.RULE_differential_frac
+
+
+
+
+    def differential_frac(self):
+
+        localctx = LaTeXParser.Differential_fracContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 54, self.RULE_differential_frac)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 316
+            self.match(LaTeXParser.CMD_FRAC)
+            self.state = 317
+            self.match(LaTeXParser.L_BRACE)
+            self.state = 318
+            self.differential()
+            self.state = 319
+            self.match(LaTeXParser.R_BRACE)
+            self.state = 320
+            self.match(LaTeXParser.L_BRACE)
+            self.state = 321
+            localctx.differential_denom = self.expr(0)
+            self.state = 322
+            self.match(LaTeXParser.R_BRACE)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2054,14 +2624,14 @@ class LaTeXParser ( Parser ):
     def limit(self):
 
         localctx = LaTeXParser.LimitContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 36, self.RULE_limit)
+        self.enterRule(localctx, 56, self.RULE_limit)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 250
+            self.state = 324
             self.match(LaTeXParser.FUNC_LIM)
-            self.state = 251
+            self.state = 325
             self.limit_sub()
-            self.state = 252
+            self.state = 326
             self.expr(0)
         except RecognitionException as re:
             localctx.exception = re
@@ -2076,43 +2646,35 @@ class LaTeXParser ( Parser ):
         def __init__(self, parser, parent=None, invokingState=-1):
             super(LaTeXParser.Limit_subContext, self).__init__(parent, invokingState)
             self.parser = parser
+            self.var = None # ExprContext
+            self.approaching = None # ExprContext
 
         def UNDERSCORE(self):
             return self.getToken(LaTeXParser.UNDERSCORE, 0)
 
-        def L_BRACE(self, i=None):
-            if i is None:
-                return self.getTokens(LaTeXParser.L_BRACE)
-            else:
-                return self.getToken(LaTeXParser.L_BRACE, i)
+        def L_BRACE(self):
+            return self.getToken(LaTeXParser.L_BRACE, 0)
 
         def LIM_APPROACH_SYM(self):
             return self.getToken(LaTeXParser.LIM_APPROACH_SYM, 0)
 
-        def expr(self):
-            return self.getTypedRuleContext(LaTeXParser.ExprContext,0)
+        def R_BRACE(self):
+            return self.getToken(LaTeXParser.R_BRACE, 0)
 
-
-        def R_BRACE(self, i=None):
+        def expr(self, i=None):
             if i is None:
-                return self.getTokens(LaTeXParser.R_BRACE)
+                return self.getTypedRuleContexts(LaTeXParser.ExprContext)
             else:
-                return self.getToken(LaTeXParser.R_BRACE, i)
+                return self.getTypedRuleContext(LaTeXParser.ExprContext,i)
 
-        def LETTER(self):
-            return self.getToken(LaTeXParser.LETTER, 0)
 
-        def SYMBOL(self):
-            return self.getToken(LaTeXParser.SYMBOL, 0)
+        def limit_left(self):
+            return self.getTypedRuleContext(LaTeXParser.Limit_leftContext,0)
 
-        def CARET(self):
-            return self.getToken(LaTeXParser.CARET, 0)
 
-        def ADD(self):
-            return self.getToken(LaTeXParser.ADD, 0)
+        def limit_right(self):
+            return self.getTypedRuleContext(LaTeXParser.Limit_rightContext,0)
 
-        def SUB(self):
-            return self.getToken(LaTeXParser.SUB, 0)
 
         def getRuleIndex(self):
             return LaTeXParser.RULE_limit_sub
@@ -2123,45 +2685,32 @@ class LaTeXParser ( Parser ):
     def limit_sub(self):
 
         localctx = LaTeXParser.Limit_subContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 38, self.RULE_limit_sub)
-        self._la = 0 # Token type
+        self.enterRule(localctx, 58, self.RULE_limit_sub)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 254
+            self.state = 328
             self.match(LaTeXParser.UNDERSCORE)
-            self.state = 255
+            self.state = 329
             self.match(LaTeXParser.L_BRACE)
-            self.state = 256
-            _la = self._input.LA(1)
-            if not(_la==LaTeXParser.LETTER or _la==LaTeXParser.SYMBOL):
-                self._errHandler.recoverInline(self)
-            else:
-                self._errHandler.reportMatch(self)
-                self.consume()
-            self.state = 257
+            self.state = 330
+            localctx.var = self.expr(0)
+            self.state = 331
             self.match(LaTeXParser.LIM_APPROACH_SYM)
-            self.state = 258
-            self.expr(0)
-            self.state = 263
+            self.state = 332
+            localctx.approaching = self.expr(0)
+            self.state = 335
             self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            if _la==LaTeXParser.CARET:
-                self.state = 259
-                self.match(LaTeXParser.CARET)
-                self.state = 260
-                self.match(LaTeXParser.L_BRACE)
-                self.state = 261
-                _la = self._input.LA(1)
-                if not(_la==LaTeXParser.ADD or _la==LaTeXParser.SUB):
-                    self._errHandler.recoverInline(self)
-                else:
-                    self._errHandler.reportMatch(self)
-                    self.consume()
-                self.state = 262
-                self.match(LaTeXParser.R_BRACE)
+            la_ = self._interp.adaptivePredict(self._input,24,self._ctx)
+            if la_ == 1:
+                self.state = 333
+                self.limit_left()
+
+            elif la_ == 2:
+                self.state = 334
+                self.limit_right()
 
 
-            self.state = 265
+            self.state = 337
             self.match(LaTeXParser.R_BRACE)
         except RecognitionException as re:
             localctx.exception = re
@@ -2171,56 +2720,90 @@ class LaTeXParser ( Parser ):
             self.exitRule()
         return localctx
 
-    class Func_args_parensContext(ParserRuleContext):
+    class Limit_leftContext(ParserRuleContext):
 
         def __init__(self, parser, parent=None, invokingState=-1):
-            super(LaTeXParser.Func_args_parensContext, self).__init__(parent, invokingState)
+            super(LaTeXParser.Limit_leftContext, self).__init__(parent, invokingState)
             self.parser = parser
 
-        def L_PAREN(self):
-            return self.getToken(LaTeXParser.L_PAREN, 0)
+        def CARET(self):
+            return self.getToken(LaTeXParser.CARET, 0)
 
-        def expr(self, i=None):
-            if i is None:
-                return self.getTypedRuleContexts(LaTeXParser.ExprContext)
-            else:
-                return self.getTypedRuleContext(LaTeXParser.ExprContext,i)
+        def L_BRACE(self):
+            return self.getToken(LaTeXParser.L_BRACE, 0)
 
+        def ADD(self):
+            return self.getToken(LaTeXParser.ADD, 0)
 
-        def R_PAREN(self):
-            return self.getToken(LaTeXParser.R_PAREN, 0)
+        def R_BRACE(self):
+            return self.getToken(LaTeXParser.R_BRACE, 0)
 
         def getRuleIndex(self):
-            return LaTeXParser.RULE_func_args_parens
+            return LaTeXParser.RULE_limit_left
 
 
 
 
-    def func_args_parens(self):
+    def limit_left(self):
 
-        localctx = LaTeXParser.Func_args_parensContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 40, self.RULE_func_args_parens)
-        self._la = 0 # Token type
+        localctx = LaTeXParser.Limit_leftContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 60, self.RULE_limit_left)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 267
-            self.match(LaTeXParser.L_PAREN)
-            self.state = 268
-            self.expr(0)
-            self.state = 273
-            self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            while _la==LaTeXParser.T__0:
-                self.state = 269
-                self.match(LaTeXParser.T__0)
-                self.state = 270
-                self.expr(0)
-                self.state = 275
-                self._errHandler.sync(self)
-                _la = self._input.LA(1)
+            self.state = 339
+            self.match(LaTeXParser.CARET)
+            self.state = 340
+            self.match(LaTeXParser.L_BRACE)
+            self.state = 341
+            self.match(LaTeXParser.ADD)
+            self.state = 342
+            self.match(LaTeXParser.R_BRACE)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
 
-            self.state = 276
-            self.match(LaTeXParser.R_PAREN)
+    class Limit_rightContext(ParserRuleContext):
+
+        def __init__(self, parser, parent=None, invokingState=-1):
+            super(LaTeXParser.Limit_rightContext, self).__init__(parent, invokingState)
+            self.parser = parser
+
+        def CARET(self):
+            return self.getToken(LaTeXParser.CARET, 0)
+
+        def L_BRACE(self):
+            return self.getToken(LaTeXParser.L_BRACE, 0)
+
+        def SUB(self):
+            return self.getToken(LaTeXParser.SUB, 0)
+
+        def R_BRACE(self):
+            return self.getToken(LaTeXParser.R_BRACE, 0)
+
+        def getRuleIndex(self):
+            return LaTeXParser.RULE_limit_right
+
+
+
+
+    def limit_right(self):
+
+        localctx = LaTeXParser.Limit_rightContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 62, self.RULE_limit_right)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 344
+            self.match(LaTeXParser.CARET)
+            self.state = 345
+            self.match(LaTeXParser.L_BRACE)
+            self.state = 346
+            self.match(LaTeXParser.SUB)
+            self.state = 347
+            self.match(LaTeXParser.R_BRACE)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2254,14 +2837,14 @@ class LaTeXParser ( Parser ):
     def func_arg_parens(self):
 
         localctx = LaTeXParser.Func_arg_parensContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 42, self.RULE_func_arg_parens)
+        self.enterRule(localctx, 64, self.RULE_func_arg_parens)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 278
+            self.state = 349
             self.match(LaTeXParser.L_PAREN)
-            self.state = 279
+            self.state = 350
             self.expr(0)
-            self.state = 280
+            self.state = 351
             self.match(LaTeXParser.R_PAREN)
         except RecognitionException as re:
             localctx.exception = re
@@ -2290,10 +2873,10 @@ class LaTeXParser ( Parser ):
     def func_arg_noparens(self):
 
         localctx = LaTeXParser.Func_arg_noparensContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 44, self.RULE_func_arg_noparens)
+        self.enterRule(localctx, 66, self.RULE_func_arg_noparens)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 282
+            self.state = 353
             self.special()
         except RecognitionException as re:
             localctx.exception = re
@@ -2333,30 +2916,30 @@ class LaTeXParser ( Parser ):
     def summation(self):
 
         localctx = LaTeXParser.SummationContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 46, self.RULE_summation)
+        self.enterRule(localctx, 68, self.RULE_summation)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 284
+            self.state = 355
             self.match(LaTeXParser.FUNC_SUM)
-            self.state = 291
+            self.state = 362
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [LaTeXParser.UNDERSCORE]:
-                self.state = 285
+                self.state = 356
                 self.subeq()
-                self.state = 286
+                self.state = 357
                 self.supexpr()
                 pass
             elif token in [LaTeXParser.CARET]:
-                self.state = 288
+                self.state = 359
                 self.supexpr()
-                self.state = 289
+                self.state = 360
                 self.subeq()
                 pass
             else:
                 raise NoViableAltException(self)
 
-            self.state = 293
+            self.state = 364
             self.expr(0)
         except RecognitionException as re:
             localctx.exception = re
@@ -2396,30 +2979,30 @@ class LaTeXParser ( Parser ):
     def product(self):
 
         localctx = LaTeXParser.ProductContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 48, self.RULE_product)
+        self.enterRule(localctx, 70, self.RULE_product)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 295
+            self.state = 366
             self.match(LaTeXParser.FUNC_PROD)
-            self.state = 302
+            self.state = 373
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [LaTeXParser.UNDERSCORE]:
-                self.state = 296
+                self.state = 367
                 self.subeq()
-                self.state = 297
+                self.state = 368
                 self.supexpr()
                 pass
             elif token in [LaTeXParser.CARET]:
-                self.state = 299
+                self.state = 370
                 self.supexpr()
-                self.state = 300
+                self.state = 371
                 self.subeq()
                 pass
             else:
                 raise NoViableAltException(self)
 
-            self.state = 304
+            self.state = 375
             self.expr(0)
         except RecognitionException as re:
             localctx.exception = re
@@ -2461,24 +3044,24 @@ class LaTeXParser ( Parser ):
     def subexpr(self):
 
         localctx = LaTeXParser.SubexprContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 50, self.RULE_subexpr)
+        self.enterRule(localctx, 72, self.RULE_subexpr)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 306
+            self.state = 377
             self.match(LaTeXParser.UNDERSCORE)
-            self.state = 312
+            self.state = 383
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [LaTeXParser.CMD_MATHIT, LaTeXParser.DIFFERENTIAL, LaTeXParser.LETTER, LaTeXParser.NUMBER, LaTeXParser.SYMBOL]:
-                self.state = 307
+            if token in [LaTeXParser.CMD_MATHIT, LaTeXParser.LETTER, LaTeXParser.NUMBER, LaTeXParser.SYMBOL]:
+                self.state = 378
                 self.atom()
                 pass
             elif token in [LaTeXParser.L_BRACE]:
-                self.state = 308
+                self.state = 379
                 self.match(LaTeXParser.L_BRACE)
-                self.state = 309
+                self.state = 380
                 self.expr(0)
-                self.state = 310
+                self.state = 381
                 self.match(LaTeXParser.R_BRACE)
                 pass
             else:
@@ -2524,24 +3107,24 @@ class LaTeXParser ( Parser ):
     def supexpr(self):
 
         localctx = LaTeXParser.SupexprContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 52, self.RULE_supexpr)
+        self.enterRule(localctx, 74, self.RULE_supexpr)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 314
+            self.state = 385
             self.match(LaTeXParser.CARET)
-            self.state = 320
+            self.state = 391
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [LaTeXParser.CMD_MATHIT, LaTeXParser.DIFFERENTIAL, LaTeXParser.LETTER, LaTeXParser.NUMBER, LaTeXParser.SYMBOL]:
-                self.state = 315
+            if token in [LaTeXParser.CMD_MATHIT, LaTeXParser.LETTER, LaTeXParser.NUMBER, LaTeXParser.SYMBOL]:
+                self.state = 386
                 self.atom()
                 pass
             elif token in [LaTeXParser.L_BRACE]:
-                self.state = 316
+                self.state = 387
                 self.match(LaTeXParser.L_BRACE)
-                self.state = 317
+                self.state = 388
                 self.expr(0)
-                self.state = 318
+                self.state = 389
                 self.match(LaTeXParser.R_BRACE)
                 pass
             else:
@@ -2589,20 +3172,20 @@ class LaTeXParser ( Parser ):
     def subeq(self):
 
         localctx = LaTeXParser.SubeqContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 54, self.RULE_subeq)
+        self.enterRule(localctx, 76, self.RULE_subeq)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 322
+            self.state = 393
             self.match(LaTeXParser.UNDERSCORE)
-            self.state = 323
+            self.state = 394
             self.match(LaTeXParser.L_BRACE)
-            self.state = 324
+            self.state = 395
             self.expr(0)
-            self.state = 325
+            self.state = 396
             self.match(LaTeXParser.EQUAL)
-            self.state = 326
+            self.state = 397
             self.expr(0)
-            self.state = 327
+            self.state = 398
             self.match(LaTeXParser.R_BRACE)
         except RecognitionException as re:
             localctx.exception = re

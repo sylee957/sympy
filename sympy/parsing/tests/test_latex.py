@@ -132,7 +132,6 @@ GOOD_PAIRS = [
     ("\\int_{a}^{b} x dx", Integral(x, (x, a, b))),
     ("\\int^{b}_{a} x dx", Integral(x, (x, a, b))),
     ("\\int_{f(a)}^{f(b)} f(z) dz", Integral(f(z), (z, f(a), f(b)))),
-    ("\\int (x+a)", Integral(_Add(x, a), x)),
     ("\\int a + b + c dx", Integral(_Add(_Add(a, b), c), x)),
     ("\\int \\frac{dz}{z}", Integral(Pow(z, -1), z)),
     ("\\int \\frac{3 dz}{z}", Integral(3*Pow(z, -1), z)),

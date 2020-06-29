@@ -94,7 +94,7 @@ CARET: '^';
 COLON: ':';
 
 fragment WS_CHAR: [ \t\r\n];
-DIFFERENTIAL: 'd' WS_CHAR*? ([a-zA-Z] | '\\' [a-zA-Z]+);
+DIFF_D: 'd';
 
 LETTER: [a-zA-Z];
 fragment DIGIT: [0-9];
@@ -135,21 +135,20 @@ expr:
 
 special:
     unary_add | unary_sub
-    | paren | absolute_value
-    | frac | binom
-    | sqrt | log
-    | limit | integral
+    | paren | absolute
+    | limit | derivative | integral
+    | frac
     | summation | product
+    | sqrt | log | binom
     | amsmath_func | user_func
     | atom;
 
-atom: (LETTER | SYMBOL) subexpr? | NUMBER | DIFFERENTIAL | mathit;
+atom: (LETTER | SYMBOL) subexpr? | NUMBER | mathit;
 
 mathit: CMD_MATHIT L_BRACE mathit_text R_BRACE;
 mathit_text: LETTER*;
 
-absolute_value:
-    BAR expr BAR;
+absolute: BAR expr BAR;
 
 unary_add: ADD expr;
 unary_sub: SUB expr;
@@ -166,6 +165,19 @@ frac:
     R_BRACE L_BRACE
     lower=expr
     R_BRACE;
+
+derivative: derivative_type_1 | derivative_type_2;
+
+derivative_type_1:
+    CMD_FRAC
+    L_BRACE DIFF_D R_BRACE
+    L_BRACE DIFF_D lower=expr R_BRACE
+    upper=expr;
+
+derivative_type_2:
+    CMD_FRAC
+    L_BRACE DIFF_D upper=expr R_BRACE
+    L_BRACE DIFF_D lower=expr R_BRACE;
 
 binom:
     (CMD_BINOM | CMD_DBINOM | CMD_TBINOM) L_BRACE
@@ -197,29 +209,39 @@ sqrt:
     (L_BRACKET root=expr R_BRACKET)?
     L_BRACE base=expr R_BRACE;
 
-user_func:
-    (LETTER | SYMBOL) subexpr?
-    L_PAREN expr (',' expr)* R_PAREN;
+user_func: user_func_name user_func_args;
+user_func_name : (LETTER | SYMBOL) subexpr?;
+user_func_args: L_PAREN expr (',' expr)* R_PAREN;
 
-integral:
-    FUNC_INT (subexpr supexpr | supexpr subexpr)?
-    (expr? DIFFERENTIAL);
+integral: integral_indefinite | integral_definite;
+integral_indefinite: FUNC_INT integrand;
+integral_definite: FUNC_INT (subexpr supexpr | supexpr subexpr) integrand;
+
+integrand: differential | differential_frac;
+differential:
+    differential_numer=expr?
+    (MUL | CMD_TIMES | CMD_CDOT)?
+    DIFF_D wrt=expr;
+differential_frac:
+    CMD_FRAC
+    L_BRACE differential R_BRACE
+    L_BRACE differential_denom=expr R_BRACE;
 
 limit: FUNC_LIM limit_sub expr;
 limit_sub:
-    UNDERSCORE L_BRACE
-    (LETTER | SYMBOL)
-    LIM_APPROACH_SYM
-    expr (CARET L_BRACE (ADD | SUB) R_BRACE)?
+    UNDERSCORE
+    L_BRACE
+    var=expr LIM_APPROACH_SYM
+    approaching=expr (limit_left | limit_right)?
     R_BRACE;
+limit_left: CARET L_BRACE ADD R_BRACE;
+limit_right: CARET L_BRACE SUB R_BRACE;
 
-func_args_parens: L_PAREN expr (',' expr)* R_PAREN;
 func_arg_parens: L_PAREN expr R_PAREN;
-
 /*
-  This is only for handling the ambiguity
+  This is only for handling the ambiguity like
   $\sin x \cos y$ -> sin(x)*cos(y) vs sin(x*cos(y))
-  And sin(x)*cos(y) is preferred for this.
+  and sin(x)*cos(y) is going to be preferred for this.
 */
 func_arg_noparens: special;
 
