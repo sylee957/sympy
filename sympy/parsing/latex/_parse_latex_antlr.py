@@ -103,6 +103,8 @@ def convert_relation(rel):
 
 
 def convert_expr(expr):
+    if isinstance(expr, LaTeXParser.FactorialContext):
+        return convert_factorial(expr)
     if isinstance(expr, LaTeXParser.PowContext):
         return convert_pow(expr)
     if isinstance(expr, LaTeXParser.MulContext):
@@ -130,6 +132,11 @@ def convert_expr(expr):
         return convert_special(expr.special())
     if isinstance(expr, LaTeXParser.ImplicitMulContext):
         return convert_mul(expr)
+
+
+def convert_factorial(expr):
+    expr = convert_expr(expr.expr())
+    return sympy.factorial(expr, evaluate=False)
 
 
 def convert_pow(expr):
@@ -188,6 +195,8 @@ def convert_special(special):
         return convert_atom(special.atom())
     if special.log():
         return convert_log(special.log())
+    if special.sqrt():
+        return convert_sqrt(special.sqrt())
     if special.amsmath_func():
         return convert_amsmath_func(special.amsmath_func())
     if special.user_func():
@@ -218,6 +227,16 @@ def convert_paren(paren):
 def convert_abs(expr):
     expr = convert_expr(expr.expr())
     return sympy.Abs(expr, evaluate=False)
+
+
+def convert_sqrt(sqrt):
+    root = sympy.S.One * 2
+    if sqrt.root:
+        root = sqrt.root
+        root = convert_expr(root)
+    base = sqrt.base
+    base = convert_expr(base)
+    return sympy.Pow(base, sympy.S.One/root, evaluate=False)
 
 
 def convert_log(log):
@@ -542,9 +561,6 @@ def convert_atom(atom):
     elif atom.NUMBER():
         s = atom.NUMBER().getText().replace(",", "")
         return sympy.Number(s)
-    elif atom.DIFFERENTIAL():
-        var = get_differential_var(atom.DIFFERENTIAL())
-        return sympy.Symbol('d' + var.name)
     elif atom.mathit():
         text = rule2text(atom.mathit().mathit_text())
         return sympy.Symbol(text)
@@ -566,58 +582,7 @@ def convert_binom(binom):
     return sympy.binomial(expr_n, expr_k, evaluate=False)
 
 def convert_func(func):
-    if func.func_normal():
-        if func.L_PAREN():  # function called with parenthesis
-            arg = convert_func_arg(func.func_arg())
-        else:
-            arg = convert_func_arg(func.func_arg_noparens())
-
-        name = func.func_normal().start.text[1:]
-
-        # change arc<trig> -> a<trig>
-        if name in [
-                "arcsin", "arccos", "arctan", "arccsc", "arcsec", "arccot"
-        ]:
-            name = "a" + name[3:]
-            expr = getattr(sympy.functions, name)(arg, evaluate=False)
-        if name in ["arsinh", "arcosh", "artanh"]:
-            name = "a" + name[2:]
-            expr = getattr(sympy.functions, name)(arg, evaluate=False)
-
-        if name == "exp":
-            expr = sympy.exp(arg, evaluate=False)
-
-        if (name == "log" or name == "ln"):
-            if func.subexpr():
-                base = convert_expr(func.subexpr().expr())
-            elif name == "log":
-                base = 10
-            elif name == "ln":
-                base = sympy.E
-            expr = sympy.log(arg, base, evaluate=False)
-
-        func_pow = None
-        should_pow = True
-        if func.supexpr():
-            if func.supexpr().expr():
-                func_pow = convert_expr(func.supexpr().expr())
-            else:
-                func_pow = convert_atom(func.supexpr().atom())
-
-        if name in [
-                "sin", "cos", "tan", "csc", "sec", "cot", "sinh", "cosh",
-                "tanh"
-        ]:
-            if func_pow == -1:
-                name = "a" + name
-                should_pow = False
-            expr = getattr(sympy.functions, name)(arg, evaluate=False)
-
-        if func_pow and should_pow:
-            expr = sympy.Pow(expr, func_pow, evaluate=False)
-
-        return expr
-    elif func.LETTER() or func.SYMBOL():
+    if func.LETTER() or func.SYMBOL():
         if func.LETTER():
             fname = func.LETTER().getText()
         elif func.SYMBOL():
@@ -638,68 +603,10 @@ def convert_func(func):
             input_args = input_args.args()
         output_args.append(convert_expr(input_args.expr()))
         return sympy.Function(fname)(*output_args)
-    elif func.FUNC_INT():
-        return handle_integral(func)
-    elif func.FUNC_SQRT():
-        expr = convert_expr(func.base)
-        if func.root:
-            r = convert_expr(func.root)
-            return sympy.root(expr, r)
-        else:
-            return sympy.sqrt(expr)
     elif func.FUNC_SUM():
         return handle_sum_or_prod(func, "summation")
     elif func.FUNC_PROD():
         return handle_sum_or_prod(func, "product")
-    elif func.FUNC_LIM():
-        return handle_limit(func)
-
-
-def convert_func_arg(arg):
-    if hasattr(arg, 'expr'):
-        return convert_expr(arg.expr())
-    else:
-        return convert_mp(arg.mp_nofunc())
-
-
-def handle_integral(func):
-    if func.additive():
-        integrand = convert_add(func.additive())
-    elif func.frac():
-        integrand = convert_frac(func.frac())
-    else:
-        integrand = 1
-
-    int_var = None
-    if func.DIFFERENTIAL():
-        int_var = get_differential_var(func.DIFFERENTIAL())
-    else:
-        for sym in integrand.atoms(sympy.Symbol):
-            s = str(sym)
-            if len(s) > 1 and s[0] == 'd':
-                if s[1] == '\\':
-                    int_var = sympy.Symbol(s[2:])
-                else:
-                    int_var = sympy.Symbol(s[1:])
-                int_sym = sym
-        if int_var:
-            integrand = integrand.subs(int_sym, 1)
-        else:
-            # Assume dx by default
-            int_var = sympy.Symbol('x')
-
-    if func.subexpr():
-        if func.subexpr().atom():
-            lower = convert_atom(func.subexpr().atom())
-        else:
-            lower = convert_expr(func.subexpr().expr())
-        if func.supexpr().atom():
-            upper = convert_atom(func.supexpr().atom())
-        else:
-            upper = convert_expr(func.supexpr().expr())
-        return sympy.Integral(integrand, (int_var, lower, upper))
-    else:
-        return sympy.Integral(integrand, int_var)
 
 
 def handle_sum_or_prod(func, name):
@@ -715,38 +622,3 @@ def handle_sum_or_prod(func, name):
         return sympy.Sum(val, (iter_var, start, end))
     elif name == "product":
         return sympy.Product(val, (iter_var, start, end))
-
-
-def handle_limit(func):
-    sub = func.limit_sub()
-    if sub.LETTER():
-        var = sympy.Symbol(sub.LETTER().getText())
-    elif sub.SYMBOL():
-        var = sympy.Symbol(sub.SYMBOL().getText()[1:])
-    else:
-        var = sympy.Symbol('x')
-    if sub.SUB():
-        direction = "-"
-    else:
-        direction = "+"
-    approaching = convert_expr(sub.expr())
-    content = convert_mp(func.mp())
-
-    return sympy.Limit(content, var, approaching, direction)
-
-
-def get_differential_var(d):
-    text = get_differential_var_str(d.getText())
-    return sympy.Symbol(text)
-
-
-def get_differential_var_str(text):
-    for i in range(1, len(text)):
-        c = text[i]
-        if not (c == " " or c == "\r" or c == "\n" or c == "\t"):
-            idx = i
-            break
-    text = text[idx:]
-    if text[0] == "\\":
-        text = text[1:]
-    return text
