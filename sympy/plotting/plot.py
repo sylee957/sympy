@@ -629,66 +629,81 @@ class LineOver1DRangeSeries(Line2DBaseSeries):
 
         if self.only_integers or not self.adaptive:
             return super(LineOver1DRangeSeries, self).get_segments()
-        else:
-            f = lambdify([self.var], self.expr)
-            list_segments = []
-            np = import_module('numpy')
-            def sample(p, q, depth):
-                """ Samples recursively if three points are almost collinear.
-                For depth < 6, points are added irrespective of whether they
-                satisfy the collinearity condition or not. The maximum depth
-                allowed is 12.
-                """
-                # Randomly sample to avoid aliasing.
-                random = 0.45 + np.random.rand() * 0.1
+
+        f = lambdify([self.var], self.expr)
+        df = lambdify([self.var], self.expr.diff(self.var))
+
+        np = import_module('numpy')
+        list_segments = []
+
+        def sample(p, q, dp, dq, depth):
+            """Samples recursively if three points are almost collinear.
+            For depth < 6, points are added irrespective of whether they
+            satisfy the collinearity condition or not. The maximum depth
+            allowed is 12.
+            """
+            # Randomly sample to avoid aliasing.
+            random = 0.45 + np.random.rand() * 0.1
+            if self.xscale == 'log':
+                xnew = 10**(np.log10(p[0]) + random * (np.log10(q[0]) -
+                                                        np.log10(p[0])))
+            else:
+                xnew = p[0] + random * (q[0] - p[0])
+            ynew = f(xnew)
+            r = np.array([xnew, ynew])
+            dr = df(xnew)
+
+            # Maximum depth
+            if depth > self.depth:
+                list_segments.append(np.array([p, q]))
+
+            # Sample irrespective of whether the line is flat till the
+            # depth of 6. We are not using linspace to avoid aliasing.
+            elif depth < 6:
+                sample(p, r, dp, dr, depth + 1)
+                sample(r, q, dr, dq, depth + 1)
+
+            # Sample ten points if complex values are encountered
+            # at both ends. If there is a real value in between, then
+            # sample those points further.
+            elif p[1] is None and q[1] is None:
                 if self.xscale == 'log':
-                    xnew = 10**(np.log10(p[0]) + random * (np.log10(q[0]) -
-                                                           np.log10(p[0])))
+                    xarray = np.logspace(p[0], q[0], 10)
                 else:
-                    xnew = p[0] + random * (q[0] - p[0])
-                ynew = f(xnew)
-                new_point = np.array([xnew, ynew])
+                    xarray = np.linspace(p[0], q[0], 10)
+                yarray = list(map(f, xarray))
+                dyarray = list(map(df, xarray))
 
-                # Maximum depth
-                if depth > self.depth:
-                    list_segments.append([p, q])
+                for i in range(len(yarray) - 1):
+                    if yarray[i] is not None or yarray[i + 1] is not None:
+                        p = np.array([xarray[i], yarray[i]])
+                        q = np.array([xarray[i + 1], yarray[i + 1]])
+                        dp = dyarray[i]
+                        dq = dyarray[i + 1]
+                        sample(p, q, dp, dq, depth + 1)
 
-                # Sample irrespective of whether the line is flat till the
-                # depth of 6. We are not using linspace to avoid aliasing.
-                elif depth < 6:
-                    sample(p, new_point, depth + 1)
-                    sample(new_point, q, depth + 1)
+            # Sample further if one of the end points in None (i.e. a
+            # complex value) or the three points are not almost collinear.
+            elif None in (p[1], q[1], r[1]):
+                sample(p, r, dp, dr, depth + 1)
+                sample(r, q, dp, dr, depth + 1)
+            elif not flat(p, r, q):
+                sample(p, r, dp, dr, depth + 1)
+                sample(r, q, dp, dr, depth + 1)
+            elif None not in (dp, dq) and abs(dp - dq) > 1e-3:
+                sample(p, r, dp, dr, depth + 1)
+                sample(r, q, dp, dr, depth + 1)
+            else:
+                list_segments.append(np.array([p, q]))
 
-                # Sample ten points if complex values are encountered
-                # at both ends. If there is a real value in between, then
-                # sample those points further.
-                elif p[1] is None and q[1] is None:
-                    if self.xscale == 'log':
-                        xarray = np.logspace(p[0], q[0], 10)
-                    else:
-                        xarray = np.linspace(p[0], q[0], 10)
-                    yarray = list(map(f, xarray))
-                    if any(y is not None for y in yarray):
-                        for i in range(len(yarray) - 1):
-                            if yarray[i] is not None or yarray[i + 1] is not None:
-                                sample([xarray[i], yarray[i]],
-                                    [xarray[i + 1], yarray[i + 1]], depth + 1)
-
-                # Sample further if one of the end points in None (i.e. a
-                # complex value) or the three points are not almost collinear.
-                elif (p[1] is None or q[1] is None or new_point[1] is None
-                        or not flat(p, new_point, q)):
-                    sample(p, new_point, depth + 1)
-                    sample(new_point, q, depth + 1)
-                else:
-                    list_segments.append([p, q])
-
-            f_start = f(self.start)
-            f_end = f(self.end)
-            sample(np.array([self.start, f_start]),
-                   np.array([self.end, f_end]), 0)
-
-            return list_segments
+        f_start = f(self.start)
+        f_end = f(self.end)
+        p = np.array([self.start, f_start])
+        q = np.array([self.end, f_end])
+        dp = df(self.start)
+        dq = df(self.end)
+        sample(p, q, dp, dq, 0)
+        return list_segments
 
     def get_points(self):
         np = import_module('numpy')
