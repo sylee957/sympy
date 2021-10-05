@@ -7,6 +7,7 @@ from sympy.geometry.synthetic.constructions import SyntheticGeometryLRatio as LR
 from sympy.geometry.synthetic.constructions import SyntheticGeometryPRatio as PRatio
 from sympy.geometry.synthetic.constructions import SyntheticGeometryIntersection as Intersection
 from sympy.geometry.synthetic.constructions import SyntheticGeometryOn as On
+from sympy.geometry.synthetic.constructions import SyntheticGeometryMidpoint as Midpoint
 from sympy.geometry.synthetic.constructions import SyntheticGeometryLine as Line
 from sympy.geometry.synthetic.constructions import SyntheticGeometryPLine as PLine
 from sympy.geometry.synthetic.constructions import SyntheticGeometryBLine as BLine
@@ -67,6 +68,10 @@ def _degenerate_construction(C):
             if P1 == P2:
                 P = P1
                 return Collinear(O1, O2, P)
+
+    if isinstance(C, Midpoint):
+        Y, L = C.args
+        return _degenerate_construction(L)
     raise NotImplementedError
 
 

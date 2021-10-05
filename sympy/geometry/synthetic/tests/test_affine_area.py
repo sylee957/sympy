@@ -10,10 +10,8 @@ from sympy.geometry.synthetic.affine_area import (
 )
 from sympy.geometry.synthetic.constructions import (
     SyntheticGeometryLRatio as LRatio,
-    SyntheticGeometryPRatio as PRatio,
     SyntheticGeometryIntersection as Intersection,
     SyntheticGeometryLine as Line,
-    SyntheticGeometryPLine as PLine
 )
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.geometry.synthetic.affine import area_method_affine

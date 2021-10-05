@@ -221,6 +221,28 @@ def _eliminate_ratio_inter_pline_pline(C, constructions, area_method, objective)
     return objective
 
 
+def _eliminate_other_constructions(C, constructions, objective):
+    if isinstance(C, On):
+        Y, L = C.args
+        if isinstance(L, Line):
+            P, Q = L.args
+            l = FrozenRatio(P, Y, P, Q)
+            C = PRatio(Y, P, Line(P, Q), l)
+            return _eliminate(C, constructions, objective)
+        if isinstance(L, PLine):
+            R, P, Q = L.args
+            l = FrozenRatio(R, Y, P, Q)
+            C = PRatio(Y, R, Line(P, Q), l)
+            return _eliminate(C, constructions, objective)
+    if isinstance(C, Midpoint):
+        Y, L = C.args
+        if isinstance(L, Line):
+            U, V = L.args
+            C = LRatio(Y, Line(U, V), Rational(1, 2))
+            return _eliminate(C, constructions, objective)
+    return objective
+
+
 def _eliminate(C, constructions, objective):
     objective = _substitution_rule(_quadrilateral_area(objective))(objective)
     objective = _substitution_rule(_simplify_area(objective))(objective)
@@ -239,38 +261,14 @@ def _eliminate(C, constructions, objective):
     objective = _eliminate_ratio_inter_pline_line(C, constructions, area_method_affine, objective)
     objective = _eliminate_ratio_inter_pline_pline(C, constructions, area_method_affine, objective)
 
+    objective = _eliminate_other_constructions(C, constructions, objective)
+
     objective = _simplify(objective)
     return objective
 
 
-def _normalize_constructions(constructions):
-    new = []
-    for C in constructions:
-        if isinstance(C, On):
-            Y, line = C.args
-            if isinstance(line, Line):
-                P, Q = line.args
-                l = FrozenRatio(P, Y, P, Q)
-                new.append(PRatio(Y, P, Line(P, Q), l))
-                continue
-            elif isinstance(line, PLine):
-                R, P, Q = line.args
-                l = FrozenRatio(R, Y, P, Q)
-                new.append(PRatio(Y, R, Line(P, Q), l))
-                continue
-        if isinstance(C, Midpoint):
-            Y, L = C.args
-            if isinstance(L, Line):
-                U, V = L.args
-                new.append(LRatio(Y, Line(U, V), Rational(1, 2)))
-            continue
-        new.append(C)
-    return tuple(new)
-
-
 def area_method_affine(constructions, objective, *, O=None, U=None, V=None, prove=None):
     prove = _auto_option_prove(objective, prove)
-    constructions = _normalize_constructions(constructions)
     objective = _normalize_predicate_affine(objective)
 
     for i in reversed(range(len(constructions))):
