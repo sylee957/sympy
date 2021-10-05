@@ -16,7 +16,7 @@ def test_quadratic_pratio():
     l = Symbol('lambda')
     Y = Symbol('Y')
 
-    C = PRatio(Y, W, U, V, l)
+    C = PRatio(Y, W, Line(U, V), l)
     G = lambda Y: Pythagoras(A, Y, B)
     objective = G(Y)
     desired = G(W) + l*(G(V) - G(U) + 2*Pythagoras(W, U, V)) - l*(1 - l)*Pythagoras(U, V, U)
@@ -49,7 +49,7 @@ def test_quadartic_foot():
     A, B, C = symbols('A B C')
     Y = Symbol('Y')
 
-    C = Foot(Y, P, U, V)
+    C = Foot(Y, P, Line(U, V))
 
     G = lambda Y: Pythagoras(A, Y, B)
     objective = G(Y)

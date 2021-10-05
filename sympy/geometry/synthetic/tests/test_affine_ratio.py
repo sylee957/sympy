@@ -23,7 +23,7 @@ def test_ratio_lratio():
     A, Y, C, D = symbols('A Y C D')
     l = Symbol('lambda')
 
-    C = LRatio(Y, P, Q, l)
+    C = LRatio(Y, Line(P, Q), l)
     objective = Ratio(A, Y, C, D)
 
     constructions = [C]
@@ -57,7 +57,7 @@ def test_ratio_pratio():
     A, Y, C, D = symbols('A Y C D')
     l = Symbol('lambda')
 
-    C = PRatio(Y, R, P, Q, l)
+    C = PRatio(Y, R, Line(P, Q), l)
     objective = Ratio(A, Y, C, D)
 
     constructions = [C]
@@ -112,9 +112,9 @@ def test_eliminate_ratio_pratio_consistency_1():
     l = Symbol('lambda')
 
     construction = [
-        LRatio(O, Q, R, Rational(1, 2)),
-        LRatio(S, P, O, Integer(2)),
-        LRatio(Y, R, S, l)
+        LRatio(O, Line(Q, R), Rational(1, 2)),
+        LRatio(S, Line(P, O), Integer(2)),
+        LRatio(Y, Line(R, S), l)
     ]
     lhs = Ratio(A, Y, C, D)
     rhs = Area(A, P, R, Q) / Area(C, P, D, Q)
@@ -131,15 +131,15 @@ def test_eliminate_ratio_pratio_consistency_2():
     m1, m2 = symbols('mu_1 mu_2')
 
     construction = [
-        LRatio(X1, Q, R, Rational(1, 2)),
-        LRatio(X2, P, X1, Integer(2)),
+        LRatio(X1, Line(Q, R), Rational(1, 2)),
+        LRatio(X2, Line(P, X1), Integer(2)),
 
-        LRatio(X3, Q, C, Rational(1, 2)),
-        LRatio(X4, P, X3, Integer(2)),
-        LRatio(D, C, X4, m2),
+        LRatio(X3, Line(Q, C), Rational(1, 2)),
+        LRatio(X4, Line(P, X3), Integer(2)),
+        LRatio(D, Line(C, X4), m2),
 
-        LRatio(Y, R, X2, l),
-        LRatio(A, R, Y, m1),
+        LRatio(Y, Line(R, X2), l),
+        LRatio(A, Line(R, Y), m1),
     ]
 
     lhs = Ratio(A, Y, C, D)

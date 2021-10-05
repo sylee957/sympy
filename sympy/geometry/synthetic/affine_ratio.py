@@ -22,16 +22,18 @@ def _ratio_lratio(C, constructions, area_method, objective):
     subs = {}
     for G in _geometric_quantities(objective):
         if isinstance(G, Ratio) and isinstance(C, LRatio):
-            Y, P, Q, l = C.args
-            if Y in G.args and len(G.args) == 4:
-                reciprocal, A, Y, C, D = match_AYCD(G, Y)
-                assertion = area_method(constructions, Collinear(A, P, Q))
-                if assertion is S.true:
-                    subs[G] = (Ratio(A, P, P, Q) + l) / Ratio(C, D, P, Q)
-                else:
-                    subs[G] = Area(A, P, Q) / Area(C, P, D, Q)
-                if reciprocal:
-                    subs[G] = 1 / subs[G]
+            Y, L, l = C.args
+            if isinstance(L, Line):
+                P, Q = L.args
+                if Y in G.args and len(G.args) == 4:
+                    reciprocal, A, Y, C, D = match_AYCD(G, Y)
+                    assertion = area_method(constructions, Collinear(A, P, Q))
+                    if assertion is S.true:
+                        subs[G] = (Ratio(A, P, P, Q) + l) / Ratio(C, D, P, Q)
+                    else:
+                        subs[G] = Area(A, P, Q) / Area(C, P, D, Q)
+                    if reciprocal:
+                        subs[G] = 1 / subs[G]
     return subs
 
 
@@ -39,16 +41,18 @@ def _ratio_pratio(C, constructions, area_method, objective):
     subs = {}
     for G in _geometric_quantities(objective):
         if isinstance(G, Ratio) and isinstance(C, PRatio):
-            Y, R, P, Q, l = C.args
-            if Y in G.args and len(G.args) == 4:
-                reciprocal, A, Y, C, D = match_AYCD(G, Y)
-                assertion = area_method(constructions, Collinear(A, R, Y))
-                if assertion is S.true:
-                    subs[G] = (Ratio(A, R, P, Q) + l) / Ratio(C, D, P, Q)
-                else:
-                    subs[G] = Area(A, P, R, Q) / Area(C, P, D, Q)
-                if reciprocal:
-                    subs[G] = 1 / subs[G]
+            Y, R, L, l = C.args
+            if isinstance(L, Line):
+                P, Q = L.args
+                if Y in G.args and len(G.args) == 4:
+                    reciprocal, A, Y, C, D = match_AYCD(G, Y)
+                    assertion = area_method(constructions, Collinear(A, R, Y))
+                    if assertion is S.true:
+                        subs[G] = (Ratio(A, R, P, Q) + l) / Ratio(C, D, P, Q)
+                    else:
+                        subs[G] = Area(A, P, R, Q) / Area(C, P, D, Q)
+                    if reciprocal:
+                        subs[G] = 1 / subs[G]
     return subs
 
 

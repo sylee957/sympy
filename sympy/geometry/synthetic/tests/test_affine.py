@@ -93,9 +93,9 @@ def test_gauss_line_1():
     construction = [
         Intersection(X, Line(A0, A3), Line(A1, A2)),
         Intersection(Y, Line(A2, A3), Line(A1, A0)),
-        Midpoint(M1, A1, A3),
-        Midpoint(M2, A0, A2),
-        Midpoint(M3, X, Y)
+        Midpoint(M1, Line(A1, A3)),
+        Midpoint(M2, Line(A0, A2)),
+        Midpoint(M3, Line(X, Y))
     ]
     objective = Area(M1, M2, M3)
     assert area_method(construction, objective) == Integer(0)
@@ -108,9 +108,9 @@ def test_gauss_line_2():
     construction = [
         Intersection(X, Line(A0, A3), Line(A1, A2)),
         Intersection(Y, Line(A2, A3), Line(A1, A0)),
-        Midpoint(M1, A1, A3),
-        Midpoint(M2, A0, A2),
-        Midpoint(M3, X, Y),
+        Midpoint(M1, Line(A1, A3)),
+        Midpoint(M2, Line(A0, A2)),
+        Midpoint(M3, Line(X, Y)),
         Intersection(Z, Line(M2, M1), Line(X, Y))
     ]
     objective = Ratio(X, M3, Y, M3) / Ratio(X, Z, Y, Z)
@@ -192,9 +192,9 @@ def test_triangle_area():
     L, M, N = symbols('L M N')
 
     construction = [
-        Midpoint(L, A, B),
-        Midpoint(M, B, C),
-        Midpoint(N, C, A)
+        Midpoint(L, Line(A, B)),
+        Midpoint(M, Line(B, C)),
+        Midpoint(N, Line(C, A))
     ]
     objective = Area(L, M, N) / Area(A, B, C)
     assert area_method(construction, objective) == Rational(1, 4)
@@ -203,9 +203,9 @@ def test_triangle_area():
     r1, r2, r3 = symbols('r1 r2 r3')
 
     construction = [
-        LRatio(A1, B, C, 1 / (r1 + 1)),
-        LRatio(B1, C, A, 1 / (r2 + 1)),
-        LRatio(C1, A, B, 1 / (r3 + 1)),
+        LRatio(A1, Line(B, C), 1 / (r1 + 1)),
+        LRatio(B1, Line(C, A), 1 / (r2 + 1)),
+        LRatio(C1, Line(A, B), 1 / (r3 + 1)),
     ]
     objective = Area(A1, B1, C1) / Area(A, B, C)
     assert area_method(construction, objective) == (r1*r2*r3 + 1) / (r1*r2*r3 + r1*r2 + r1*r3 + r2*r3 + r1 + r2 + r3 + 1)
@@ -218,9 +218,9 @@ def test_parallelogram_area():
     r = Symbol('r')
 
     construction = [
-        PRatio(D, C, A, B, Integer(-1)),
-        LRatio(A1, C, D, r),
-        LRatio(B1, D, A, r),
+        PRatio(D, C, Line(A, B), Integer(-1)),
+        LRatio(A1, Line(C, D), r),
+        LRatio(B1, Line(D, A), r),
         Intersection(A2, Line(A, A1), Line(B, B1))
     ]
     objective = Area(A, B, A2) / Area(A, B, C, D)
@@ -234,10 +234,10 @@ def test_quadrilateral_area():
     I = Symbol('I')
 
     construction = [
-        LRatio(E, A, B, r1),
-        LRatio(F, D, C, r1),
-        LRatio(H, A, D, r2),
-        LRatio(G, B, C, r2),
+        LRatio(E, Line(A, B), r1),
+        LRatio(F, Line(D, C), r1),
+        LRatio(H, Line(A, D), r2),
+        LRatio(G, Line(B, C), r2),
         Intersection(I, Line(E, F), Line(H, G))
     ]
     objective = Ratio(H, I, G, I)
@@ -250,11 +250,11 @@ def test_quadrilateral_grid():
     U, V, Q, X, Y = symbols('U V Q X Y')
 
     construction = [
-        LRatio(X, A, B, n / (2*n + 1)),
-        LRatio(U, D, C, n / (2*n + 1)),
-        LRatio(Q, D, C, (n + 1) / (2*n + 1)),
-        PRatio(V, U, D, C, 1 / (2*n + 1)),
-        PRatio(Y, X, A, B, 1 / (2*n + 1)),
+        LRatio(X, Line(A, B), n / (2*n + 1)),
+        LRatio(U, Line(D, C), n / (2*n + 1)),
+        LRatio(Q, Line(D, C), (n + 1) / (2*n + 1)),
+        PRatio(V, U, Line(D, C), 1 / (2*n + 1)),
+        PRatio(Y, X, Line(A, B), 1 / (2*n + 1)),
     ]
     objective = (Area(Q, X, Y) + Area(U, X, V)) / Area(A, B, C, D)
     assert area_method(construction, objective) == 1 / (2*n + 1)
@@ -279,10 +279,10 @@ def test_93_configuration_1():
     r1, r2, r3, r4 = symbols('r1 r2 r3 r4')
 
     construction = [
-        LRatio(P7, P1, P3, r1),
-        LRatio(P8, P1, P5, r2),
-        LRatio(P9, P3, P5, r3),
-        LRatio(P2, P5, P7, r4),
+        LRatio(P7, Line(P1, P3), r1),
+        LRatio(P8, Line(P1, P5), r2),
+        LRatio(P9, Line(P3, P5), r3),
+        LRatio(P2, Line(P5, P7), r4),
         Intersection(P4, Line(P1, P9), Line(P2, P8)),
         Intersection(P6, Line(P3, P8), Line(P2, P9))
     ]
@@ -313,10 +313,10 @@ def test_93_configuration_2():
     r1, r2, r3, r4 = symbols('r1 r2 r3 r4')
 
     construction = [
-        LRatio(P3, P1, P7, r1),
-        LRatio(P6, P1, P4, r2),
-        LRatio(P8, P3, P6, r3),
-        LRatio(P9, P4, P7, r4),
+        LRatio(P3, Line(P1, P7), r1),
+        LRatio(P6, Line(P1, P4), r2),
+        LRatio(P8, Line(P3, P6), r3),
+        LRatio(P9, Line(P4, P7), r4),
         Intersection(P5, Line(P1, P8), Line(P3, P9)),
         Intersection(P2, Line(P4, P8), Line(P6, P9))
     ]

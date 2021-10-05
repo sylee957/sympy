@@ -83,49 +83,39 @@ class SyntheticGeometryCircle(SyntheticGeometryPrimitive):
 
 
 class SyntheticGeometryLRatio(SyntheticGeometryConstruction):
-    r"""$LRatio(Y, P, Q, \lambda)$
+    r"""$LRatio(Y, Line(P, Q), \lambda)$
 
     Construct a new point $Y$ on line $PQ$ such that
     $\frac{\overline{PY}}{\overline{PQ}} = \lambda$
     """
-    def __new__(cls, Y, U, V, l):
+    def __new__(cls, Y, L, l):
         Y = _sympify(Y)
-        U = _sympify(U)
-        V = _sympify(V)
+        L = _sympify(L)
         l = _sympify(l)
-        return super().__new__(cls, Y, U, V, l)
-
-    def __str__(self):
-        Y, P, Q, l = self.args
-        return f"Take a point {Y} on line {P}{Q} such that {P}{Y}/{P}{Q} = {l}"
+        return super().__new__(cls, Y, L, l)
 
 
 class SyntheticGeometryPRatio(SyntheticGeometryConstruction):
-    r"""$PRatio(Y, R, P, Q, \lambda)$
+    r"""$PRatio(Y, R, Line(P, Q), \lambda)$
 
     Construct a new point $Y$ such that
     $\frac{\overline{RY}}{\overline{PQ}} = \lambda$ and $RY \parallel PQ$
     """
-    def __new__(cls, Y, W, U, V, l):
+    def __new__(cls, Y, W, L, l):
         Y = _sympify(Y)
         W = _sympify(W)
-        U = _sympify(U)
-        V = _sympify(V)
+        L = _sympify(L)
         l = _sympify(l)
-        return super().__new__(cls, Y, W, U, V, l)
-
-    def __str__(self):
-        Y, R, P, Q, l = self.args
-        return f"Take a point {Y} on a line passing through {R} and parallel to {P}{Q} such that {R}{Y}/{P}{Q} = {l}"
+        return super().__new__(cls, Y, W, L, l)
 
 
 class SyntheticGeometryTRatio(SyntheticGeometryConstruction):
-    def __new__(cls, Y, U, V, l):
+    r"""$TRatio(Y, Line(P, Q), \lambda)$"""
+    def __new__(cls, Y, L, l):
         Y = _sympify(Y)
-        U = _sympify(U)
-        V = _sympify(V)
+        L = _sympify(L)
         l = _sympify(l)
-        return super().__new__(cls, Y, U, V, l)
+        return super().__new__(cls, Y, L, l)
 
 
 class SyntheticGeometryIntersection(SyntheticGeometryConstruction):
@@ -143,27 +133,19 @@ class SyntheticGeometryIntersection(SyntheticGeometryConstruction):
         B = _sympify(B)
         return super().__new__(cls, Y, A, B)
 
-    def __str__(self):
-        Y, L1, L2 = self.args
-        return f"Take a point {Y} as an intersection of {L1} and {L2}"
-
 
 class SyntheticGeometryMidpoint(SyntheticGeometryConstruction):
-    def __new__(cls, Y, U, V):
+    r"""$Midpoint(Y, Line(U, V))$"""
+    def __new__(cls, Y, L):
         Y = _sympify(Y)
-        U = _sympify(U)
-        V = _sympify(V)
-        return super().__new__(cls, Y, U, V)
-
-    def __str__(self):
-        Y, U, V = self.args
-        return f"Take a point {Y} as a midpoint of {U}{V}"
+        L = _sympify(L)
+        return super().__new__(cls, Y, L)
 
 
 class SyntheticGeometryFoot(SyntheticGeometryConstruction):
-    def __new__(cls, Y, P, U, V):
+    r"""$Foot(Y, P, Line(U, V))$"""
+    def __new__(cls, Y, P, L):
         Y = _sympify(Y)
         P = _sympify(P)
-        U = _sympify(U)
-        V = _sympify(V)
-        return super().__new__(cls, Y, P, U, V)
+        L = _sympify(L)
+        return super().__new__(cls, Y, P, L)

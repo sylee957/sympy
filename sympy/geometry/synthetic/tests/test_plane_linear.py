@@ -16,7 +16,7 @@ def test_linear_pratio():
     l = Symbol('lambda')
     Y = Symbol('Y')
 
-    C = PRatio(Y, W, U, V, l)
+    C = PRatio(Y, W, Line(U, V), l)
 
     G = lambda Y: Area(A, B, Y)
     objective = G(Y)
@@ -74,7 +74,7 @@ def test_linear_foot():
     A, B, C = symbols('A B C')
     Y = Symbol('Y')
 
-    C = Foot(Y, P, U, V)
+    C = Foot(Y, P, Line(U, V))
 
     G = lambda Y: Area(A, B, Y)
     objective = G(Y)

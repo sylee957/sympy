@@ -24,7 +24,7 @@ def test_area_lratio():
     A, B, Y = symbols('A B Y')
     l = Symbol('lambda')
 
-    C = LRatio(Y, P, Q, l)
+    C = LRatio(Y, Line(P, Q), l)
     objective = Area(A, B, Y)
     desired = l*Area(A, B, Q) + (S.One - l) * Area(A, B, P)
     assert _area_lratio(C, objective) == {objective: desired}
@@ -46,7 +46,7 @@ def test_area_pratio():
     A, B, Y = symbols('A B Y')
     l = Symbol('lambda')
 
-    C = PRatio(Y, R, P, Q, l)
+    C = PRatio(Y, R, Line(P, Q), l)
     objective = Area(A, B, Y)
     desired = Area(A, B, R) + l * Area(A, P, B, Q)
     assert _area_pratio(C, objective) == {objective: desired}
@@ -82,9 +82,9 @@ def test_eliminate_area_pratio_consistency():
     l = Symbol('lambda')
 
     construction = [
-        LRatio(O, Q, R, Rational(1, 2)),
-        LRatio(S, P, O, Integer(2)),
-        LRatio(Y, R, S, l)
+        LRatio(O, Line(Q, R), Rational(1, 2)),
+        LRatio(S, Line(P, O), Integer(2)),
+        LRatio(Y, Line(R, S), l)
     ]
     lhs = Area(A, B, Y)
     rhs = Area(A, B, R) + l * Area(A, P, B, Q)
@@ -99,8 +99,8 @@ def test_eliminate_area_inter_line_pline_consistency():
     X1, X2 = symbols('X1 X2')
 
     constructions = [
-        LRatio(X1, Q, R, Rational(1, 2)),
-        LRatio(X2, P, X1, Integer(2)),
+        LRatio(X1, Line(Q, R), Rational(1, 2)),
+        LRatio(X2, Line(P, X1), Integer(2)),
         Intersection(Y, Line(R, X2), Line(U, V))
     ]
 
@@ -116,10 +116,10 @@ def test_eliminate_area_inter_pline_pline_consistency():
     X1, X2, X3, X4 = symbols('X1 X2 X3 X4')
 
     constructions = [
-        LRatio(X1, Q, R, Rational(1, 2)),
-        LRatio(X2, P, X1, Integer(2)),
-        LRatio(X3, V, W, Rational(1, 2)),
-        LRatio(X4, U, X3, Integer(2)),
+        LRatio(X1, Line(Q, R), Rational(1, 2)),
+        LRatio(X2, Line(P, X1), Integer(2)),
+        LRatio(X3, Line(V, W), Rational(1, 2)),
+        LRatio(X4, Line(U, X3), Integer(2)),
         Intersection(Y, Line(R, X2), Line(W, X4))
     ]
 

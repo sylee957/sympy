@@ -54,14 +54,18 @@ from sympy.geometry.synthetic.options import (
 
 def degenerate(C, construction):
     if isinstance(C, LRatio):
-        Y, P, Q, l = C.args
-        assertion = area_method_affine(construction, SamePoints(P, Q))
-        return assertion
+        Y, L, l = C.args
+        if isinstance(L, Line):
+            P, Q = L.args
+            assertion = area_method_affine(construction, SamePoints(P, Q))
+            return assertion
 
     elif isinstance(C, PRatio):
-        Y, R, P, Q, l = C.args
-        assertion = area_method_affine(construction, SamePoints(P, Q))
-        return assertion
+        Y, R, L, l = C.args
+        if isinstance(L, Line):
+            P, Q = L.args
+            assertion = area_method_affine(construction, SamePoints(P, Q))
+            return assertion
 
     elif isinstance(C, Intersection):
         Y, L1, L2 = C.args
@@ -153,16 +157,18 @@ def _normalize_constructions(constructions):
             if isinstance(line, Line):
                 P, Q = line.args
                 l = FrozenRatio(P, Y, P, Q)
-                new.append(PRatio(Y, P, P, Q, l))
+                new.append(PRatio(Y, P, Line(P, Q), l))
                 continue
             elif isinstance(line, PLine):
                 R, P, Q = line.args
                 l = FrozenRatio(R, Y, P, Q)
-                new.append(PRatio(Y, R, P, Q, l))
+                new.append(PRatio(Y, R, Line(P, Q), l))
                 continue
         if isinstance(C, Midpoint):
-            Y, U, V = C.args
-            new.append(LRatio(Y, U, V, Rational(1, 2)))
+            Y, L = C.args
+            if isinstance(L, Line):
+                U, V = L.args
+                new.append(LRatio(Y, Line(U, V), Rational(1, 2)))
             continue
         new.append(C)
     return tuple(new)

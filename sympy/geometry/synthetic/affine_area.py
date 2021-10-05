@@ -28,10 +28,12 @@ def _area_lratio(C, objective):
     subs = {}
     for G in _geometric_quantities(objective):
         if isinstance(G, Area) and isinstance(C, LRatio):
-            Y, P, Q, l = C.args
-            if Y in G.args and len(G.args) == 3:
-                A, B, Y = match_ABY(G, Y)
-                subs[G] = l * Area(A, B, Q) + (S.One - l) * Area(A, B, P)
+            Y, L, l = C.args
+            if isinstance(L, Line):
+                P, Q = L.args
+                if Y in G.args and len(G.args) == 3:
+                    A, B, Y = match_ABY(G, Y)
+                    subs[G] = l * Area(A, B, Q) + (S.One - l) * Area(A, B, P)
     return subs
 
 
@@ -51,10 +53,12 @@ def _area_pratio(C, objective):
     subs = {}
     for G in _geometric_quantities(objective):
         if isinstance(G, Area) and isinstance(C, PRatio):
-            Y, R, P, Q, l = C.args
-            if Y in G.args and len(G.args) == 3:
-                A, B, Y = match_ABY(G, Y)
-                subs[G] = Area(A, B, R) + l * Area(A, P, B, Q)
+            Y, R, L, l = C.args
+            if isinstance(L, Line):
+                P, Q = L.args
+                if Y in G.args and len(G.args) == 3:
+                    A, B, Y = match_ABY(G, Y)
+                    subs[G] = Area(A, B, R) + l * Area(A, P, B, Q)
     return subs
 
 

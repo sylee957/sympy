@@ -35,7 +35,11 @@ def _quadratic_pratio(C, objective):
     if not isinstance(C, PRatio):
         return subs
 
-    Y, W, U, V, l = C.args
+    Y, W, L, l = C.args
+    if not isinstance(L, Line):
+        return subs
+
+    U, V = L.args
     for G in _geometric_quantities(objective):
         _G = _match_quadratic(G, Y)
         if _G is None:
@@ -132,7 +136,11 @@ def _quadratic_foot(C, objective):
     if not isinstance(C, Foot):
         return subs
 
-    Y, P, U, V = C.args
+    Y, P, L = C.args
+    if not isinstance(L, Line):
+        return subs
+
+    U, V = L.args
     for G in _geometric_quantities(objective):
         _G = _match_quadratic(G, Y)
         if _G is None:
