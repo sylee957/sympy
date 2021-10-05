@@ -1,11 +1,6 @@
 from sympy.geometry.synthetic.common import (
     _geometric_quantities, match_ABY)
 from sympy.core.singleton import S
-from sympy.geometry.synthetic.constructions import (
-    SyntheticGeometryPLine as PLine,
-    SyntheticGeometryLine as Line,
-    SyntheticGeometryIntersection as Intersection
-)
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 
 

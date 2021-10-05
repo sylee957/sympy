@@ -28,11 +28,11 @@ def test_ratio_lratio():
 
     constructions = [C]
     desired = Area(A, P, Q) / Area(C, P, D, Q)
-    assert _ratio_lratio(C, constructions, area_method_affine, objective) == {objective: desired}
+    assert _ratio_lratio(Y, P, Q, l, constructions, area_method_affine, objective) == {objective: desired}
 
     constructions = [On(A, Line(P, Q)), C]
     desired = (Ratio(A, P, P, Q) + l) / Ratio(C, D, P, Q)
-    assert _ratio_lratio(C, constructions, area_method_affine, objective) == {objective: desired}
+    assert _ratio_lratio(Y, P, Q, l, constructions, area_method_affine, objective) == {objective: desired}
 
 
 def test_ratio_inter_line_line():
@@ -45,11 +45,11 @@ def test_ratio_inter_line_line():
 
     constructions = [C]
     desired = Area(A, U, V) / Area(C, U, D, V)
-    assert _ratio_inter_line_line(C, constructions, area_method_affine, objective) == {objective: desired}
+    assert _ratio_inter_line_line(Y, P, Q, U, V, constructions, area_method_affine, objective) == {objective: desired}
 
     constructions = [On(A, Line(U, V)), C]
     desired = Area(A, P, Q) / Area(C, P, D, Q)
-    assert _ratio_inter_line_line(C, constructions, area_method_affine, objective) == {objective: desired}
+    assert _ratio_inter_line_line(Y, P, Q, U, V, constructions, area_method_affine, objective) == {objective: desired}
 
 
 def test_ratio_pratio():
@@ -62,11 +62,11 @@ def test_ratio_pratio():
 
     constructions = [C]
     desired = Area(A, P, R, Q) / Area(C, P, D, Q)
-    assert _ratio_pratio(C, constructions, area_method_affine, objective) == {objective: desired}
+    assert _ratio_pratio(Y, R, P, Q, l, constructions, area_method_affine, objective) == {objective: desired}
 
     constructions = [C, On(A, Line(R, Y))]
     desired = (Ratio(A, R, P, Q) + l) / Ratio(C, D, P, Q)
-    assert _ratio_pratio(C, constructions, area_method_affine, objective) == {objective: desired}
+    assert _ratio_pratio(Y, R, P, Q, l, constructions, area_method_affine, objective) == {objective: desired}
 
 
 def test_ratio_inter_pline_line():
@@ -79,11 +79,11 @@ def test_ratio_inter_pline_line():
 
     constructions = [C]
     desired = Area(A, U, V) / Area(C, U, D, V)
-    assert _ratio_inter_pline_line(C, constructions, area_method_affine, objective) == {objective: desired}
+    assert _ratio_inter_pline_line(Y, R, P, Q, U, V, constructions, area_method_affine, objective) == {objective: desired}
 
     constructions = [On(A, Line(U, V)), C]
     desired = Area(A, P, R, Q) / Area(C, P, D, Q)
-    assert _ratio_inter_pline_line(C, constructions, area_method_affine, objective) == {objective: desired}
+    assert _ratio_inter_pline_line(Y, R, P, Q, U, V, constructions, area_method_affine, objective) == {objective: desired}
 
 
 def test_ratio_inter_pline_pline():
@@ -96,11 +96,11 @@ def test_ratio_inter_pline_pline():
 
     constructions = [C]
     desired = Area(A, P, R, Q) / Area(C, P, D, Q)
-    assert _ratio_inter_pline_pline(C, constructions, area_method_affine, objective) == {objective: desired}
+    assert _ratio_inter_pline_pline(Y, R, P, Q, W, U, V, constructions, area_method_affine, objective) == {objective: desired}
 
     constructions = [C, On(A, PLine(Y, P, Q))]
     desired = Area(A, U, W, V) / Area(C, U, D, V)
-    assert _ratio_inter_pline_pline(C, constructions, area_method_affine, objective) == {objective: desired}
+    assert _ratio_inter_pline_pline(Y, R, P, Q, W, U, V, constructions, area_method_affine, objective) == {objective: desired}
 
 
 def test_eliminate_ratio_pratio_consistency_1():

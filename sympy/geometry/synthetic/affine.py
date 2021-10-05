@@ -52,14 +52,70 @@ def _simplify_image(simplify, subs):
     return {k: simplify(v) for k, v in subs.items()}
 
 
-def _eliminate_area_lratio(C, constructions, objective):
+def _match_lratio(C):
     if not isinstance(C, LRatio):
-        return objective
+        return None
     Y, L, r = C.args
     if not isinstance(L, Line):
-        return objective
+        return None
     P, Q = L.args
+    return Y, P, Q, r
 
+
+def _match_pratio(C):
+    if not isinstance(C, PRatio):
+        return None
+    Y, R, L, r = C.args
+    if not isinstance(L, Line):
+        return None
+    P, Q = L.args
+    return Y, R, P, Q, r
+
+
+def _match_inter_line_line(C):
+    if not isinstance(C, Intersection):
+        return None
+    Y, L1, L2 = C.args
+    if not isinstance(L1, Line):
+        return None
+    P, Q = L1.args
+    if not isinstance(L2, Line):
+        return None
+    U, V = L2.args
+    return Y, P, Q, U, V
+
+
+def _match_inter_pline_line(C):
+    if not isinstance(C, Intersection):
+        return None
+    Y, L1, L2 = C.args
+    if isinstance(L1, Line) and isinstance(L2, PLine):
+        return _match_inter_pline_line(Intersection(Y, L2, L1))
+    if not (isinstance(L1, PLine) and isinstance(L2, Line)):
+        return None
+    R, P, Q = L1.args
+    U, V = L2.args
+    return Y, R, P, Q, U, V
+
+
+def _match_inter_pline_pline(C):
+    if not isinstance(C, Intersection):
+        return None
+    Y, L1, L2 = C.args
+    if not isinstance(L1, PLine):
+        return None
+    R, P, Q = L1.args
+    if not isinstance(L2, PLine):
+        return None
+    W, U, V = L2.args
+    return Y, R, P, Q, W, U, V
+
+
+def _eliminate_area_lratio(C, constructions, objective):
+    match = _match_lratio(C)
+    if match is None:
+        return objective
+    Y, P, Q, r = match
     subs = _area_lratio(Y, P, Q, r, objective)
     subs = _eliminate_image(C, constructions, subs)
     objective = _substitution_rule(subs)(objective)
@@ -67,13 +123,10 @@ def _eliminate_area_lratio(C, constructions, objective):
 
 
 def _eliminate_area_pratio(C, constructions, objective):
-    if not isinstance(C, PRatio):
+    match = _match_pratio(C)
+    if match is None:
         return objective
-    Y, R, L, r = C.args
-    if not isinstance(L, Line):
-        return objective
-    P, Q = L.args
-
+    Y, R, P, Q, r = match
     subs = _area_pratio(Y, R, P, Q, r, objective)
     subs = _eliminate_image(C, constructions, subs)
     objective = _substitution_rule(subs)(objective)
@@ -81,16 +134,10 @@ def _eliminate_area_pratio(C, constructions, objective):
 
 
 def _eliminate_area_inter_line_line(C, constructions, objective):
-    if not isinstance(C, Intersection):
+    match = _match_inter_line_line(C)
+    if match is None:
         return objective
-    Y, L1, L2 = C.args
-    if not isinstance(L1, Line):
-        return objective
-    P, Q = L1.args
-    if not isinstance(L2, Line):
-        return objective
-    U, V = L2.args
-
+    Y, P, Q, U, V = match
     subs = _area_inter_line_line(Y, P, Q, U, V, objective)
     subs = _eliminate_image(C, constructions, subs)
     objective = _substitution_rule(subs)(objective)
@@ -98,19 +145,10 @@ def _eliminate_area_inter_line_line(C, constructions, objective):
 
 
 def _eliminate_area_inter_pline_line(C, constructions, objective):
-    if not isinstance(C, Intersection):
+    match = _match_inter_pline_line(C)
+    if match is None:
         return objective
-    Y, L1, L2 = C.args
-
-    if isinstance(L1, Line) and isinstance(L2, PLine):
-        return _eliminate_area_inter_pline_line(Intersection(Y, L2, L1), constructions, objective)
-
-    if not (isinstance(L1, PLine) and isinstance(L2, Line)):
-        return objective
-
-    R, P, Q = L1.args
-    U, V = L2.args
-
+    Y, R, P, Q, U, V = match
     subs = _area_inter_pline_line(Y, R, P, Q, U, V, objective)
     subs = _eliminate_image(C, constructions, subs)
     objective = _substitution_rule(subs)(objective)
@@ -118,17 +156,66 @@ def _eliminate_area_inter_pline_line(C, constructions, objective):
 
 
 def _eliminate_area_inter_pline_pline(C, constructions, objective):
-    if not isinstance(C, Intersection):
+    match = _match_inter_pline_pline(C)
+    if match is None:
         return objective
-    Y, L1, L2 = C.args
-    if not isinstance(L1, PLine):
-        return objective
-    R, P, Q = L1.args
-    if not isinstance(L2, PLine):
-        return objective
-    W, U, V = L2.args
-
+    Y, R, P, Q, W, U, V = match
     subs = _area_inter_pline_pline(Y, R, P, Q, W, U, V, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
+def _eliminate_ratio_lratio(C, constructions, area_method, objective):
+    match = _match_lratio(C)
+    if match is None:
+        return objective
+    Y, P, Q, r = match
+    subs = _ratio_lratio(Y, P, Q, r, constructions, area_method, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
+def _eliminate_ratio_pratio(C, constructions, area_method, objective):
+    match = _match_pratio(C)
+    if match is None:
+        return objective
+    Y, R, P, Q, r = match
+    subs = _ratio_pratio(Y, R, P, Q, r, constructions, area_method, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
+def _eliminate_ratio_inter_line_line(C, constructions, area_method, objective):
+    match = _match_inter_line_line(C)
+    if match is None:
+        return objective
+    Y, P, Q, U, V = match
+    subs = _ratio_inter_line_line(Y, P, Q, U, V, constructions, area_method, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
+def _eliminate_ratio_inter_pline_line(C, constructions, area_method, objective):
+    match = _match_inter_pline_line(C)
+    if match is None:
+        return objective
+    Y, R, P, Q, U, V = match
+    subs = _ratio_inter_pline_line(Y, R, P, Q, U, V, constructions, area_method, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
+def _eliminate_ratio_inter_pline_pline(C, constructions, area_method, objective):
+    match = _match_inter_pline_pline(C)
+    if match is None:
+        return objective
+    Y, R, P, Q, W, U, V = match
+    subs = _ratio_inter_pline_pline(Y, R, P, Q, W, U, V, constructions, area_method, objective)
     subs = _eliminate_image(C, constructions, subs)
     objective = _substitution_rule(subs)(objective)
     return objective
@@ -146,25 +233,11 @@ def _eliminate(C, constructions, objective):
     objective = _eliminate_area_inter_pline_line(C, constructions, objective)
     objective = _eliminate_area_inter_pline_pline(C, constructions, objective)
 
-    subs = _ratio_lratio(C, constructions, area_method_affine, objective)
-    subs = _eliminate_image(C, constructions, subs)
-    objective = _substitution_rule(subs)(objective)
-
-    subs = _ratio_pratio(C, constructions, area_method_affine, objective)
-    subs = _eliminate_image(C, constructions, subs)
-    objective = _substitution_rule(subs)(objective)
-
-    subs = _ratio_inter_line_line(C, constructions, area_method_affine, objective)
-    subs = _eliminate_image(C, constructions, subs)
-    objective = _substitution_rule(subs)(objective)
-
-    subs = _ratio_inter_pline_line(C, constructions, area_method_affine, objective)
-    subs = _eliminate_image(C, constructions, subs)
-    objective = _substitution_rule(subs)(objective)
-
-    subs = _ratio_inter_pline_pline(C, constructions, area_method_affine, objective)
-    subs = _eliminate_image(C, constructions, subs)
-    objective = _substitution_rule(subs)(objective)
+    objective = _eliminate_ratio_lratio(C, constructions, area_method_affine, objective)
+    objective = _eliminate_ratio_pratio(C, constructions, area_method_affine, objective)
+    objective = _eliminate_ratio_inter_line_line(C, constructions, area_method_affine, objective)
+    objective = _eliminate_ratio_inter_pline_line(C, constructions, area_method_affine, objective)
+    objective = _eliminate_ratio_inter_pline_pline(C, constructions, area_method_affine, objective)
 
     objective = _simplify(objective)
     return objective
