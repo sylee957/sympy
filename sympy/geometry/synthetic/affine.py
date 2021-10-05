@@ -1,7 +1,5 @@
-from sympy.polys.polytools import cancel
 from sympy.core.numbers import Rational
 from sympy.core.singleton import S
-from sympy.core.relational import Eq, Ne
 from sympy.geometry.synthetic.quantities import (
     SyntheticGeometryFrozenSignedRatio as FrozenRatio
 )
@@ -42,6 +40,7 @@ from sympy.geometry.synthetic.options import (
 )
 from sympy.geometry.synthetic.options_predicate import _normalize_predicate_affine
 from sympy.geometry.synthetic.degenerate import _degenerate_construction
+from sympy.geometry.synthetic.simplify import _cancel
 
 
 def _eliminate_image(C, constructions, subs):
@@ -295,12 +294,6 @@ def area_method_affine(constructions, objective, *, O=None, U=None, V=None, prov
     if prove and objective is not S.true:
         objective = S.false
     return objective
-
-
-def _cancel(objective):
-    if isinstance(objective, (Eq, Ne)):
-        return objective.func(cancel(objective.lhs), cancel(objective.rhs))
-    return cancel(objective)
 
 
 def _simplify(objective):

@@ -1,4 +1,5 @@
 from sympy.logic.boolalg import Boolean
+from sympy.core.sympify import _sympify
 
 
 class SyntheticGeometryCollinear(Boolean):
@@ -14,8 +15,20 @@ class SyntheticGeometrySamePoints(Boolean):
 
 
 class SyntheticGeometryPerpendicular(Boolean):
-    pass
+    r"""$A, B \perp C, D$"""
+    def __new__(cls, A, B, C, D):
+        A = _sympify(A)
+        B = _sympify(B)
+        C = _sympify(C)
+        D = _sympify(D)
+        return super().__new__(cls, A, B, C, D)
 
 
-class SyntheticGeometryCongruent(Boolean):
-    pass
+class SyntheticGeometryEqDistance(Boolean):
+    r"""|\overline{A, B}| = |\overline{C, D}|"""
+    def __new__(cls, A, B, C, D):
+        A = _sympify(A)
+        B = _sympify(B)
+        C = _sympify(C)
+        D = _sympify(D)
+        return super().__new__(cls, A, B, C, D)

@@ -2742,7 +2742,17 @@ class LatexPrinter(Printer):
     def _print_SyntheticGeometryParallel(self, expr):
         A, B, C, D = expr.args
         A, B, C, D = self._print(A), self._print(B), self._print(C), self._print(D)
-        return f"({A}, {B} \parallel {C}, {D})"
+        return r"(%s, %s \parallel %s, %s)" % (A, B, C, D)
+
+    def _print_SyntheticGeometryPerpendicular(self, expr):
+        A, B, C, D = expr.args
+        A, B, C, D = self._print(A), self._print(B), self._print(C), self._print(D)
+        return r"(%s, %s \perp %s, %s)" % (A, B, C, D)
+
+    def _print_SyntheticGeometryEqDistance(self, expr):
+        A, B, C, D = expr.args
+        A, B, C, D = self._print(A), self._print(B), self._print(C), self._print(D)
+        return r"|\overline{%s, %s}| = |\overline{%s, %s}|" % (A, B, C, D)
 
     def _print_SyntheticGeometrySamePoints(self, expr):
         A, B = expr.args
