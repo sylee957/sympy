@@ -2739,6 +2739,83 @@ class LatexPrinter(Printer):
         args_latex = ', '.join([self._print(a) for a in args])
         return '%s(%s)' % (pred_latex, args_latex)
 
+    def _print_SyntheticGeometrySignedLength(self, expr):
+        A, B = expr.args
+        A, B = self._print(A), self._print(B)
+        return r"\overline{%s, %s}" % (A, B)
+
+    def _print_SyntheticGeometryTwolineAlpha(self, expr):
+        return r"\alpha"
+
+    def _print_SyntheticGeometryTwolineBeta(self, expr):
+        return r"\beta"
+
+    def _print_SyntheticGeometryParallel(self, expr):
+        A, B, C, D = expr.args
+        A, B, C, D = self._print(A), self._print(B), self._print(C), self._print(D)
+        return r"(%s, %s \parallel %s, %s)" % (A, B, C, D)
+
+    def _print_SyntheticGeometryPerpendicular(self, expr):
+        A, B, C, D = expr.args
+        A, B, C, D = self._print(A), self._print(B), self._print(C), self._print(D)
+        return r"(%s, %s \perp %s, %s)" % (A, B, C, D)
+
+    def _print_SyntheticGeometryEqdistance(self, expr):
+        A, B, C, D = expr.args
+        A, B, C, D = self._print(A), self._print(B), self._print(C), self._print(D)
+        return r"\overline{%s, %s}^{2} = \overline{%s, %s}^{2}" % (A, B, C, D)
+
+    def _print_SyntheticGeometryEqpoints(self, expr):
+        A, B = expr.args
+        A, B = self._print(A), self._print(B)
+        return f"({A} = {B})"
+
+    def _print_SyntheticGeometrySignedArea(self, expr):
+        args = ", ".join((self._print(arg) for arg in expr.args))
+        return r"\mathcal{S}_{%s}" % args
+
+    def _print_SyntheticGeometryPythagorasDifference(self, expr):
+        args = ", ".join((self._print(arg) for arg in expr.args))
+        return r"\mathcal{P}_{%s}" % args
+
+    def _print_SyntheticGeometrySignedRatio(self, expr):
+        A, B, C, D = expr.args
+        A, B, C, D = self._print(A), self._print(B), self._print(C), self._print(D)
+        return r"\frac{\overline{%s, %s}}{\overline{%s, %s}}" % (A, B, C, D)
+
+    def _print_SyntheticGeometryAuxiliaryPoint(self, expr):
+        args = map(self._print, expr.args)
+        args = ", ".join(args)
+        return r'\mathcal{N}_{%s}' % args
+
+    def _print_SyntheticGeometryAuxiliaryRatio(self, expr):
+        A, B, C, D = expr.args
+        A, B, C, D = self._print(A), self._print(B), self._print(C), self._print(D)
+        return r"\lambda_{\frac{\overline{%s, %s}}{\overline{%s, %s}}}" % (A, B, C, D)
+
+    def _print_SyntheticGeometryAuxiliaryAreaCoordinateO(self, expr):
+        return r"\mathcal{O}"
+
+    def _print_SyntheticGeometryAuxiliaryAreaCoordinateU(self, expr):
+        return r"\mathcal{U}"
+
+    def _print_SyntheticGeometryAuxiliaryAreaCoordinateV(self, expr):
+        return r"\mathcal{V}"
+
+    def _print_SyntheticGeometryAuxiliaryTwolineO1(self, expr):
+        return r"\mathcal{O}_1"
+
+    def _print_SyntheticGeometryAuxiliaryTwolineO2(self, expr):
+        return r"\mathcal{O}_2"
+
+    def _print_SyntheticGeometryAreaCoordinateX(self, expr):
+        arg = self._print(expr.args[-1])
+        return r"\mathcal{X}_{%s}" % arg
+
+    def _print_SyntheticGeometryAreaCoordinateY(self, expr):
+        arg = self._print(expr.args[-1])
+        return r"\mathcal{Y}_{%s}" % arg
+
     def emptyPrinter(self, expr):
         # default to just printing as monospace, like would normally be shown
         s = super().emptyPrinter(expr)
