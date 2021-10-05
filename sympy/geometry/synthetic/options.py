@@ -1,7 +1,7 @@
 from sympy.logic.boolalg import Boolean
 from sympy.core.symbol import Dummy
 from sympy.core.compatibility import default_sort_key
-from sympy.geometry.synthetic.options_points import _get_points_construction
+from sympy.geometry.synthetic.options_points import _get_points_quantity
 
 
 def _auto_option_prove(objective, prove):
@@ -22,18 +22,11 @@ def _auto_coordinates_orthogonal(O, U, V):
     return O, U, V
 
 
-def _auto_coordinates_skew(constructions, objective, O, U, V):
+def _auto_coordinates_skew(objective, O, U, V):
     O, U, V = _auto_coordinates_orthogonal(O, U, V)
 
-    all_points = set()
-    constructed_points = set()
-    for C in constructions:
-        Y, new_points = _get_points_construction(C)
-        constructed_points.add(Y)
-        all_points = all_points.union(new_points)
-    free_points = all_points.difference(constructed_points)
+    free_points = _get_points_quantity(objective)
     free_points = sorted(free_points, key=default_sort_key)
-
     if not free_points:
         return O, U, V
     if len(free_points) == 1:

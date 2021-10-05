@@ -2,7 +2,6 @@ from sympy.geometry.synthetic.common import (
     _geometric_quantities, match_ABY)
 from sympy.core.singleton import S
 from sympy.geometry.synthetic.constructions import (
-    SyntheticGeometryLRatio as LRatio,
     SyntheticGeometryPRatio as PRatio,
     SyntheticGeometryPLine as PLine,
     SyntheticGeometryLine as Line,
@@ -11,14 +10,14 @@ from sympy.geometry.synthetic.constructions import (
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 
 
-def _area_lratio(C, objective):
+def _area_lratio(Y, P, Q, l, objective):
     r"""Eliminate $\mathcal{S}_{A, B, Y}$ where $Y$ is constructed from
-    $LRatio(Y, P, Q, \lambda)$
+    $LRatio(Y, Line(P, Q), \lambda)$
 
     Explanation
     ===========
 
-    If $Y$ is a point introduced by $LRatio(Y, P, Q, \lambda)$,
+    If $Y$ is a point introduced by $LRatio(Y, Line(P, Q), \lambda)$,
 
     .. math::
         \mathcal{S}_{A, B, Y} =
@@ -27,13 +26,9 @@ def _area_lratio(C, objective):
     """
     subs = {}
     for G in _geometric_quantities(objective):
-        if isinstance(G, Area) and isinstance(C, LRatio):
-            Y, L, l = C.args
-            if isinstance(L, Line):
-                P, Q = L.args
-                if Y in G.args and len(G.args) == 3:
-                    A, B, Y = match_ABY(G, Y)
-                    subs[G] = l * Area(A, B, Q) + (S.One - l) * Area(A, B, P)
+        if isinstance(G, Area) and len(G.args) == 3 and Y in G.args:
+            A, B, Y = match_ABY(G, Y)
+            subs[G] = l * Area(A, B, Q) + (S.One - l) * Area(A, B, P)
     return subs
 
 

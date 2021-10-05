@@ -2740,9 +2740,14 @@ class LatexPrinter(Printer):
         return '%s(%s)' % (pred_latex, args_latex)
 
     def _print_SyntheticGeometryParallel(self, expr):
-        A, B, C, D = self.args
+        A, B, C, D = expr.args
         A, B, C, D = self._print(A), self._print(B), self._print(C), self._print(D)
         return f"({A}, {B} \parallel {C}, {D})"
+
+    def _print_SyntheticGeometrySamePoints(self, expr):
+        A, B = expr.args
+        A, B = self._print(A), self._print(B)
+        return f"({A} = {B})"
 
     def _print_SyntheticGeometrySignedArea(self, expr):
         args = ", ".join((self._print(arg) for arg in expr.args))

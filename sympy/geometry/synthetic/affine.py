@@ -1,23 +1,14 @@
-from sympy.core.symbol import Dummy
 from sympy.polys.polytools import cancel
-from sympy.core.basic import Atom
 from sympy.core.numbers import Rational
 from sympy.core.singleton import S
 from sympy.core.relational import Eq, Ne
-from sympy.geometry.synthetic.predicates import (
-    SyntheticGeometrySamePoints as SamePoints,
-    SyntheticGeometryCollinear as Collinear,
-    SyntheticGeometryParallel as Parallel
-)
 from sympy.geometry.synthetic.quantities import (
-    SyntheticGeometrySignedArea as Area,
-    SyntheticGeometrySignedRatio as Ratio,
-    SyntheticGeometryFrozenSignedRatio as FrozenRatio
+    SyntheticGeometryFrozenSignedRatio as FrozenRatio,
+    SyntheticGeometrySignedArea as Area
 )
 from sympy.geometry.synthetic.constructions import (
     SyntheticGeometryLRatio as LRatio,
     SyntheticGeometryPRatio as PRatio,
-    SyntheticGeometryIntersection as Intersection,
     SyntheticGeometryOn as On,
     SyntheticGeometryLine as Line,
     SyntheticGeometryPLine as PLine,
@@ -47,48 +38,10 @@ from sympy.geometry.synthetic.affine_ratio import (
 from sympy.geometry.synthetic.area_coordinates import _area_coordinates
 from sympy.geometry.synthetic.options import (
     _auto_option_prove,
-    _auto_coordinates_orthogonal,
     _auto_coordinates_skew
 )
-
-
-def degenerate(C, construction):
-    if isinstance(C, LRatio):
-        Y, L, l = C.args
-        if isinstance(L, Line):
-            P, Q = L.args
-            assertion = area_method_affine(construction, SamePoints(P, Q))
-            return assertion
-
-    elif isinstance(C, PRatio):
-        Y, R, L, l = C.args
-        if isinstance(L, Line):
-            P, Q = L.args
-            assertion = area_method_affine(construction, SamePoints(P, Q))
-            return assertion
-
-    elif isinstance(C, Intersection):
-        Y, L1, L2 = C.args
-        if isinstance(L1, Line) and isinstance(L2, Line):
-            P, Q = L1.args
-            U, V = L2.args
-            assertion = area_method_affine(construction, Parallel(U, V, P, Q))
-            return assertion
-
-        if isinstance(L1, Line) and isinstance(L2, PLine):
-            L1, L2 = L2, L1
-
-        if isinstance(L1, PLine) and isinstance(L2, Line):
-            R, P, Q = L1.args
-            U, V = L2.args
-            assertion = area_method_affine(construction, Parallel(U, V, P, Q))
-            return assertion
-
-        if isinstance(L1, PLine) and isinstance(L2, PLine):
-            R, P, Q = L1.args
-            W, U, V = L2.args
-            assertion = area_method_affine(construction, Parallel(U, V, P, Q))
-            return assertion
+from sympy.geometry.synthetic.options_predicate import _normalize_predicate_affine
+from sympy.geometry.synthetic.degenerate import _degenerate_construction
 
 
 def _eliminate_image(C, constructions, subs):
@@ -99,15 +52,27 @@ def _simplify_image(simplify, subs):
     return {k: simplify(v) for k, v in subs.items()}
 
 
+def _eliminate_area_lratio(C, constructions, objective):
+    if not isinstance(C, LRatio):
+        return objective
+    Y, L, r = C.args
+    if not isinstance(L, Line):
+        return objective
+    P, Q = L.args
+
+    subs = _area_lratio(Y, P, Q, r, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
 def _eliminate(C, constructions, objective):
     objective = _substitution_rule(_quadrilateral_area(objective))(objective)
     objective = _substitution_rule(_simplify_area(objective))(objective)
     objective = _substitution_rule(_simplify_ratio(objective))(objective)
     objective = _substitution_rule(_uniformize_area(objective))(objective)
 
-    subs = _area_lratio(C, objective)
-    subs = _eliminate_image(C, constructions, subs)
-    objective = _substitution_rule(subs)(objective)
+    objective = _eliminate_area_lratio(C, constructions, objective)
 
     subs = _area_pratio(C, objective)
     subs = _eliminate_image(C, constructions, subs)
@@ -174,33 +139,17 @@ def _normalize_constructions(constructions):
     return tuple(new)
 
 
-def _normalize_proof_objective(objective):
-    if isinstance(objective, Collinear):
-        A, B, C = objective.args
-        return Eq(Area(A, B, C), S.Zero)
-    if isinstance(objective, Parallel):
-        A, B, C, D = objective.args
-        return Eq(Area(A, B, C) - Area(A, B, D), S.Zero)
-    if isinstance(objective, SamePoints):
-        A, B = objective.args
-        X, Y = Dummy('X'), Dummy('Y')
-        return Eq(Ratio(A, B, X, Y), S.Zero)
-    if not isinstance(objective, Atom):
-        return objective.func(*(_normalize_proof_objective(arg) for arg in objective.args))
-    return objective
-
-
 def area_method_affine(constructions, objective, *, O=None, U=None, V=None, prove=None):
     prove = _auto_option_prove(objective, prove)
     constructions = _normalize_constructions(constructions)
-    objective = _normalize_proof_objective(objective)
-    O, U, V = _auto_coordinates_orthogonal(O, U, V)
-    O, U, V = _auto_coordinates_skew(constructions, objective, O, U, V)
+    objective = _normalize_predicate_affine(objective)
 
     for i in reversed(range(len(constructions))):
         C = constructions[i]
-        if prove and degenerate(C, constructions[:i]) is S.true:
-            return S.true
+        if prove:
+            assertion = _degenerate_construction(C)
+            if area_method_affine(constructions[:i], assertion, prove=True) is S.true:
+                return S.true
 
         while True:
             old = objective
@@ -209,6 +158,7 @@ def area_method_affine(constructions, objective, *, O=None, U=None, V=None, prov
             if old == new:
                 break
 
+    O, U, V = _auto_coordinates_skew(objective, O, U, V)
     subs = _area_coordinates(O, U, V, objective)
     subs = _simplify_image(_simplify, subs)
     objective = _substitution_rule(subs)(objective)

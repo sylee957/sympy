@@ -24,10 +24,9 @@ def test_area_lratio():
     A, B, Y = symbols('A B Y')
     l = Symbol('lambda')
 
-    C = LRatio(Y, Line(P, Q), l)
     objective = Area(A, B, Y)
     desired = l*Area(A, B, Q) + (S.One - l) * Area(A, B, P)
-    assert _area_lratio(C, objective) == {objective: desired}
+    assert _area_lratio(Y, P, Q, l, objective) == {objective: desired}
 
 
 def test_area_inter_line_line():

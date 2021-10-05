@@ -9,6 +9,7 @@ from sympy.geometry.synthetic.constructions import (
     SyntheticGeometryBLine as BLine,
     SyntheticGeometryCircle as Circle
 )
+from sympy.geometry.synthetic.common import _geometric_quantities
 
 
 def _get_points_primitives(C):
@@ -37,3 +38,11 @@ def _get_points_construction(C):
         Y, L1, L2 = C.args
         L1, L2 = _get_points_primitives(L1), _get_points_primitives(L2)
         return Y, set.union(L1, L2)
+
+
+def _get_points_quantity(expr):
+    all_points = set()
+    for G in _geometric_quantities(expr):
+        new_points = set(G.args)
+        all_points = all_points.union(new_points)
+    return all_points
