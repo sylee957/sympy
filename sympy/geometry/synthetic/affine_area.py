@@ -2,7 +2,6 @@ from sympy.geometry.synthetic.common import (
     _geometric_quantities, match_ABY)
 from sympy.core.singleton import S
 from sympy.geometry.synthetic.constructions import (
-    SyntheticGeometryPRatio as PRatio,
     SyntheticGeometryPLine as PLine,
     SyntheticGeometryLine as Line,
     SyntheticGeometryIntersection as Intersection
@@ -32,14 +31,14 @@ def _area_lratio(Y, P, Q, l, objective):
     return subs
 
 
-def _area_pratio(C, objective):
+def _area_pratio(Y, R, P, Q, l, objective):
     r"""Eliminate $\mathcal{S}_{A, B, Y}$ where $Y$ is constructed from
-    $PRatio(Y, R, P, Q, \lambda)$
+    $PRatio(Y, R, Line(P, Q), \lambda)$
 
     Explanation
     ===========
 
-    If $Y$ is a point introduced by $PRatio(Y, R, P, Q, \lambda)$,
+    If $Y$ is a point introduced by $PRatio(Y, R, Line(P, Q), \lambda)$,
 
     .. math::
         \mathcal{S}_{A, B, Y} =
@@ -47,17 +46,13 @@ def _area_pratio(C, objective):
     """
     subs = {}
     for G in _geometric_quantities(objective):
-        if isinstance(G, Area) and isinstance(C, PRatio):
-            Y, R, L, l = C.args
-            if isinstance(L, Line):
-                P, Q = L.args
-                if Y in G.args and len(G.args) == 3:
-                    A, B, Y = match_ABY(G, Y)
-                    subs[G] = Area(A, B, R) + l * Area(A, P, B, Q)
+        if isinstance(G, Area) and len(G.args) == 3 and Y in G.args:
+            A, B, Y = match_ABY(G, Y)
+            subs[G] = Area(A, B, R) + l * Area(A, P, B, Q)
     return subs
 
 
-def _area_inter_line_line(C, objective):
+def _area_inter_line_line(Y, P, Q, U, V, objective):
     r"""Eliminate $\mathcal{S}_{A, B, Y}$ where $Y$ is constructed from
     $Intersection(Y, Line(P, Q), Line(U, V))$
 
@@ -75,18 +70,13 @@ def _area_inter_line_line(C, objective):
     """
     subs = {}
     for G in _geometric_quantities(objective):
-        if isinstance(G, Area) and isinstance(C, Intersection):
-            Y, L1, L2 = C.args
-            if isinstance(L1, Line) and isinstance(L2, Line):
-                P, Q = L1.args
-                U, V = L2.args
-                if Y in G.args and len(G.args) == 3:
-                    A, B, Y = match_ABY(G, Y)
-                    subs[G] = (Area(P, U, V) * Area(A, B, Q) + Area(Q, V, U) * Area(A, B, P)) / Area(P, U, Q, V)
+        if isinstance(G, Area) and len(G.args) == 3 and Y in G.args:
+            A, B, Y = match_ABY(G, Y)
+            subs[G] = (Area(P, U, V) * Area(A, B, Q) + Area(Q, V, U) * Area(A, B, P)) / Area(P, U, Q, V)
     return subs
 
 
-def _area_inter_pline_line(C, objective):
+def _area_inter_pline_line(Y, R, P, Q, U, V, objective):
     r"""Eliminate $\mathcal{S}_{A, B, Y}$ where $Y$ is constructed from
     $Intersection(Y, PLine(R, P, Q), Line(U, V))$
 
@@ -104,22 +94,13 @@ def _area_inter_pline_line(C, objective):
     """
     subs = {}
     for G in _geometric_quantities(objective):
-        if isinstance(G, Area) and isinstance(C, Intersection):
-            Y, L1, L2 = C.args
-
-            if isinstance(L1, Line) and isinstance(L2, PLine):
-                L1, L2 = L2, L1
-
-            if isinstance(L1, PLine) and isinstance(L2, Line):
-                R, P, Q = L1.args
-                U, V = L2.args
-                if Y in G.args and len(G.args) == 3:
-                    A, B, Y = match_ABY(G, Y)
-                    subs[G] = (Area(P, U, Q, R) * Area(A, B, V) - Area(P, V, Q, R) * Area(A, B, U)) / Area(P, U, Q, V)
+        if isinstance(G, Area) and len(G.args) == 3 and Y in G.args:
+            A, B, Y = match_ABY(G, Y)
+            subs[G] = (Area(P, U, Q, R) * Area(A, B, V) - Area(P, V, Q, R) * Area(A, B, U)) / Area(P, U, Q, V)
     return subs
 
 
-def _area_inter_pline_pline(C, objective):
+def _area_inter_pline_pline(Y, R, P, Q, W, U, V, objective):
     r"""Eliminate $\mathcal{S}_{A, B, Y}$ where $Y$ is constructed from
     $Intersection(Y, PLine(R, P, Q), PLine(W, U, V))$
 
@@ -136,12 +117,7 @@ def _area_inter_pline_pline(C, objective):
     """
     subs = {}
     for G in _geometric_quantities(objective):
-        if isinstance(G, Area) and isinstance(C, Intersection):
-            Y, L1, L2 = C.args
-            if isinstance(L1, PLine) and isinstance(L2, PLine):
-                R, P, Q = L1.args
-                W, U, V = L2.args
-                if Y in G.args and len(G.args) == 3:
-                    A, B, Y = match_ABY(G, Y)
-                    subs[G] = Area(P, W, Q, R) / Area(P, U, Q, V) * Area(A, U, B, V) + Area(A, B, W)
+        if isinstance(G, Area) and len(G.args) == 3 and Y in G.args:
+            A, B, Y = match_ABY(G, Y)
+            subs[G] = Area(P, W, Q, R) / Area(P, U, Q, V) * Area(A, U, B, V) + Area(A, B, W)
     return subs

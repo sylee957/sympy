@@ -3,12 +3,12 @@ from sympy.core.numbers import Rational
 from sympy.core.singleton import S
 from sympy.core.relational import Eq, Ne
 from sympy.geometry.synthetic.quantities import (
-    SyntheticGeometryFrozenSignedRatio as FrozenRatio,
-    SyntheticGeometrySignedArea as Area
+    SyntheticGeometryFrozenSignedRatio as FrozenRatio
 )
 from sympy.geometry.synthetic.constructions import (
     SyntheticGeometryLRatio as LRatio,
     SyntheticGeometryPRatio as PRatio,
+    SyntheticGeometryIntersection as Intersection,
     SyntheticGeometryOn as On,
     SyntheticGeometryLine as Line,
     SyntheticGeometryPLine as PLine,
@@ -66,6 +66,74 @@ def _eliminate_area_lratio(C, constructions, objective):
     return objective
 
 
+def _eliminate_area_pratio(C, constructions, objective):
+    if not isinstance(C, PRatio):
+        return objective
+    Y, R, L, r = C.args
+    if not isinstance(L, Line):
+        return objective
+    P, Q = L.args
+
+    subs = _area_pratio(Y, R, P, Q, r, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
+def _eliminate_area_inter_line_line(C, constructions, objective):
+    if not isinstance(C, Intersection):
+        return objective
+    Y, L1, L2 = C.args
+    if not isinstance(L1, Line):
+        return objective
+    P, Q = L1.args
+    if not isinstance(L2, Line):
+        return objective
+    U, V = L2.args
+
+    subs = _area_inter_line_line(Y, P, Q, U, V, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
+def _eliminate_area_inter_pline_line(C, constructions, objective):
+    if not isinstance(C, Intersection):
+        return objective
+    Y, L1, L2 = C.args
+
+    if isinstance(L1, Line) and isinstance(L2, PLine):
+        return _eliminate_area_inter_pline_line(Intersection(Y, L2, L1), constructions, objective)
+
+    if not (isinstance(L1, PLine) and isinstance(L2, Line)):
+        return objective
+
+    R, P, Q = L1.args
+    U, V = L2.args
+
+    subs = _area_inter_pline_line(Y, R, P, Q, U, V, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
+def _eliminate_area_inter_pline_pline(C, constructions, objective):
+    if not isinstance(C, Intersection):
+        return objective
+    Y, L1, L2 = C.args
+    if not isinstance(L1, PLine):
+        return objective
+    R, P, Q = L1.args
+    if not isinstance(L2, PLine):
+        return objective
+    W, U, V = L2.args
+
+    subs = _area_inter_pline_pline(Y, R, P, Q, W, U, V, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
 def _eliminate(C, constructions, objective):
     objective = _substitution_rule(_quadrilateral_area(objective))(objective)
     objective = _substitution_rule(_simplify_area(objective))(objective)
@@ -73,22 +141,10 @@ def _eliminate(C, constructions, objective):
     objective = _substitution_rule(_uniformize_area(objective))(objective)
 
     objective = _eliminate_area_lratio(C, constructions, objective)
-
-    subs = _area_pratio(C, objective)
-    subs = _eliminate_image(C, constructions, subs)
-    objective = _substitution_rule(subs)(objective)
-
-    subs = _area_inter_line_line(C, objective)
-    subs = _eliminate_image(C, constructions, subs)
-    objective = _substitution_rule(subs)(objective)
-
-    subs = _area_inter_pline_line(C, objective)
-    subs = _eliminate_image(C, constructions, subs)
-    objective = _substitution_rule(subs)(objective)
-
-    subs = _area_inter_pline_pline(C, objective)
-    subs = _eliminate_image(C, constructions, subs)
-    objective = _substitution_rule(subs)(objective)
+    objective = _eliminate_area_pratio(C, constructions, objective)
+    objective = _eliminate_area_inter_line_line(C, constructions, objective)
+    objective = _eliminate_area_inter_pline_line(C, constructions, objective)
+    objective = _eliminate_area_inter_pline_pline(C, constructions, objective)
 
     subs = _ratio_lratio(C, constructions, area_method_affine, objective)
     subs = _eliminate_image(C, constructions, subs)
