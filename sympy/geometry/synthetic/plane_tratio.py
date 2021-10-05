@@ -4,13 +4,11 @@ from sympy.geometry.synthetic.common import _match_linear_pythagoras_3
 from sympy.geometry.synthetic.common import _match_quadratic_pythagoras_3
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDifference as Pythagoras
-from sympy.geometry.synthetic.constructions import SyntheticGeometryTRatio as TRatio
-from sympy.geometry.synthetic.constructions import SyntheticGeometryLine as Line
 
 
-def _tratio_area(C, objective):
+def _tratio_area(Y, P, Q, l, objective):
     r"""Eliminate the point $Y$ from the construction
-    $TRatio(Y, P, Q, \lambda)$.
+    $TRatio(Y, Line(P, Q), \lambda)$.
 
     Explanation
     ===========
@@ -28,14 +26,6 @@ def _tratio_area(C, objective):
        for Geometry Theorems. 10.1142/9789812798152.
     """
     subs = {}
-    if not isinstance(C, TRatio):
-        return subs
-
-    Y, L, l = C.args
-    if not isinstance(L, Line):
-        return subs
-
-    P, Q = L.args
     for G in _geometric_quantities(objective):
         if not isinstance(G, Area):
             continue
@@ -50,9 +40,9 @@ def _tratio_area(C, objective):
     return subs
 
 
-def _tratio_pythagoras(C, objective):
+def _tratio_pythagoras(Y, P, Q, l, objective):
     r"""Eliminate the point $Y$ from the construction
-    $TRatio(Y, P, Q, \lambda)$.
+    $TRatio(Y, Line(P, Q), \lambda)$.
 
     Explanation
     ===========
@@ -70,14 +60,6 @@ def _tratio_pythagoras(C, objective):
        for Geometry Theorems. 10.1142/9789812798152.
     """
     subs = {}
-    if not isinstance(C, TRatio):
-        return subs
-
-    Y, L, l = C.args
-    if not isinstance(L, Line):
-        return subs
-
-    P, Q = L.args
     for G in _geometric_quantities(objective):
         if not isinstance(G, Pythagoras):
             continue
@@ -92,7 +74,7 @@ def _tratio_pythagoras(C, objective):
     return subs
 
 
-def _tratio_quadratic(C, objective):
+def _tratio_quadratic(Y, P, Q, l, objective):
     r"""Eliminate the point $Y$ from the construction
     $TRatio(Y, Line(P, Q), \lambda)$.
 
@@ -113,14 +95,6 @@ def _tratio_quadratic(C, objective):
        for Geometry Theorems. 10.1142/9789812798152.
     """
     subs = {}
-    if not isinstance(C, TRatio):
-        return subs
-
-    Y, L, l = C.args
-    if not isinstance(L, Line):
-        return subs
-
-    P, Q = L.args
     for G in _geometric_quantities(objective):
         if not isinstance(G, Pythagoras):
             continue

@@ -1,33 +1,56 @@
-from sympy.core.singleton import S
-from sympy.geometry.synthetic.options import _auto_option_prove
+from sympy.geometry.synthetic.constructions import SyntheticGeometryPRatio as PRatio
+from sympy.geometry.synthetic.constructions import SyntheticGeometryTRatio as TRatio
+from sympy.geometry.synthetic.constructions import SyntheticGeometryIntersection as Intersection
+from sympy.geometry.synthetic.constructions import SyntheticGeometryFoot as Foot
+from sympy.geometry.synthetic.constructions import SyntheticGeometryLine as Line
 
-"""
-def area_method_plane(constructions, objective, *, O=None, U=None, V=None, prove=None):
-    prove = _auto_option_prove(objective, prove)
-    constructions = _normalize_constructions(constructions)
-    objective = _normalize_proof_objective(objective)
-    O, U, V = _normalize_coordinates(O, U, V)
-    O, U, V = _auto_coordinates(constructions, objective, O, U, V)
 
-    for i in reversed(range(len(constructions))):
-        C = constructions[i]
-        if prove and degenerate(C, constructions[:i]) is S.true:
-            return S.true
+def _match_pratio(C):
+    if not isinstance(C, PRatio):
+        return None
 
-        while True:
-            old = objective
-            objective = _eliminate(C, constructions[:i + 1], objective)
-            new = objective
-            if old == new:
-                break
+    Y, W, L, l = C.args
+    if not isinstance(L, Line):
+        return None
 
-    subs = _area_coordinates(O, U, V, objective)
-    subs = _simplify_image(_simplify, subs)
-    objective = _substitution_rule(subs)(objective)
-    objective = _substitution_rule(_simplify_area(objective))(objective)
-    objective = _cancel(objective)
+    U, V = L.args
+    return Y, W, U, V, l
 
-    if prove and objective is not S.true:
-        objective = S.false
-    return objective
-"""
+
+def _match_inter_line_line(C):
+    if not isinstance(C, Intersection):
+        return None
+
+    Y, L1, L2 = C.args
+    if not isinstance(L1, Line):
+        return None
+    if not isinstance(L2, Line):
+        return None
+
+    U, V = L1.args
+    P, Q = L2.args
+    return Y, U, V, P, Q
+
+
+def _match_foot(C):
+    if not isinstance(C, Foot):
+        return None
+
+    Y, P, L = C.args
+    if not isinstance(L, Line):
+        return None
+
+    U, V = L.args
+    return Y, P, U, V
+
+
+def _match_tratio(C):
+    if not isinstance(C, TRatio):
+        return None
+
+    Y, L, l = C.args
+    if not isinstance(L, Line):
+        return None
+
+    P, Q = L.args
+    return Y, P, Q, l

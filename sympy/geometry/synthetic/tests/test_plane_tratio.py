@@ -1,8 +1,6 @@
 from sympy.core.symbol import Symbol, symbols
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDifference as Pythagoras
-from sympy.geometry.synthetic.constructions import SyntheticGeometryTRatio as TRatio
-from sympy.geometry.synthetic.constructions import SyntheticGeometryLine as Line
 from sympy.geometry.synthetic.plane_tratio import _tratio_area
 from sympy.geometry.synthetic.plane_tratio import _tratio_pythagoras
 from sympy.geometry.synthetic.plane_tratio import _tratio_quadratic
@@ -14,10 +12,9 @@ def test_tratio_area():
     l = Symbol('lambda')
     Y = Symbol('Y')
 
-    C = TRatio(Y, Line(P, Q), l)
     objective = Area(A, B, Y)
     desired = Area(A, B, P) - l / 4 * Pythagoras(P, A, Q, B)
-    assert _tratio_area(C, objective) == {objective: desired}
+    assert _tratio_area(Y, P, Q, l, objective) == {objective: desired}
 
 
 def test_tratio_pythagoras():
@@ -26,10 +23,9 @@ def test_tratio_pythagoras():
     l = Symbol('lambda')
     Y = Symbol('Y')
 
-    C = TRatio(Y, Line(P, Q), l)
     objective = Pythagoras(A, B, Y)
     desired = Pythagoras(A, B, P) - 4 * l * Area(P, A, Q, B)
-    assert _tratio_pythagoras(C, objective) == {objective: desired}
+    assert _tratio_pythagoras(Y, P, Q, l, objective) == {objective: desired}
 
 
 def test_tratio_quadratic():
@@ -38,10 +34,9 @@ def test_tratio_quadratic():
     l = Symbol('lambda')
     Y = Symbol('Y')
 
-    C = TRatio(Y, Line(P, Q), l)
     objective = Pythagoras(A, Y, B)
     desired = (
         Pythagoras(A, P, B) + l**2 * Pythagoras(P, Q, P) -
         4*l*(Pythagoras(A, P, Q) + Pythagoras(B, P, Q))
     )
-    assert _tratio_quadratic(C, objective) == {objective: desired}
+    assert _tratio_quadratic(Y, P, Q, l, objective) == {objective: desired}

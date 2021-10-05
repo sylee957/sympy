@@ -2,15 +2,11 @@ from sympy.geometry.synthetic.common import _geometric_quantities
 from sympy.geometry.synthetic.common import _match_linear
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDifference as Pythagoras
-from sympy.geometry.synthetic.constructions import SyntheticGeometryPRatio as PRatio
-from sympy.geometry.synthetic.constructions import SyntheticGeometryLine as Line
-from sympy.geometry.synthetic.constructions import SyntheticGeometryIntersection as Intersection
-from sympy.geometry.synthetic.constructions import SyntheticGeometryFoot as Foot
 
 
-def _linear_pratio(C, objective):
+def _linear_pratio(Y, W, U, V, l, objective):
     r"""Eliminate the point $Y$ from the construction
-    $PRatio(Y, W, U, V, \lambda)$.
+    $PRatio(Y, W, Line(U, V), \lambda)$.
 
     Explanation
     ===========
@@ -40,14 +36,6 @@ def _linear_pratio(C, objective):
     for Geometry Theorems. 10.1142/9789812798152.
     """
     subs = {}
-    if not isinstance(C, PRatio):
-        return subs
-
-    Y, W, L, l = C.args
-    if not isinstance(L, Line):
-        return subs
-
-    U, V = L.args
     for G in _geometric_quantities(objective):
         _G = _match_linear(G, Y)
         if _G is None:
@@ -56,7 +44,7 @@ def _linear_pratio(C, objective):
     return subs
 
 
-def _linear_inter_line_line(C, objective):
+def _linear_inter_line_line(Y, U, V, P, Q, objective):
     r"""Eliminate the point $Y$ from the construction
     $Inter(Y, Line(U, V), Line(P, Q))$.
 
@@ -83,17 +71,6 @@ def _linear_inter_line_line(C, objective):
     for Geometry Theorems. 10.1142/9789812798152.
     """
     subs = {}
-    if not isinstance(C, Intersection):
-        return subs
-
-    Y, L1, L2 = C.args
-    if not isinstance(L1, Line):
-        return subs
-    if not isinstance(L2, Line):
-        return subs
-
-    U, V = L1.args
-    P, Q = L2.args
     for G in _geometric_quantities(objective):
         _G = _match_linear(G, Y)
         if _G is None:
@@ -102,9 +79,9 @@ def _linear_inter_line_line(C, objective):
     return subs
 
 
-def _linear_foot(C, objective):
+def _linear_foot(Y, P, U, V, objective):
     r"""Eliminate the point $Y$ from the construction
-    $Foot(Y, P, U, V)$.
+    $Foot(Y, P, Line(U, V))$.
 
     Explanation
     ===========
@@ -129,14 +106,6 @@ def _linear_foot(C, objective):
     for Geometry Theorems. 10.1142/9789812798152.
     """
     subs = {}
-    if not isinstance(C, Foot):
-        return subs
-
-    Y, P, L = C.args
-    if not isinstance(L, Line):
-        return subs
-
-    U, V = L.args
     for G in _geometric_quantities(objective):
         _G = _match_linear(G, Y)
         if _G is None:
