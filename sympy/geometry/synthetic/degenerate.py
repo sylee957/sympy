@@ -67,6 +67,7 @@ def _degenerate_construction(C):
             if P1 == P2:
                 P = P1
                 return Collinear(O1, O2, P)
+    raise NotImplementedError
 
 
 def _degenerate_line_pline_line_pline(L1, L2):
