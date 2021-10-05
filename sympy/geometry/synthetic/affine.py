@@ -1,11 +1,9 @@
 from sympy.core.symbol import Dummy
 from sympy.polys.polytools import cancel
-from sympy.logic.boolalg import Boolean
 from sympy.core.basic import Atom
 from sympy.core.numbers import Rational
 from sympy.core.singleton import S
 from sympy.core.relational import Eq, Ne
-from sympy.core.compatibility import default_sort_key
 from sympy.geometry.synthetic.predicates import (
     SyntheticGeometrySamePoints as SamePoints,
     SyntheticGeometryCollinear as Collinear,
@@ -26,7 +24,6 @@ from sympy.geometry.synthetic.constructions import (
     SyntheticGeometryMidpoint as Midpoint
 )
 from sympy.geometry.synthetic.common import (
-    _geometric_quantities,
     _simplify_area,
     _simplify_ratio,
     _uniformize_area,
@@ -48,6 +45,11 @@ from sympy.geometry.synthetic.affine_ratio import (
     _ratio_inter_pline_pline
 )
 from sympy.geometry.synthetic.area_coordinates import _area_coordinates
+from sympy.geometry.synthetic.options import (
+    _auto_option_prove,
+    _auto_coordinates_orthogonal,
+    _auto_coordinates_skew
+)
 
 
 def degenerate(C, construction):
@@ -143,60 +145,6 @@ def _eliminate(C, constructions, objective):
     return objective
 
 
-def _normalize_coordinates(O, U, V):
-    if O is None:
-        O = Dummy('$O')
-    if U is None:
-        U = Dummy('$U')
-    if V is None:
-        V = Dummy('$V')
-    return O, U, V
-
-
-def _auto_coordinates(constructions, objective, O, U, V):
-    all_points = set()
-    for G in _geometric_quantities(objective):
-        for point in G.args:
-            all_points.add(point)
-    constructed_points = set()
-    for C in constructions:
-        if isinstance(C, LRatio):
-            Y, P, Q, _ = C.args
-            constructed_points.add(Y)
-            all_points.add(Y)
-            all_points.add(P)
-            all_points.add(Q)
-        elif isinstance(C, PRatio):
-            Y, R, P, Q, _ = C.args
-            constructed_points.add(Y)
-            all_points.add(Y)
-            all_points.add(P)
-            all_points.add(Q)
-            all_points.add(R)
-        if isinstance(C, Intersection):
-            Y, L1, L2 = C.args
-            constructed_points.add(Y)
-            all_points.add(Y)
-            for point in L1.args:
-                all_points.add(point)
-            for point in L2.args:
-                all_points.add(point)
-    free_points = all_points.difference(constructed_points)
-    free_points = sorted(free_points, key=default_sort_key)
-
-    if not free_points:
-        return O, U, V
-    if len(free_points) == 1:
-        O = free_points
-        return O, U, V
-    if len(free_points) == 2:
-        O, U = free_points
-        return O, U, V
-
-    O, U, V, *_ = free_points
-    return O, U, V
-
-
 def _normalize_constructions(constructions):
     new = []
     for C in constructions:
@@ -236,20 +184,12 @@ def _normalize_proof_objective(objective):
     return objective
 
 
-def _normalize_argument_prove(objective, prove):
-    if prove is None:
-        prove = False
-        if isinstance(objective, Boolean):
-            prove = True
-    return prove
-
-
 def area_method_affine(constructions, objective, *, O=None, U=None, V=None, prove=None):
-    prove = _normalize_argument_prove(objective, prove)
+    prove = _auto_option_prove(objective, prove)
     constructions = _normalize_constructions(constructions)
     objective = _normalize_proof_objective(objective)
-    O, U, V = _normalize_coordinates(O, U, V)
-    O, U, V = _auto_coordinates(constructions, objective, O, U, V)
+    O, U, V = _auto_coordinates_orthogonal(O, U, V)
+    O, U, V = _auto_coordinates_skew(constructions, objective, O, U, V)
 
     for i in reversed(range(len(constructions))):
         C = constructions[i]

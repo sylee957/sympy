@@ -2,7 +2,15 @@ from sympy.core.basic import Basic
 from sympy.core.sympify import _sympify
 
 
-class SyntheticGeometryOn(Basic):
+class SyntheticGeometryConstruction(Basic):
+    pass
+
+
+class SyntheticGeometryPrimitive(Basic):
+    pass
+
+
+class SyntheticGeometryOn(SyntheticGeometryConstruction):
     r"""Take a point $Y$ on either a :class:`SyntheticGeometryLine`,
     :class:`SyntheticGeometryPLine`, :class:`SyntheticGeometryTLine`,
     :class:`SyntheticGeometryBLine`, :class:`SyntheticGeometryCircle`.
@@ -15,7 +23,7 @@ class SyntheticGeometryOn(Basic):
         return f"Take a point {Y} on {line}"
 
 
-class SyntheticGeometryLine(Basic):
+class SyntheticGeometryLine(SyntheticGeometryPrimitive):
     r"""A line passing through two points $U$ and $V$.
     The nondegenerate condition is $U \ne V$.
     """
@@ -29,7 +37,7 @@ class SyntheticGeometryLine(Basic):
         return f"line {A}{B}"
 
 
-class SyntheticGeometryPLine(Basic):
+class SyntheticGeometryPLine(SyntheticGeometryConstruction):
     r"""A line passing through a point $W$ and parallel to $Line(U, V)$.
     The nondegenerate condition is $U \ne V$.
     """
@@ -44,7 +52,7 @@ class SyntheticGeometryPLine(Basic):
         return f"line passing through {A} and parallel to {B}{C}"
 
 
-class SyntheticGeometryTLine(Basic):
+class SyntheticGeometryTLine(SyntheticGeometryConstruction):
     r"""A line passing through a point $W$ and perpendicular to
     $Line(U, V)$. The nondegenerate condition is $U \ne V$.
     """
@@ -55,7 +63,7 @@ class SyntheticGeometryTLine(Basic):
         return super().__new__(cls, W, U, V)
 
 
-class SyntheticGeometryBLine(Basic):
+class SyntheticGeometryBLine(SyntheticGeometryPrimitive):
     r"""Perpendicular bisector of $Line(U, V)$.
     The nondegenerate condition is $U \ne V$.
     """
@@ -65,7 +73,7 @@ class SyntheticGeometryBLine(Basic):
         return super().__new__(cls, U, V)
 
 
-class SyntheticGeometryCircle(Basic):
+class SyntheticGeometryCircle(SyntheticGeometryPrimitive):
     r"""A circle with point $O$ as its center and passing through point $U$.
     """
     def __new__(cls, O, U):
@@ -74,7 +82,7 @@ class SyntheticGeometryCircle(Basic):
         return super().__new__(cls, O, U)
 
 
-class SyntheticGeometryLRatio(Basic):
+class SyntheticGeometryLRatio(SyntheticGeometryConstruction):
     r"""$LRatio(Y, P, Q, \lambda)$
 
     Construct a new point $Y$ on line $PQ$ such that
@@ -92,7 +100,7 @@ class SyntheticGeometryLRatio(Basic):
         return f"Take a point {Y} on line {P}{Q} such that {P}{Y}/{P}{Q} = {l}"
 
 
-class SyntheticGeometryPRatio(Basic):
+class SyntheticGeometryPRatio(SyntheticGeometryConstruction):
     r"""$PRatio(Y, R, P, Q, \lambda)$
 
     Construct a new point $Y$ such that
@@ -111,7 +119,7 @@ class SyntheticGeometryPRatio(Basic):
         return f"Take a point {Y} on a line passing through {R} and parallel to {P}{Q} such that {R}{Y}/{P}{Q} = {l}"
 
 
-class SyntheticGeometryTRatio(Basic):
+class SyntheticGeometryTRatio(SyntheticGeometryConstruction):
     def __new__(cls, Y, U, V, l):
         Y = _sympify(Y)
         U = _sympify(U)
@@ -120,7 +128,7 @@ class SyntheticGeometryTRatio(Basic):
         return super().__new__(cls, Y, U, V, l)
 
 
-class SyntheticGeometryIntersection(Basic):
+class SyntheticGeometryIntersection(SyntheticGeometryConstruction):
     r"""$Inter(Y, A, B)$ where A, B are either
 
     - $Line(P, Q)$ and $Line(U, V)$
@@ -140,7 +148,7 @@ class SyntheticGeometryIntersection(Basic):
         return f"Take a point {Y} as an intersection of {L1} and {L2}"
 
 
-class SyntheticGeometryMidpoint(Basic):
+class SyntheticGeometryMidpoint(SyntheticGeometryConstruction):
     def __new__(cls, Y, U, V):
         Y = _sympify(Y)
         U = _sympify(U)
@@ -152,7 +160,7 @@ class SyntheticGeometryMidpoint(Basic):
         return f"Take a point {Y} as a midpoint of {U}{V}"
 
 
-class SyntheticGeometryFoot(Basic):
+class SyntheticGeometryFoot(SyntheticGeometryConstruction):
     def __new__(cls, Y, P, U, V):
         Y = _sympify(Y)
         P = _sympify(P)
