@@ -2739,6 +2739,29 @@ class LatexPrinter(Printer):
         args_latex = ', '.join([self._print(a) for a in args])
         return '%s(%s)' % (pred_latex, args_latex)
 
+    def _print_SyntheticGeometryParallel(self, expr):
+        A, B, C, D = self.args
+        A, B, C, D = self._print(A), self._print(B), self._print(C), self._print(D)
+        return f"({A}, {B} \parallel {C}, {D})"
+
+    def _print_SyntheticGeometrySignedArea(self, expr):
+        args = ", ".join((self._print(arg) for arg in expr.args))
+        return r"\mathcal{S}_{%s}" % args
+
+    def _print_SyntheticGeometryPythagorasDifference(self, expr):
+        args = ", ".join((self._print(arg) for arg in expr.args))
+        return r"\mathcal{P}_{%s}" % args
+
+    def _print_SyntheticGeometrySignedRatio(self, expr):
+        A, B, C, D = expr.args
+        A, B, C, D = self._print(A), self._print(B), self._print(C), self._print(D)
+        return r"\frac{\overline{%s, %s}}{\overline{%s, %s}}" % (A, B, C, D)
+
+    def _print_SyntheticGeometryFrozenSignedRatio(self, expr):
+        A, B, C, D = expr.args
+        A, B, C, D = self._print(A), self._print(B), self._print(C), self._print(D)
+        return r"\frac{\overline{%s, %s}}{\overline{%s, %s}}" % (A, B, C, D)
+
     def emptyPrinter(self, expr):
         # default to just printing as monospace, like would normally be shown
         s = super().emptyPrinter(expr)
