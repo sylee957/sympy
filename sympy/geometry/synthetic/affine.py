@@ -244,26 +244,33 @@ def _eliminate_other_constructions(C, constructions, objective):
 
 
 def _eliminate(C, constructions, objective):
-    objective = _substitution_rule(_quadrilateral_area(objective))(objective)
-    objective = _substitution_rule(_simplify_area(objective))(objective)
-    objective = _substitution_rule(_simplify_ratio(objective))(objective)
-    objective = _substitution_rule(_uniformize_area(objective))(objective)
+    while True:
+        old = objective
 
-    objective = _eliminate_area_lratio(C, constructions, objective)
-    objective = _eliminate_area_pratio(C, constructions, objective)
-    objective = _eliminate_area_inter_line_line(C, constructions, objective)
-    objective = _eliminate_area_inter_pline_line(C, constructions, objective)
-    objective = _eliminate_area_inter_pline_pline(C, constructions, objective)
+        objective = _substitution_rule(_quadrilateral_area(objective))(objective)
+        objective = _substitution_rule(_simplify_area(objective))(objective)
+        objective = _substitution_rule(_simplify_ratio(objective))(objective)
+        objective = _substitution_rule(_uniformize_area(objective))(objective)
 
-    objective = _eliminate_ratio_lratio(C, constructions, area_method_affine, objective)
-    objective = _eliminate_ratio_pratio(C, constructions, area_method_affine, objective)
-    objective = _eliminate_ratio_inter_line_line(C, constructions, area_method_affine, objective)
-    objective = _eliminate_ratio_inter_pline_line(C, constructions, area_method_affine, objective)
-    objective = _eliminate_ratio_inter_pline_pline(C, constructions, area_method_affine, objective)
+        objective = _eliminate_area_lratio(C, constructions, objective)
+        objective = _eliminate_area_pratio(C, constructions, objective)
+        objective = _eliminate_area_inter_line_line(C, constructions, objective)
+        objective = _eliminate_area_inter_pline_line(C, constructions, objective)
+        objective = _eliminate_area_inter_pline_pline(C, constructions, objective)
 
-    objective = _eliminate_other_constructions(C, constructions, objective)
+        objective = _eliminate_ratio_lratio(C, constructions, area_method_affine, objective)
+        objective = _eliminate_ratio_pratio(C, constructions, area_method_affine, objective)
+        objective = _eliminate_ratio_inter_line_line(C, constructions, area_method_affine, objective)
+        objective = _eliminate_ratio_inter_pline_line(C, constructions, area_method_affine, objective)
+        objective = _eliminate_ratio_inter_pline_pline(C, constructions, area_method_affine, objective)
 
-    objective = _simplify(objective)
+        objective = _eliminate_other_constructions(C, constructions, objective)
+
+        objective = _cancel(objective)
+
+        new = objective
+        if old == new:
+            break
     return objective
 
 
@@ -278,12 +285,7 @@ def area_method_affine(constructions, objective, *, O=None, U=None, V=None, prov
             if area_method_affine(constructions[:i], assertion, prove=True) is S.true:
                 return S.true
 
-        while True:
-            old = objective
-            objective = _eliminate(C, constructions[:i + 1], objective)
-            new = objective
-            if old == new:
-                break
+        objective = _eliminate(C, constructions[:i + 1], objective)
 
         Y = C.args[0]
         for G in _geometric_quantities(objective):

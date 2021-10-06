@@ -235,30 +235,37 @@ def _eliminate_other_constructions(C, constructions, objective):
 
 
 def _eliminate(C, constructions, objective):
-    objective = _substitution_rule(_simplify_area(objective))(objective)
-    objective = _substitution_rule(_simplify_ratio(objective))(objective)
-    objective = _substitution_rule(_simplify_pythagoras(objective))(objective)
-    objective = _substitution_rule(_uniformize_area(objective))(objective)
-    objective = _substitution_rule(_uniformize_pythagoras(objective))(objective)
+    while True:
+        old = objective
 
-    objective = _eliminate_linear_pratio(C, constructions, objective)
-    objective = _eliminate_linear_inter_line_line(C, constructions, objective)
-    objective = _eliminate_linear_foot(C, constructions, objective)
+        objective = _substitution_rule(_simplify_area(objective))(objective)
+        objective = _substitution_rule(_simplify_ratio(objective))(objective)
+        objective = _substitution_rule(_simplify_pythagoras(objective))(objective)
+        objective = _substitution_rule(_uniformize_area(objective))(objective)
+        objective = _substitution_rule(_uniformize_pythagoras(objective))(objective)
 
-    objective = _eliminate_quadratic_pratio(C, constructions, objective)
-    objective = _eliminate_quadratic_inter_line_line(C, constructions, objective)
-    objective = _eliminate_quadratic_foot(C, constructions, objective)
+        objective = _eliminate_linear_pratio(C, constructions, objective)
+        objective = _eliminate_linear_inter_line_line(C, constructions, objective)
+        objective = _eliminate_linear_foot(C, constructions, objective)
 
-    objective = _eliminate_tratio_area(C, constructions, objective)
-    objective = _eliminate_tratio_pythagoras(C, constructions, objective)
-    objective = _eliminate_tratio_quadratic(C, constructions, objective)
+        objective = _eliminate_quadratic_pratio(C, constructions, objective)
+        objective = _eliminate_quadratic_inter_line_line(C, constructions, objective)
+        objective = _eliminate_quadratic_foot(C, constructions, objective)
 
-    objective = _eliminate_other_constructions(C, constructions, objective)
+        objective = _eliminate_tratio_area(C, constructions, objective)
+        objective = _eliminate_tratio_pythagoras(C, constructions, objective)
+        objective = _eliminate_tratio_quadratic(C, constructions, objective)
 
-    if _has_unsolved_quadrilateral(C, objective):
-        objective = _eliminate_quadrilateral_expand(C, constructions, objective)
+        objective = _eliminate_other_constructions(C, constructions, objective)
 
-    objective = _cancel(objective)
+        if _has_unsolved_quadrilateral(C, objective):
+            objective = _eliminate_quadrilateral_expand(C, constructions, objective)
+
+        objective = _cancel(objective)
+
+        new = objective
+        if old == new:
+            break
     return objective
 
 
@@ -309,12 +316,7 @@ def area_method_plane(constructions, objective, *, O=None, U=None, V=None, prove
             if area_method_plane(constructions[:i], assertion, prove=True) is S.true:
                 return S.true
 
-        while True:
-            old = objective
-            objective = _eliminate(C, constructions[:i + 1], objective)
-            new = objective
-            if old == new:
-                break
+        objective = _eliminate(C, constructions[:i + 1], objective)
 
         Y = C.args[0]
         for G in _geometric_quantities(objective):
