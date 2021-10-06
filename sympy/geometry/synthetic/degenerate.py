@@ -5,6 +5,7 @@ from sympy.geometry.synthetic.predicates import SyntheticGeometryCollinear as Co
 from sympy.geometry.synthetic.quantities import SyntheticGeometryFrozenSignedRatio as Ratio
 from sympy.geometry.synthetic.constructions import SyntheticGeometryLRatio as LRatio
 from sympy.geometry.synthetic.constructions import SyntheticGeometryPRatio as PRatio
+from sympy.geometry.synthetic.constructions import SyntheticGeometryTRatio as TRatio
 from sympy.geometry.synthetic.constructions import SyntheticGeometryIntersection as Intersection
 from sympy.geometry.synthetic.constructions import SyntheticGeometryOn as On
 from sympy.geometry.synthetic.constructions import SyntheticGeometryMidpoint as Midpoint
@@ -13,6 +14,7 @@ from sympy.geometry.synthetic.constructions import SyntheticGeometryPLine as PLi
 from sympy.geometry.synthetic.constructions import SyntheticGeometryBLine as BLine
 from sympy.geometry.synthetic.constructions import SyntheticGeometryTLine as TLine
 from sympy.geometry.synthetic.constructions import SyntheticGeometryCircle as Circle
+from sympy.geometry.synthetic.constructions import SyntheticGeometryFoot as Foot
 from sympy.geometry.synthetic.common import _geometric_quantities
 from sympy.core.singleton import S
 
@@ -41,6 +43,10 @@ def _degenerate_construction(C):
 
     if isinstance(C, PRatio):
         Y, R, L, l = C.args
+        return _degenerate_construction(L)
+
+    if isinstance(C, TRatio):
+        Y, L, l = C.args
         return _degenerate_construction(L)
 
     if isinstance(C, On):
@@ -72,7 +78,11 @@ def _degenerate_construction(C):
     if isinstance(C, Midpoint):
         Y, L = C.args
         return _degenerate_construction(L)
-    raise NotImplementedError
+    if isinstance(C, Foot):
+        Y, P, L = C.args
+        return _degenerate_construction(L)
+
+    raise NotImplementedError(f"Degenerate condition is not properly implemented for {C}")
 
 
 def _degenerate_line_pline_line_pline(L1, L2):

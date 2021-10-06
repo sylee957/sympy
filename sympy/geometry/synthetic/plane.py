@@ -43,7 +43,7 @@ from sympy.geometry.synthetic.area_coordinates import _area_coordinates
 from sympy.geometry.synthetic.area_coordinates_orthogonal import _area_coordinates_pythagoras
 from sympy.geometry.synthetic.area_coordinates_orthogonal import _area_coordinates_herron
 from sympy.geometry.synthetic.area_coordinates_orthogonal import _align_area_OUV
-from sympy.geometry.synthetic.common import _apply_to_image, match_AYCD, _match_ratio
+from sympy.geometry.synthetic.common import _apply_to_image, match_AYCD
 
 
 def _ratio_pratio(Y, R, P, Q, l, constructions, objective):
@@ -110,6 +110,39 @@ def _ratio_foot(Y, P, U, V, constructions, objective):
                 subs[G] = Pythagoras(P, E, D, F) / Pythagoras(E, F, E)
             else:
                 subs[G] = Area(D, U, V) / Area(E, U, F, V)
+            if reciprocal:
+                subs[G] = 1 / subs[G]
+    return subs
+
+
+def _ratio_tratio(Y, P, Q, r, constructions, objective):
+    r"""
+
+    .. math::
+        \frac{\overline{D, Y}}{\overline{E, F}} =
+        \begin{cases}
+        \frac{\mathcal{S}_{D, P, Q} - \frac{r}{4} \mathcal{P}_{P, Q, P}}{\mathcal{P}_{E, P, F, Q}}
+        \text{ if } D, P, Y \text{ collinear} \\
+        \frac{\mathcal{P}_{D, P, Q}}{\mathcal{P}_{E, P, F, Q}}
+        \text{ otherwise }
+        \end{cases}
+
+    References
+    ==========
+
+    .. [1] Chou, Shih-Chun & Gao, Xiao-Shan & Zhang, J.. (1994).
+    Machine Proofs in Geometry: Automated Production of Readable Proofs
+    for Geometry Theorems. 10.1142/9789812798152.
+    """
+    subs = {}
+    for G in _geometric_quantities(objective):
+        if isinstance(G, Ratio) and Y in G.args:
+            reciprocal, D, Y, E, F = match_AYCD(G, Y)
+            assertion = area_method_plane(constructions, Collinear(D, P, Y))
+            if assertion is S.true:
+                subs[G] = (Area(D, P, Q) - r / 4 * Pythagoras(P, Q, P)) / Pythagoras(E, P, F, Q)
+            else:
+                subs[G] =  Pythagoras(D, P, Q) / Pythagoras(E, P, F, Q)
             if reciprocal:
                 subs[G] = 1 / subs[G]
     return subs

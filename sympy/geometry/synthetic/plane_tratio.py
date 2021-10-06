@@ -29,6 +29,8 @@ def _tratio_area(Y, P, Q, l, objective):
     for G in _geometric_quantities(objective):
         if not isinstance(G, Area):
             continue
+        if not len(G.args) == 3:
+            continue
 
         A, B, C = G.args
         match = _match_linear_area_3(A, B, C, Y)
@@ -62,6 +64,8 @@ def _tratio_pythagoras(Y, P, Q, l, objective):
     subs = {}
     for G in _geometric_quantities(objective):
         if not isinstance(G, Pythagoras):
+            continue
+        if not len(G.args) == 3:
             continue
 
         A, B, C = G.args
@@ -97,6 +101,8 @@ def _tratio_quadratic(Y, P, Q, l, objective):
     subs = {}
     for G in _geometric_quantities(objective):
         if not isinstance(G, Pythagoras):
+            continue
+        if not len(G.args) == 3:
             continue
 
         A, B, C = G.args
