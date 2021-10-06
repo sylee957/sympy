@@ -2,6 +2,7 @@ from sympy.core.singleton import S
 from sympy.core.symbol import Dummy
 from sympy.core.numbers import Integer
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
+from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedRatio as Ratio
 from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDifference as Pythagoras
 from sympy.geometry.synthetic.quantities import SyntheticGeometryFrozenSignedRatio as FrozenRatio
 from sympy.geometry.synthetic.predicates import SyntheticGeometryCollinear as Collinear
@@ -42,6 +43,76 @@ from sympy.geometry.synthetic.area_coordinates import _area_coordinates
 from sympy.geometry.synthetic.area_coordinates_orthogonal import _area_coordinates_pythagoras
 from sympy.geometry.synthetic.area_coordinates_orthogonal import _area_coordinates_herron
 from sympy.geometry.synthetic.area_coordinates_orthogonal import _align_area_OUV
+from sympy.geometry.synthetic.common import _apply_to_image, match_AYCD, _match_ratio
+
+
+def _ratio_pratio(Y, R, P, Q, l, constructions, objective):
+    subs = {}
+    for G in _geometric_quantities(objective):
+        if isinstance(G, Ratio) and Y in G.args:
+            reciprocal, A, Y, C, D = match_AYCD(G, Y)
+            assertion = area_method_plane(constructions, Collinear(A, R, Y))
+            if assertion is S.true:
+                subs[G] = (Ratio(A, R, P, Q) + l) / Ratio(C, D, P, Q)
+            else:
+                subs[G] = Area(A, P, R, Q) / Area(C, P, D, Q)
+            if reciprocal:
+                subs[G] = 1 / subs[G]
+    return subs
+
+
+def _ratio_inter_line_line(Y, P, Q, U, V, constructions, objective):
+    subs = {}
+    for G in _geometric_quantities(objective):
+        if isinstance(G, Ratio) and Y in G.args:
+            reciprocal, A, Y, C, D = match_AYCD(G, Y)
+            assertion = area_method_plane(constructions, Collinear(A, U, V))
+            if assertion is S.true:
+                subs[G] = Area(A, P, Q) / Area(C, P, D, Q)
+            else:
+                subs[G] = Area(A, U, V) / Area(C, U, D, V)
+            if reciprocal:
+                subs[G] = 1 / subs[G]
+    return subs
+
+
+def _ratio_foot(Y, P, U, V, constructions, objective):
+    r"""
+    .. math::
+        \frac{\overline{D, Y}}{\overline{E, F}} =
+        \begin{cases}
+        \frac{\mathcal{P}_{P, E, D, F}}{\mathcal{P}_{E, F, E}}
+        \text{ if } D, U, V \text{ collinear} \\
+        \frac{\mathcal{S}_{D, U, V}}{\mathcal{S}_{E, U, F, V}}
+        \text{ otherwise }
+        \end{cases}
+
+    Notes
+    =====
+
+    Although the original implementation in [1]_ takes account of an
+    additional assumption $D \ne U$, we ignore this
+    side condition because it is redundant.
+
+    References
+    ==========
+
+    .. [1] Chou, Shih-Chun & Gao, Xiao-Shan & Zhang, J.. (1994).
+    Machine Proofs in Geometry: Automated Production of Readable Proofs
+    for Geometry Theorems. 10.1142/9789812798152.
+    """
+    subs = {}
+    for G in _geometric_quantities(objective):
+        if isinstance(G, Ratio) and Y in G.args:
+            reciprocal, D, Y, E, F = match_AYCD(G, Y)
+            assertion = area_method_plane(constructions, Collinear(D, U, V))
+            if assertion is S.true:
+                subs[G] = Pythagoras(P, E, D, F) / Pythagoras(E, F, E)
+            else:
+                subs[G] = Area(D, U, V) / Area(E, U, F, V)
+            if reciprocal:
+                subs[G] = 1 / subs[G]
+    return subs
 
 
 def _eliminate_image(C, constructions, subs):
@@ -215,7 +286,7 @@ def _has_unsolved_quadrilateral(C, objective):
     return False
 
 
-def _eliminate_on(C, constructions, objective):
+def _rewrite_and_eliminate_on(C, constructions, objective):
     r"""Eliminate ``On(Y, L)`` using more elementary constructions.
 
     The supported form are
@@ -230,9 +301,7 @@ def _eliminate_on(C, constructions, objective):
         if isinstance(L, Line):
             U, V = L.args
             C = PRatio(Y, U, Line(U, V), FrozenRatio(U, Y, U, V))
-            constructions = tuple(constructions[:-1]) + (C,)
-            objective = _eliminate(C, constructions, objective)
-            return objective
+            return _eliminate(C, constructions, objective)
 
         C = lambda L: On(Y, L)
         if isinstance(L, PLine):
@@ -244,11 +313,16 @@ def _eliminate_on(C, constructions, objective):
         if isinstance(L, BLine):
             U, V = L.args
             return _auxiliary_points_bline(constructions, objective, U, V)
+        if isinstance(L, Circle):
+            O, P = L.args
+            Q = Dummy('\$Q')
+            C = Intersection(Y, Line(P, Q), Circle(O, P))
+            return _eliminate(C, constructions, objective)
 
     return objective
 
 
-def _eliminate_inter(C, constructions, objective):
+def _rewrite_and_eliminate_inter(C, constructions, objective):
     if isinstance(C, Intersection):
         Y, L1, L2 = C.args
 
@@ -277,7 +351,7 @@ def _eliminate_inter(C, constructions, objective):
             return _auxiliary_points_bline(constructions, objective, U, V)
 
         if isinstance(L2, Line) and isinstance(L1, Circle):
-            return _eliminate()
+            return _eliminate(Intersection(Y, L2, L1))
 
         if isinstance(L1, Line) and isinstance(L2, Circle):
             U, V = L1.args
@@ -286,10 +360,21 @@ def _eliminate_inter(C, constructions, objective):
             C1 = Foot(N, O, U, V)
             C2 = PRatio(Y, N, N, U, Integer(-1))
 
-            constructions = tuple(constructions[:-1]) + (C1, C2)
-            objective = _eliminate(C2, constructions, objective)
-            objective = _eliminate(C1, constructions[:-1], objective)
+            objective = _eliminate(C2, constructions + (C1, C2), objective)
+            objective = _eliminate(C1, constructions + (C1), objective)
             return objective
+
+        if isinstance(L1, Circle) and isinstance(C2, Circle):
+            O1, P1 = L1.args
+            O2, P2 = L2.args
+            if P1 == P2:
+                P = P1
+                C1 = Foot(N, P, Line(O1, O2))
+                C2 = PRatio(Y, N, Line(N, P), Integer(-1))
+
+                objective = _eliminate(C2, constructions + (C1, C2), objective)
+                objective = _eliminate(C1, constructions + (C1), objective)
+                return objective
 
     return objective
 
@@ -299,31 +384,28 @@ def _auxiliary_points_pline(C, constructions, objective, W, U, V):
     C1 = PRatio(N, W, U, V, Integer(1))
     C2 = C(Line(W, N))
 
-    constructions = tuple(constructions[:-1]) + (C1, C2)
-    objective = _eliminate(C2, constructions, objective)
-    objective = _eliminate(C1, constructions[:-1], objective)
+    objective = _eliminate(C2, constructions + (C1, C2), objective)
+    objective = _eliminate(C1, constructions + (C1,), objective)
     return objective
 
 
 def _auxiliary_points_tline(C, constructions, objective, W, U, V):
-    assertion = area_method_plane(constructions[:-1], Collinear(W, U, V))
+    assertion = area_method_plane(constructions, Collinear(W, U, V))
     if assertion is S.true:
         N = Dummy('\$N')
         C1 = TRatio(N, Line(W, U), Integer(1))
         C2 = C(Line(N, W))
 
-        constructions = tuple(constructions[:-1]) + (C1, C2)
-        objective = _eliminate(C2, constructions, objective)
-        objective = _eliminate(C1, constructions[:-1], objective)
+        objective = _eliminate(C2, constructions + (C1, C2), objective)
+        objective = _eliminate(C1, constructions + (C1,), objective)
         return objective
     else:
         N = Dummy('\$N')
         C1 = Foot(N, W, Line(U, V))
         C2 = C(Line(N, W))
 
-        constructions = tuple(constructions[:-1]) + (C1, C2)
-        objective = _eliminate(C2, constructions, objective)
-        objective = _eliminate(C1, constructions[:-1], objective)
+        objective = _eliminate(C2, constructions + (C1, C2), objective)
+        objective = _eliminate(C1, constructions + (C1,), objective)
         return objective
 
 
@@ -333,9 +415,8 @@ def _auxiliary_points_bline(constructions, objective, U, V):
     C1 = Midpoint(M, Line(U, V))
     C2 = TRatio(N, Line(M, U), S.One)
 
-    constructions = tuple(constructions[:-1]) + (C1, C2)
-    objective = _eliminate(C2, constructions, objective)
-    objective = _eliminate(C1, constructions[:-1], objective)
+    objective = _eliminate(C2, constructions + (C1, C2), objective)
+    objective = _eliminate(C1, constructions + (C1,), objective)
     return objective
 
 
@@ -361,8 +442,8 @@ def _eliminate(C, constructions, objective):
         objective = _eliminate_tratio_pythagoras(C, constructions, objective)
         objective = _eliminate_tratio_quadratic(C, constructions, objective)
 
-        objective = _eliminate_on(C, constructions, objective)
-        objective = _eliminate_inter(C, constructions, objective)
+        objective = _rewrite_and_eliminate_on(C, constructions, objective)
+        objective = _rewrite_and_eliminate_inter(C, constructions, objective)
 
         if _has_unsolved_quadrilateral(C, objective):
             objective = _eliminate_quadrilateral_expand(C, constructions, objective)
@@ -389,6 +470,7 @@ def _apply_area_coordinates(O, U, V, objective):
 
     subs = _align_area_OUV(O, U, V, objective)
     objective = _substitution_rule(subs)(objective)
+
     subs = _area_coordinates_herron(O, U, V, objective)
     subs = _simplify_image(_simplify, subs)
     objective = _substitution_rule(subs)(objective)
@@ -422,7 +504,7 @@ def area_method_plane(constructions, objective, *, O=None, U=None, V=None, prove
             if area_method_plane(constructions[:i], assertion, prove=True) is S.true:
                 return S.true
 
-        objective = _eliminate(C, constructions[:i + 1], objective)
+        objective = _eliminate(C, constructions[:i], objective)
 
         Y = C.args[0]
         for G in _geometric_quantities(objective):

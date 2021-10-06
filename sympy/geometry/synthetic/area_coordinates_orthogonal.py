@@ -30,6 +30,8 @@ def _area_coordinates_pythagoras(O, U, V, objective):
 def _geometric_subexpressions(expr):
     if isinstance(expr, Expr):
         return {expr}
+    if not expr.args:
+        return set()
     return set.union(*(_geometric_subexpressions(arg) for arg in expr.args))
 
 

@@ -6,6 +6,22 @@ from sympy.core.singleton import S
 from sympy.core.compatibility import default_sort_key
 
 
+def _match_ratio(G, Y):
+    if isinstance(G, Ratio):
+        if Y == G.args[0]:
+            Y, A, D, C = G.args
+            return False, A, Y, C, D
+        if Y == G.args[1]:
+            A, Y, C, D = G.args
+            return False, A, Y, C, D
+        if Y == G.args[2]:
+            D, C, Y, A = G.args
+            return True, A, Y, C, D
+        if Y == G.args[3]:
+            C, D, A, Y = G.args
+            return True, A, Y, C, D
+
+
 def match_ABY(G, Y):
     if Y == G.args[0]:
         Y, A, B = G.args

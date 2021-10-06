@@ -178,7 +178,7 @@ def _eliminate_area_inter_pline_pline(C, constructions, objective):
     return objective
 
 
-def _eliminate_ratio_lratio(C, constructions, area_method, objective):
+def _eliminate_ratio_lratio(C, constructions, objective):
     match = _match_lratio(C)
     if match is None:
         return objective
@@ -189,7 +189,7 @@ def _eliminate_ratio_lratio(C, constructions, area_method, objective):
     return objective
 
 
-def _eliminate_ratio_pratio(C, constructions, area_method, objective):
+def _eliminate_ratio_pratio(C, constructions, objective):
     match = _match_pratio(C)
     if match is None:
         return objective
@@ -200,7 +200,7 @@ def _eliminate_ratio_pratio(C, constructions, area_method, objective):
     return objective
 
 
-def _eliminate_ratio_inter_line_line(C, constructions, area_method, objective):
+def _eliminate_ratio_inter_line_line(C, constructions, objective):
     match = _match_inter_line_line(C)
     if match is None:
         return objective
@@ -211,7 +211,7 @@ def _eliminate_ratio_inter_line_line(C, constructions, area_method, objective):
     return objective
 
 
-def _eliminate_ratio_inter_pline_line(C, constructions, area_method, objective):
+def _eliminate_ratio_inter_pline_line(C, constructions, objective):
     match = _match_inter_pline_line(C)
     if match is None:
         return objective
@@ -222,7 +222,7 @@ def _eliminate_ratio_inter_pline_line(C, constructions, area_method, objective):
     return objective
 
 
-def _eliminate_ratio_inter_pline_pline(C, constructions, area_method, objective):
+def _eliminate_ratio_inter_pline_pline(C, constructions, objective):
     match = _match_inter_pline_pline(C)
     if match is None:
         return objective
@@ -233,7 +233,7 @@ def _eliminate_ratio_inter_pline_pline(C, constructions, area_method, objective)
     return objective
 
 
-def _eliminate_other_constructions(C, constructions, objective):
+def _rewrite_and_eliminate(C, constructions, objective):
     if isinstance(C, On):
         Y, L = C.args
         if isinstance(L, Line):
@@ -270,13 +270,13 @@ def _eliminate(C, constructions, objective):
         objective = _eliminate_area_inter_pline_line(C, constructions, objective)
         objective = _eliminate_area_inter_pline_pline(C, constructions, objective)
 
-        objective = _eliminate_ratio_lratio(C, constructions, area_method_affine, objective)
-        objective = _eliminate_ratio_pratio(C, constructions, area_method_affine, objective)
-        objective = _eliminate_ratio_inter_line_line(C, constructions, area_method_affine, objective)
-        objective = _eliminate_ratio_inter_pline_line(C, constructions, area_method_affine, objective)
-        objective = _eliminate_ratio_inter_pline_pline(C, constructions, area_method_affine, objective)
+        objective = _eliminate_ratio_lratio(C, constructions, objective)
+        objective = _eliminate_ratio_pratio(C, constructions, objective)
+        objective = _eliminate_ratio_inter_line_line(C, constructions, objective)
+        objective = _eliminate_ratio_inter_pline_line(C, constructions, objective)
+        objective = _eliminate_ratio_inter_pline_pline(C, constructions, objective)
 
-        objective = _eliminate_other_constructions(C, constructions, objective)
+        objective = _rewrite_and_eliminate(C, constructions, objective)
 
         objective = _cancel(objective)
 
