@@ -1,4 +1,6 @@
 from sympy.core.singleton import S
+from sympy.core.symbol import Dummy
+from sympy.core.numbers import Integer
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDifference as Pythagoras
 from sympy.geometry.synthetic.quantities import SyntheticGeometryFrozenSignedRatio as FrozenRatio
@@ -8,6 +10,9 @@ from sympy.geometry.synthetic.constructions import SyntheticGeometryIntersection
 from sympy.geometry.synthetic.constructions import SyntheticGeometryOn as On
 from sympy.geometry.synthetic.constructions import SyntheticGeometryFoot as Foot
 from sympy.geometry.synthetic.constructions import SyntheticGeometryLine as Line
+from sympy.geometry.synthetic.constructions import SyntheticGeometryPLine as PLine
+from sympy.geometry.synthetic.constructions import SyntheticGeometryBLine as BLine
+from sympy.geometry.synthetic.constructions import SyntheticGeometryTLine as TLine
 from sympy.geometry.synthetic.degenerate import _degenerate_construction
 from sympy.geometry.synthetic.options import _auto_coordinates_orthogonal, _auto_option_prove
 from sympy.geometry.synthetic.options_predicate import _normalize_predicate_plane
@@ -214,7 +219,18 @@ def _eliminate_other_constructions(C, constructions, objective):
             U, V = L.args
             C = PRatio(Y, U, Line(U, V), FrozenRatio(U, Y, U, V))
             constructions = tuple(constructions[:-1]) + (C,)
-            return _eliminate(C, constructions, objective)
+            objective = _eliminate(C, constructions, objective)
+            return objective
+
+        if isinstance(L, PLine):
+            W, U, V = L.args
+            N = Dummy(r'\$N')
+            C1 = PRatio(N, W, U, V, Integer(1))
+            C2 = On(Y, Line(W, N))
+            constructions = tuple(constructions[:-1]) + (C1, C2)
+            objective = _eliminate(C2, constructions, objective)
+            objective = _eliminate(C1, constructions[:-1], objective)
+            return objective
     return objective
 
 
