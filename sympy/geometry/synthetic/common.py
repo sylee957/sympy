@@ -318,3 +318,7 @@ def _simplify_pythagoras(objective):
             elif B == C:
                 subs[G] = S.Zero
     return subs
+
+
+def _apply_to_image(func, subs):
+    return {k: func(v) for k, v in subs.items()}

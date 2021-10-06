@@ -4,15 +4,18 @@ from sympy.core.numbers import Integer
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDifference as Pythagoras
 from sympy.geometry.synthetic.quantities import SyntheticGeometryFrozenSignedRatio as FrozenRatio
+from sympy.geometry.synthetic.predicates import SyntheticGeometryCollinear as Collinear
 from sympy.geometry.synthetic.constructions import SyntheticGeometryPRatio as PRatio
 from sympy.geometry.synthetic.constructions import SyntheticGeometryTRatio as TRatio
 from sympy.geometry.synthetic.constructions import SyntheticGeometryIntersection as Intersection
 from sympy.geometry.synthetic.constructions import SyntheticGeometryOn as On
 from sympy.geometry.synthetic.constructions import SyntheticGeometryFoot as Foot
 from sympy.geometry.synthetic.constructions import SyntheticGeometryLine as Line
+from sympy.geometry.synthetic.constructions import SyntheticGeometryMidpoint as Midpoint
 from sympy.geometry.synthetic.constructions import SyntheticGeometryPLine as PLine
 from sympy.geometry.synthetic.constructions import SyntheticGeometryBLine as BLine
 from sympy.geometry.synthetic.constructions import SyntheticGeometryTLine as TLine
+from sympy.geometry.synthetic.constructions import SyntheticGeometryCircle as Circle
 from sympy.geometry.synthetic.degenerate import _degenerate_construction
 from sympy.geometry.synthetic.options import _auto_coordinates_orthogonal, _auto_option_prove
 from sympy.geometry.synthetic.options_predicate import _normalize_predicate_plane
@@ -212,7 +215,16 @@ def _has_unsolved_quadrilateral(C, objective):
     return False
 
 
-def _eliminate_other_constructions(C, constructions, objective):
+def _eliminate_on(C, constructions, objective):
+    r"""Eliminate ``On(Y, L)`` using more elementary constructions.
+
+    The supported form are
+
+    - ``On(Y, Line(U, V))``
+    - ``On(Y, PLine(W, U, V))``
+    - ``On(Y, TLine(W, U, V))``
+    - ``On(Y, BLine(U, V))``
+    """
     if isinstance(C, On):
         Y, L = C.args
         if isinstance(L, Line):
@@ -222,15 +234,108 @@ def _eliminate_other_constructions(C, constructions, objective):
             objective = _eliminate(C, constructions, objective)
             return objective
 
+        C = lambda L: On(Y, L)
         if isinstance(L, PLine):
             W, U, V = L.args
+            return _auxiliary_points_pline(C, constructions, objective, W, U, V)
+        if isinstance(L, TLine):
+            W, U, V = L.args
+            return _auxiliary_points_tline(C, constructions, objective, W, U, V)
+        if isinstance(L, BLine):
+            U, V = L.args
+            return _auxiliary_points_bline(constructions, objective, U, V)
+
+    return objective
+
+
+def _eliminate_inter(C, constructions, objective):
+    if isinstance(C, Intersection):
+        Y, L1, L2 = C.args
+
+        if isinstance(L1, PLine):
+            C = lambda L: On(Y, L, L2)
+            W, U, V = L1.args
+            return _auxiliary_points_pline(C, constructions, objective, W, U, V)
+        elif isinstance(L1, TLine):
+            C = lambda L: On(Y, L, L2)
+            W, U, V = L1.args
+            return _auxiliary_points_tline(C, constructions, objective, W, U, V)
+        elif isinstance(L1, BLine):
+            U, V = L1.args
+            return _auxiliary_points_bline(constructions, objective, U, V)
+
+        if isinstance(L2, PLine):
+            C = lambda L: On(Y, L1, L)
+            W, U, V = L2.args
+            return _auxiliary_points_pline(C, constructions, objective, W, U, V)
+        elif isinstance(L2, TLine):
+            C = lambda L: On(Y, L1, L)
+            W, U, V = L2.args
+            return _auxiliary_points_tline(C, constructions, objective, W, U, V)
+        elif isinstance(L2, BLine):
+            U, V = L2.args
+            return _auxiliary_points_bline(constructions, objective, U, V)
+
+        if isinstance(L2, Line) and isinstance(L1, Circle):
+            return _eliminate()
+
+        if isinstance(L1, Line) and isinstance(L2, Circle):
+            U, V = L1.args
+            O, U = L2.args
             N = Dummy(r'\$N')
-            C1 = PRatio(N, W, U, V, Integer(1))
-            C2 = On(Y, Line(W, N))
+            C1 = Foot(N, O, U, V)
+            C2 = PRatio(Y, N, N, U, Integer(-1))
+
             constructions = tuple(constructions[:-1]) + (C1, C2)
             objective = _eliminate(C2, constructions, objective)
             objective = _eliminate(C1, constructions[:-1], objective)
             return objective
+
+    return objective
+
+
+def _auxiliary_points_pline(C, constructions, objective, W, U, V):
+    N = Dummy(r'\$N')
+    C1 = PRatio(N, W, U, V, Integer(1))
+    C2 = C(Line(W, N))
+
+    constructions = tuple(constructions[:-1]) + (C1, C2)
+    objective = _eliminate(C2, constructions, objective)
+    objective = _eliminate(C1, constructions[:-1], objective)
+    return objective
+
+
+def _auxiliary_points_tline(C, constructions, objective, W, U, V):
+    assertion = area_method_plane(constructions[:-1], Collinear(W, U, V))
+    if assertion is S.true:
+        N = Dummy('\$N')
+        C1 = TRatio(N, Line(W, U), Integer(1))
+        C2 = C(Line(N, W))
+
+        constructions = tuple(constructions[:-1]) + (C1, C2)
+        objective = _eliminate(C2, constructions, objective)
+        objective = _eliminate(C1, constructions[:-1], objective)
+        return objective
+    else:
+        N = Dummy('\$N')
+        C1 = Foot(N, W, Line(U, V))
+        C2 = C(Line(N, W))
+
+        constructions = tuple(constructions[:-1]) + (C1, C2)
+        objective = _eliminate(C2, constructions, objective)
+        objective = _eliminate(C1, constructions[:-1], objective)
+        return objective
+
+
+def _auxiliary_points_bline(constructions, objective, U, V):
+    M = Dummy('\$M')
+    N = Dummy('\$N')
+    C1 = Midpoint(M, Line(U, V))
+    C2 = TRatio(N, Line(M, U), S.One)
+
+    constructions = tuple(constructions[:-1]) + (C1, C2)
+    objective = _eliminate(C2, constructions, objective)
+    objective = _eliminate(C1, constructions[:-1], objective)
     return objective
 
 
@@ -256,7 +361,8 @@ def _eliminate(C, constructions, objective):
         objective = _eliminate_tratio_pythagoras(C, constructions, objective)
         objective = _eliminate_tratio_quadratic(C, constructions, objective)
 
-        objective = _eliminate_other_constructions(C, constructions, objective)
+        objective = _eliminate_on(C, constructions, objective)
+        objective = _eliminate_inter(C, constructions, objective)
 
         if _has_unsolved_quadrilateral(C, objective):
             objective = _eliminate_quadrilateral_expand(C, constructions, objective)
