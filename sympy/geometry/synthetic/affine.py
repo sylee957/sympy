@@ -41,6 +41,7 @@ from sympy.geometry.synthetic.options import (
 from sympy.geometry.synthetic.options_predicate import _normalize_predicate_affine
 from sympy.geometry.synthetic.degenerate import _degenerate_construction
 from sympy.geometry.synthetic.simplify import _cancel
+from sympy.geometry.synthetic.common import _geometric_quantities
 
 
 def _eliminate_image(C, constructions, subs):
@@ -283,6 +284,11 @@ def area_method_affine(constructions, objective, *, O=None, U=None, V=None, prov
             new = objective
             if old == new:
                 break
+
+        Y = C.args[0]
+        for G in _geometric_quantities(objective):
+            if G.has(Y):
+                raise NotImplementedError(f"The elimination step for {Y} in {C} is not properly implemented")
 
     O, U, V = _auto_coordinates_skew(objective, O, U, V)
     subs = _area_coordinates(O, U, V, objective)

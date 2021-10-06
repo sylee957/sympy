@@ -33,6 +33,18 @@ def _geometric_subexpressions(expr):
     return set.union(*(_geometric_subexpressions(arg) for arg in expr.args))
 
 
+def _align_area_OUV(O, U, V, objective):
+    canonical = Area(O, U, V)
+    subs = {}
+    for G in _geometric_quantities(objective):
+        if isinstance(G, Area):
+            if G.args == (U, V, O) or G.args == (V, O, U):
+                subs[G] = canonical
+            elif G.args == (O, V, U) or G.args == (U, O, V) or G.args == (V, U, O):
+                subs[G] = -canonical
+    return subs
+
+
 def _area_coordinates_herron(O, U, V, objective):
     ouo = Pythagoras(O, U, O)
     ovo = Pythagoras(O, V, O)

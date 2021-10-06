@@ -174,6 +174,26 @@ def _quadrilateral_area(objective):
     return subs
 
 
+def _quadrilateral_pythagoras(objective):
+    r"""Return the substitution that expands the quadrilateral
+    Pythagoras difference.
+
+    Explanation
+    ===========
+
+    .. math::
+        \mathcal{P}_{A, B, C, D} =
+        \mathcal{P}_{B, A, C} - \mathcal{P}_{D, A, C}
+    """
+    subs = {}
+    for G in _geometric_quantities(objective):
+        if isinstance(G, Area):
+            if len(G.args) == 4:
+                A, B, C, D = G.args
+                subs[G] = Pythagoras(B, A, C) - Pythagoras(D, A, C)
+    return subs
+
+
 def _uniformize_area(objective):
     r"""Return the substitution that normalizes the ordering of the
     points of the signed areas from the given geometric quantities.
