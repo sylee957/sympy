@@ -14,11 +14,11 @@ def _auto_option_prove(objective, prove):
 
 def _auto_coordinates_orthogonal(O, U, V):
     if O is None:
-        O = Dummy('$O')
+        O = Dummy(r'\breve{O}')
     if U is None:
-        U = Dummy('$U')
+        U = Dummy(r'\breve{U}')
     if V is None:
-        V = Dummy('$V')
+        V = Dummy(r'\breve{V}')
     return O, U, V
 
 

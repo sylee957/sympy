@@ -21,7 +21,7 @@ def _normalize_predicate_affine(objective):
         return Eq(Area(A, B, C) - Area(A, B, D), S.Zero)
     if isinstance(objective, SamePoints):
         A, B = objective.args
-        X, Y = Dummy('\$X'), Dummy('\$Y')
+        X, Y = Dummy(r'\breve{X}'), Dummy(r'\breve{Y}')
         return Eq(Ratio(A, B, X, Y), S.Zero)
     if not isinstance(objective, Atom):
         return objective.func(*(_normalize_predicate_affine(arg) for arg in objective.args))

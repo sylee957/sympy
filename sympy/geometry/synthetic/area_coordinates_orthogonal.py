@@ -1,7 +1,7 @@
 from sympy.geometry.synthetic.common import _geometric_quantities
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDifference as Pythagoras
-from sympy.polys.rings import sring
+from sympy.polys.rings import vring, sring
 from sympy.core.expr import Expr
 from sympy.polys.polytools import cancel
 

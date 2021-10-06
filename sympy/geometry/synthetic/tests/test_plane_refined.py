@@ -6,6 +6,7 @@ from sympy.geometry.synthetic.constructions import SyntheticGeometryPLine as PLi
 from sympy.geometry.synthetic.constructions import SyntheticGeometryTLine as TLine
 from sympy.geometry.synthetic.constructions import SyntheticGeometryFoot as Foot
 from sympy.geometry.synthetic.constructions import SyntheticGeometryMidpoint as Midpoint
+from sympy.geometry.synthetic.constructions import SyntheticGeometryIntersection as Intersection
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDifference as Pythagoras
 from sympy.geometry.synthetic.plane import area_method_plane
@@ -109,3 +110,98 @@ def test_plane_refined_foot_quadratic():
     ]
     objective = Pythagoras(A, Y, B) + Pythagoras(P, V, U) * Pythagoras(P, U, V) / Pythagoras(U, V, U)
     assert area_method_plane(constructions, objective) is S.Zero
+
+
+def test_refined_inter_line_pline_linear():
+    # Exercise 3.37, Machine Proofs in Geometry
+    Y, P, Q, R, U, V = symbols('Y P Q R U V')
+    A, B, C = symbols('A B C')
+
+    UYUV = Area(U, P, R, Q) / Area(U, P, V, Q)
+    YVUV = -Area(V, P, R, Q) / Area(U, P, V, Q)
+
+    constructions = [Intersection(Y, Line(U, V), PLine(R, P, Q))]
+
+    G = lambda X: Area(A, B, X)
+    lhs = G(Y)
+    rhs = UYUV * G(V) + YVUV * G(U)
+    assert area_method_plane(constructions, lhs - rhs) is S.Zero
+
+    G = lambda X: Area(A, B, C, X)
+    lhs = G(Y)
+    rhs = UYUV * G(V) + YVUV * G(U)
+    assert area_method_plane(constructions, lhs - rhs) is S.Zero
+
+    G = lambda X: Pythagoras(A, B, X)
+    lhs = G(Y)
+    rhs = UYUV * G(V) + YVUV * G(U)
+    assert area_method_plane(constructions, lhs - rhs) is S.Zero
+
+    G = lambda X: Pythagoras(A, B, C, X)
+    lhs = G(Y)
+    rhs = UYUV * G(V) + YVUV * G(U)
+    assert area_method_plane(constructions, lhs - rhs) is S.Zero
+
+
+def test_refined_inter_line_tline_linear_1():
+    # Exercise 3.37, Machine Proofs in Geometry
+    Y, P, Q, R, U, V = symbols('Y P Q R U V')
+    A, B, C = symbols('A B C')
+
+    UYUV = Pythagoras(U, P, R, Q) / Pythagoras(U, P, V, Q)
+    YVUV = -Pythagoras(V, P, R, Q) / Pythagoras(U, P, V, Q)
+
+    constructions = [Intersection(Y, Line(U, V), TLine(R, P, Q))]
+
+    G = lambda X: Area(A, B, X)
+    lhs = G(Y)
+    rhs = UYUV * G(V) + YVUV * G(U)
+    assert area_method_plane(constructions, lhs - rhs) is S.Zero
+
+
+def test_refined_inter_line_tline_linear_2():
+    # Exercise 3.37, Machine Proofs in Geometry
+    Y, P, Q, R, U, V = symbols('Y P Q R U V')
+    A, B, C = symbols('A B C')
+
+    UYUV = Pythagoras(U, P, R, Q) / Pythagoras(U, P, V, Q)
+    YVUV = -Pythagoras(V, P, R, Q) / Pythagoras(U, P, V, Q)
+
+    constructions = [Intersection(Y, Line(U, V), TLine(R, P, Q))]
+
+    G = lambda X: Area(A, B, C, X)
+    lhs = G(Y)
+    rhs = UYUV * G(V) + YVUV * G(U)
+    assert area_method_plane(constructions, lhs - rhs) is S.Zero
+
+
+def test_refined_inter_line_tline_linear_3():
+    # Exercise 3.37, Machine Proofs in Geometry
+    Y, P, Q, R, U, V = symbols('Y P Q R U V')
+    A, B, C = symbols('A B C')
+
+    UYUV = Pythagoras(U, P, R, Q) / Pythagoras(U, P, V, Q)
+    YVUV = -Pythagoras(V, P, R, Q) / Pythagoras(U, P, V, Q)
+
+    constructions = [Intersection(Y, Line(U, V), TLine(R, P, Q))]
+
+    G = lambda X: Pythagoras(A, B, X)
+    lhs = G(Y)
+    rhs = UYUV * G(V) + YVUV * G(U)
+    assert area_method_plane(constructions, lhs - rhs) is S.Zero
+
+
+def test_refined_inter_line_tline_linear_4():
+    # Exercise 3.37, Machine Proofs in Geometry
+    Y, P, Q, R, U, V = symbols('Y P Q R U V')
+    A, B, C = symbols('A B C')
+
+    UYUV = Pythagoras(U, P, R, Q) / Pythagoras(U, P, V, Q)
+    YVUV = -Pythagoras(V, P, R, Q) / Pythagoras(U, P, V, Q)
+
+    constructions = [Intersection(Y, Line(U, V), TLine(R, P, Q))]
+
+    G = lambda X: Pythagoras(A, B, C, X)
+    lhs = G(Y)
+    rhs = UYUV * G(V) + YVUV * G(U)
+    assert area_method_plane(constructions, lhs - rhs) is S.Zero

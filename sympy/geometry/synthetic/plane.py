@@ -1,5 +1,5 @@
 from sympy.core.singleton import S
-from sympy.core.symbol import Dummy, symbols
+from sympy.core.symbol import Dummy
 from sympy.core.numbers import Integer
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedRatio as Ratio
@@ -409,11 +409,11 @@ def _rewrite_and_eliminate_inter(C, constructions, objective):
         Y, L1, L2 = C.args
 
         if isinstance(L1, PLine):
-            C = lambda L: On(Y, L, L2)
+            C = lambda L: Intersection(Y, L, L2)
             W, U, V = L1.args
             return _auxiliary_points_pline(C, constructions, objective, W, U, V)
         elif isinstance(L1, TLine):
-            C = lambda L: On(Y, L, L2)
+            C = lambda L: Intersection(Y, L, L2)
             W, U, V = L1.args
             return _auxiliary_points_tline(C, constructions, objective, W, U, V)
         elif isinstance(L1, BLine):
@@ -421,11 +421,11 @@ def _rewrite_and_eliminate_inter(C, constructions, objective):
             return _auxiliary_points_bline(constructions, objective, U, V)
 
         if isinstance(L2, PLine):
-            C = lambda L: On(Y, L1, L)
+            C = lambda L: Intersection(Y, L1, L)
             W, U, V = L2.args
             return _auxiliary_points_pline(C, constructions, objective, W, U, V)
         elif isinstance(L2, TLine):
-            C = lambda L: On(Y, L1, L)
+            C = lambda L: Intersection(Y, L1, L)
             W, U, V = L2.args
             return _auxiliary_points_tline(C, constructions, objective, W, U, V)
         elif isinstance(L2, BLine):
@@ -438,7 +438,7 @@ def _rewrite_and_eliminate_inter(C, constructions, objective):
         if isinstance(L1, Line) and isinstance(L2, Circle):
             U, V = L1.args
             O, U = L2.args
-            N = Dummy(r'\$N')
+            N = Dummy(r'\breve{N}')
             C1 = Foot(N, O, U, V)
             C2 = PRatio(Y, N, N, U, Integer(-1))
 
@@ -472,7 +472,7 @@ def _rewrite_and_eliminate_midpoint(C, constructions, objective):
 
 
 def _auxiliary_points_pline(C, constructions, objective, W, U, V):
-    N = Dummy(r'\$N')
+    N = Dummy(r'\breve{N}')
     C1 = PRatio(N, W, Line(U, V), Integer(1))
     C2 = C(Line(W, N))
 
@@ -484,7 +484,7 @@ def _auxiliary_points_pline(C, constructions, objective, W, U, V):
 def _auxiliary_points_tline(C, constructions, objective, W, U, V):
     assertion = area_method_plane(constructions, Collinear(W, U, V))
     if assertion is S.true:
-        N = Dummy('\$N')
+        N = Dummy(r'\breve{N}')
         C1 = TRatio(N, Line(W, U), Integer(1))
         C2 = C(Line(N, W))
 
@@ -492,7 +492,7 @@ def _auxiliary_points_tline(C, constructions, objective, W, U, V):
         objective = _eliminate(C1, constructions + (C1,), objective)
         return objective
     else:
-        N = Dummy('\$N')
+        N = Dummy(r'\breve{N}')
         C1 = Foot(N, W, Line(U, V))
         C2 = C(Line(N, W))
 
@@ -502,8 +502,8 @@ def _auxiliary_points_tline(C, constructions, objective, W, U, V):
 
 
 def _auxiliary_points_bline(constructions, objective, U, V):
-    M = Dummy('\$M')
-    N = Dummy('\$N')
+    M = Dummy(r'\breve{M}')
+    N = Dummy(r'\breve{N}')
     C1 = Midpoint(M, Line(U, V))
     C2 = TRatio(N, Line(M, U), S.One)
 
