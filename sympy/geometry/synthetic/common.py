@@ -203,7 +203,7 @@ def _quadrilateral_pythagoras(objective):
     """
     subs = {}
     for G in _geometric_quantities(objective):
-        if isinstance(G, Area):
+        if isinstance(G, Pythagoras):
             if len(G.args) == 4:
                 A, B, C, D = G.args
                 subs[G] = Pythagoras(B, A, C) - Pythagoras(D, A, C)

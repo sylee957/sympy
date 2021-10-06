@@ -1,5 +1,5 @@
 from sympy.core.singleton import S
-from sympy.core.symbol import Dummy
+from sympy.core.symbol import Dummy, symbols
 from sympy.core.numbers import Integer
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedRatio as Ratio
@@ -43,7 +43,7 @@ from sympy.geometry.synthetic.area_coordinates import _area_coordinates
 from sympy.geometry.synthetic.area_coordinates_orthogonal import _area_coordinates_pythagoras
 from sympy.geometry.synthetic.area_coordinates_orthogonal import _area_coordinates_herron
 from sympy.geometry.synthetic.area_coordinates_orthogonal import _align_area_OUV
-from sympy.geometry.synthetic.common import _apply_to_image, match_AYCD
+from sympy.geometry.synthetic.common import match_AYCD
 
 
 def _ratio_pratio(Y, R, P, Q, l, constructions, objective):
@@ -302,6 +302,50 @@ def _eliminate_tratio_quadratic(C, constructions, objective):
     return objective
 
 
+def _eliminate_ratio_pratio(C, constructions, objective):
+    match = _match_pratio(C)
+    if match is None:
+        return objective
+    Y, W, U, V, l = match
+    subs = _ratio_pratio(Y, W, U, V, l, constructions, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
+def _eliminate_ratio_inter_line_line(C, constructions, objective):
+    match = _match_inter_line_line(C)
+    if match is None:
+        return objective
+    Y, U, V, P, Q = match
+    subs = _ratio_inter_line_line(Y, U, V, P, Q, constructions, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
+def _eliminate_ratio_foot(C, constructions, objective):
+    match = _match_foot(C)
+    if match is None:
+        return objective
+    Y, P, U, V = match
+    subs = _ratio_foot(Y, P, U, V, constructions, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
+def _eliminate_ratio_tratio(C, constructions, objective):
+    match = _match_tratio(C)
+    if match is None:
+        return objective
+    Y, P, Q, l = match
+    subs = _ratio_tratio(Y, P, Q, l, constructions, objective)
+    subs = _eliminate_image(C, constructions, subs)
+    objective = _substitution_rule(subs)(objective)
+    return objective
+
+
 def _eliminate_quadrilateral_expand(C, constructions, objective):
     objective = _substitution_rule(_quadrilateral_area(objective))(objective)
     objective = _substitution_rule(_quadrilateral_pythagoras(objective))(objective)
@@ -328,6 +372,7 @@ def _rewrite_and_eliminate_on(C, constructions, objective):
     - ``On(Y, PLine(W, U, V))``
     - ``On(Y, TLine(W, U, V))``
     - ``On(Y, BLine(U, V))``
+    - ``On(Y, (U, V))``
     """
     if isinstance(C, On):
         Y, L = C.args
@@ -356,6 +401,10 @@ def _rewrite_and_eliminate_on(C, constructions, objective):
 
 
 def _rewrite_and_eliminate_inter(C, constructions, objective):
+    r"""Eliminate ``Inter(Y, L1, L1)`` using more elementary constructions.
+
+    L1, L2 must be ``PLine, TLine, BLine, Circle``
+    """
     if isinstance(C, Intersection):
         Y, L1, L2 = C.args
 
@@ -412,9 +461,19 @@ def _rewrite_and_eliminate_inter(C, constructions, objective):
     return objective
 
 
+def _rewrite_and_eliminate_midpoint(C, constructions, objective):
+    if isinstance(C, Midpoint):
+        Y, L = C.args
+        if isinstance(L, Line):
+            U, V = L.args
+            C = PRatio(Y, U, Line(U, V), S.Half)
+            return _eliminate(C, constructions, objective)
+    return objective
+
+
 def _auxiliary_points_pline(C, constructions, objective, W, U, V):
     N = Dummy(r'\$N')
-    C1 = PRatio(N, W, U, V, Integer(1))
+    C1 = PRatio(N, W, Line(U, V), Integer(1))
     C2 = C(Line(W, N))
 
     objective = _eliminate(C2, constructions + (C1, C2), objective)
@@ -475,8 +534,14 @@ def _eliminate(C, constructions, objective):
         objective = _eliminate_tratio_pythagoras(C, constructions, objective)
         objective = _eliminate_tratio_quadratic(C, constructions, objective)
 
+        objective = _eliminate_ratio_pratio(C, constructions, objective)
+        objective = _eliminate_ratio_inter_line_line(C, constructions, objective)
+        objective = _eliminate_ratio_foot(C, constructions, objective)
+        objective = _eliminate_ratio_tratio(C, constructions, objective)
+
         objective = _rewrite_and_eliminate_on(C, constructions, objective)
         objective = _rewrite_and_eliminate_inter(C, constructions, objective)
+        objective = _rewrite_and_eliminate_midpoint(C, constructions, objective)
 
         if _has_unsolved_quadrilateral(C, objective):
             objective = _eliminate_quadrilateral_expand(C, constructions, objective)
@@ -497,9 +562,14 @@ def _apply_area_coordinates(O, U, V, objective):
     subs = _simplify_image(_simplify, subs)
     objective = _substitution_rule(subs)(objective)
 
-    subs = _area_coordinates_pythagoras(O, U, V, objective)
-    subs = _simplify_image(_simplify, subs)
-    objective = _substitution_rule(subs)(objective)
+    while True:
+        old = objective
+        subs = _area_coordinates_pythagoras(O, U, V, objective)
+        subs = _simplify_image(_simplify, subs)
+        objective = _substitution_rule(subs)(objective)
+        new = objective
+        if old == new:
+            break
 
     subs = _align_area_OUV(O, U, V, objective)
     objective = _substitution_rule(subs)(objective)
@@ -527,6 +597,7 @@ def _simplify_image(simplify, subs):
 
 
 def area_method_plane(constructions, objective, *, O=None, U=None, V=None, prove=None):
+    constructions = tuple(constructions)
     prove = _auto_option_prove(objective, prove)
     objective = _normalize_predicate_plane(objective)
 
