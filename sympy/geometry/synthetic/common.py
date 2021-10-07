@@ -274,6 +274,21 @@ def _uniformize_pythagoras(objective):
     return subs
 
 
+def _uniformize_ratio(objective):
+    for G in _geometric_quantities(objective):
+        if isinstance(G, Ratio) and len(G.args) == 4:
+            A, B, C, D = G.args
+            AA, BB = sorted([A, B], key=default_sort_key)
+            CC, DD = sorted([C, D], key=default_sort_key)
+            sign = 1
+            if A == BB and B == AA:
+                sign *= -1
+            if C == DD and D == CC:
+                sign *= -1
+            objective = objective.xreplace({G: sign * Ratio(AA, BB, CC, DD)})
+    return objective
+
+
 def _simplify_area(objective):
     r"""Return the substitution that evaluates trivial areas.
 

@@ -19,6 +19,7 @@ from sympy.geometry.synthetic.common import (
     _simplify_area,
     _simplify_ratio,
     _uniformize_area,
+    _uniformize_ratio,
     _substitution_rule,
     _quadrilateral_area
 )
@@ -238,13 +239,11 @@ def _rewrite_and_eliminate(C, constructions, objective):
         Y, L = C.args
         if isinstance(L, Line):
             P, Q = L.args
-            l = FrozenRatio(P, Y, P, Q)
-            C = PRatio(Y, P, Line(P, Q), l)
+            C = LRatio(Y, Line(P, Q), FrozenRatio(P, Y, P, Q))
             return _eliminate(C, constructions, objective)
         if isinstance(L, PLine):
             R, P, Q = L.args
-            l = FrozenRatio(R, Y, P, Q)
-            C = PRatio(Y, R, Line(P, Q), l)
+            C = PRatio(Y, R, Line(P, Q), FrozenRatio(R, Y, P, Q))
             return _eliminate(C, constructions, objective)
     if isinstance(C, Midpoint):
         Y, L = C.args
@@ -263,6 +262,7 @@ def _eliminate(C, constructions, objective):
         objective = _substitution_rule(_simplify_area(objective))(objective)
         objective = _substitution_rule(_simplify_ratio(objective))(objective)
         objective = _substitution_rule(_uniformize_area(objective))(objective)
+        objective = _uniformize_ratio(objective)
 
         objective = _eliminate_area_lratio(C, constructions, objective)
         objective = _eliminate_area_pratio(C, constructions, objective)

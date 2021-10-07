@@ -23,16 +23,15 @@ def test_ratio_lratio():
     A, Y, C, D = symbols('A Y C D')
     l = Symbol('lambda')
 
-    C = LRatio(Y, Line(P, Q), l)
     objective = Ratio(A, Y, C, D)
 
-    constructions = [C]
+    constructions = [LRatio(Y, Line(P, Q), l)]
     desired = Area(A, P, Q) / Area(C, P, D, Q)
-    assert _ratio_lratio(Y, P, Q, l, constructions, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
 
-    constructions = [On(A, Line(P, Q)), C]
+    constructions = [On(A, Line(P, Q)), LRatio(Y, Line(P, Q), l)]
     desired = (Ratio(A, P, P, Q) + l) / Ratio(C, D, P, Q)
-    assert _ratio_lratio(Y, P, Q, l, constructions, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
 
 
 def test_ratio_inter_line_line():
@@ -40,16 +39,15 @@ def test_ratio_inter_line_line():
     U, V = symbols('U V')
     A, Y, C, D = symbols('A Y C D')
 
-    C = Intersection(Y, Line(P, Q), Line(U, V))
     objective = Ratio(A, Y, C, D)
 
-    constructions = [C]
+    constructions = [Intersection(Y, Line(P, Q), Line(U, V))]
     desired = Area(A, U, V) / Area(C, U, D, V)
-    assert _ratio_inter_line_line(Y, P, Q, U, V, constructions, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
 
-    constructions = [On(A, Line(U, V)), C]
+    constructions = [On(A, Line(U, V)), Intersection(Y, Line(P, Q), Line(U, V))]
     desired = Area(A, P, Q) / Area(C, P, D, Q)
-    assert _ratio_inter_line_line(Y, P, Q, U, V, constructions, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
 
 
 def test_ratio_pratio():
@@ -57,16 +55,15 @@ def test_ratio_pratio():
     A, Y, C, D = symbols('A Y C D')
     l = Symbol('lambda')
 
-    C = PRatio(Y, R, Line(P, Q), l)
     objective = Ratio(A, Y, C, D)
 
-    constructions = [C]
+    constructions = [PRatio(Y, R, Line(P, Q), l)]
     desired = Area(A, P, R, Q) / Area(C, P, D, Q)
-    assert _ratio_pratio(Y, R, P, Q, l, constructions, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
 
-    constructions = [C, On(A, Line(R, Y))]
+    constructions = [PRatio(Y, R, Line(P, Q), l), On(A, Line(R, Y))]
     desired = (Ratio(A, R, P, Q) + l) / Ratio(C, D, P, Q)
-    assert _ratio_pratio(Y, R, P, Q, l, constructions, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
 
 
 def test_ratio_inter_pline_line():
@@ -74,16 +71,15 @@ def test_ratio_inter_pline_line():
     U, V = symbols('U V')
     A, Y, C, D = symbols('A Y C D')
 
-    C = Intersection(Y, PLine(R, P, Q), Line(U, V))
     objective = Ratio(A, Y, C, D)
 
-    constructions = [C]
+    constructions = [Intersection(Y, PLine(R, P, Q), Line(U, V))]
     desired = Area(A, U, V) / Area(C, U, D, V)
-    assert _ratio_inter_pline_line(Y, R, P, Q, U, V, constructions, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
 
-    constructions = [On(A, Line(U, V)), C]
+    constructions = [On(A, Line(U, V)), Intersection(Y, PLine(R, P, Q), Line(U, V))]
     desired = Area(A, P, R, Q) / Area(C, P, D, Q)
-    assert _ratio_inter_pline_line(Y, R, P, Q, U, V, constructions, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
 
 
 def test_ratio_inter_pline_pline():
@@ -91,16 +87,15 @@ def test_ratio_inter_pline_pline():
     U, V, W = symbols('U V W')
     A, Y, C, D = symbols('A Y C D')
 
-    C = Intersection(Y, PLine(R, P, Q), PLine(W, U, V))
     objective = Ratio(A, Y, C, D)
 
-    constructions = [C]
+    constructions = [Intersection(Y, PLine(R, P, Q), PLine(W, U, V))]
     desired = Area(A, P, R, Q) / Area(C, P, D, Q)
-    assert _ratio_inter_pline_pline(Y, R, P, Q, W, U, V, constructions, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
 
-    constructions = [C, On(A, PLine(Y, P, Q))]
+    constructions = [Intersection(Y, PLine(R, P, Q), PLine(W, U, V)), On(A, Line(R, Y))]
     desired = Area(A, U, W, V) / Area(C, U, D, V)
-    assert _ratio_inter_pline_pline(Y, R, P, Q, W, U, V, constructions, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
 
 
 def test_eliminate_ratio_pratio_consistency_1():
