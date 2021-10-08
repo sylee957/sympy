@@ -64,33 +64,33 @@ def test_refined_area_simplify_consistency():
 def test_menelaus_1():
     A, B, C = symbols('A B C')
     D, E, F = symbols('D E F')
-    construction = [
+    constructions = [
         On(D, Line(B, C)),
         On(E, Line(A, C)),
         Intersection(F, Line(D, E), Line(A, B))
     ]
     objective = Ratio(A, F, F, B) * Ratio(B, D, D, C) * Ratio(C, E, E, A)
-    assert area_method(construction, objective) == -Integer(1)
+    assert area_method(constructions, objective).cancel() == -Integer(1)
 
 
 def test_menelaus_2():
     A, B, C = symbols('A B C')
     D, E, F = symbols('D E F')
     X, Y = symbols('X Y')
-    construction = [
+    constructions = [
         Intersection(D, Line(B, C), Line(X, Y)),
         Intersection(E, Line(A, C), Line(X, Y)),
         Intersection(F, Line(A, B), Line(X, Y))
     ]
     objective = Ratio(A, F, F, B) * Ratio(B, D, D, C) * Ratio(C, E, E, A)
-    assert area_method(construction, objective) == -Integer(1)
+    assert area_method(constructions, objective).cancel() == -Integer(1)
 
 
 def test_gauss_line_1():
     A0, A1, A2, A3 = symbols('A0 A1 A2 A3')
     X, Y = symbols('X Y')
     M1, M2, M3 = symbols('M1 M2 M3')
-    construction = [
+    constructions = [
         Intersection(X, Line(A0, A3), Line(A1, A2)),
         Intersection(Y, Line(A2, A3), Line(A1, A0)),
         Midpoint(M1, Line(A1, A3)),
@@ -98,14 +98,14 @@ def test_gauss_line_1():
         Midpoint(M3, Line(X, Y))
     ]
     objective = Area(M1, M2, M3)
-    assert area_method(construction, objective) == Integer(0)
+    assert area_method(constructions, objective) == Integer(0)
 
 
 def test_gauss_line_2():
     A0, A1, A2, A3 = symbols('A0 A1 A2 A3')
     X, Y, Z = symbols('X Y Z')
     M1, M2, M3 = symbols('M1 M2 M3')
-    construction = [
+    constructions = [
         Intersection(X, Line(A0, A3), Line(A1, A2)),
         Intersection(Y, Line(A2, A3), Line(A1, A0)),
         Midpoint(M1, Line(A1, A3)),
@@ -114,7 +114,7 @@ def test_gauss_line_2():
         Intersection(Z, Line(M2, M1), Line(X, Y))
     ]
     objective = Ratio(X, M3, Y, M3) / Ratio(X, Z, Y, Z)
-    assert area_method(construction, objective) == Integer(1)
+    assert area_method(constructions, objective) == Integer(1)
 
 
 def test_trapezoid():

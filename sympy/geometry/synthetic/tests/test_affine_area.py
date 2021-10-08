@@ -71,6 +71,11 @@ def test_area_inter_pline_pline():
     desired = Area(P, W, Q, R) / Area(P, U, Q, V) * Area(A, U, B, V) + Area(A, B, W)
     assert area_method_affine(constructions, objective - desired) == 0
 
+    constructions = [Intersection(Y, PLine(W, U, V), PLine(R, P, Q))]
+    objective = Area(A, B, Y)
+    desired = Area(P, W, Q, R) / Area(P, U, Q, V) * Area(A, U, B, V) + Area(A, B, W)
+    assert area_method_affine(constructions, objective - desired) == 0
+
 
 def test_eliminate_area_pratio_consistency():
     P, Q, R = symbols('P Q R')
@@ -79,7 +84,7 @@ def test_eliminate_area_pratio_consistency():
     O = Symbol('O')
     l = Symbol('lambda')
 
-    construction = [
+    constructions = [
         LRatio(O, Line(Q, R), Rational(1, 2)),
         LRatio(S, Line(P, O), Integer(2)),
         LRatio(Y, Line(R, S), l)
@@ -87,7 +92,7 @@ def test_eliminate_area_pratio_consistency():
     lhs = Area(A, B, Y)
     rhs = Area(A, B, R) + l * Area(A, P, B, Q)
     objective = lhs - rhs
-    assert area_method_affine(construction, objective) == Integer(0)
+    assert area_method_affine(constructions, objective) == Integer(0)
 
 
 def test_eliminate_area_inter_line_pline_consistency():
@@ -104,7 +109,8 @@ def test_eliminate_area_inter_line_pline_consistency():
 
     lhs = Area(A, B, Y)
     rhs = (Area(P, U, Q, R) * Area(A, B, V) - Area(P, V, Q, R) * Area(A, B, U)) / Area(P, U, Q, V)
-    assert area_method_affine(constructions, lhs - rhs) == Integer(0)
+    objective = lhs - rhs
+    assert area_method_affine(constructions, objective) == Integer(0)
 
 
 def test_eliminate_area_inter_pline_pline_consistency():
@@ -123,7 +129,8 @@ def test_eliminate_area_inter_pline_pline_consistency():
 
     lhs = Area(A, B, Y)
     rhs = Area(P, W, Q, R) / Area(P, U, Q, V) * Area(A, U, B, V) + Area(A, B, W)
-    assert area_method_affine(constructions, lhs - rhs) == Integer(0)
+    objective = lhs - rhs
+    assert area_method_affine(constructions, objective) == Integer(0)
 
 
 # XXX Add more consistency tests if we find more elementary constructions

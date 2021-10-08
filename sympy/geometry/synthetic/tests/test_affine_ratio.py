@@ -8,11 +8,6 @@ from sympy.geometry.synthetic.constructions import (
     SyntheticGeometryLine as Line,
     SyntheticGeometryPLine as PLine
 )
-from sympy.geometry.synthetic.affine import _ratio_lratio
-from sympy.geometry.synthetic.affine import _ratio_pratio
-from sympy.geometry.synthetic.affine import _ratio_inter_line_line
-from sympy.geometry.synthetic.affine import _ratio_inter_pline_line
-from sympy.geometry.synthetic.affine import _ratio_inter_pline_pline
 from sympy.geometry.synthetic.affine import area_method_affine
 from sympy.core.symbol import symbols, Symbol
 from sympy.core.numbers import Integer, Rational

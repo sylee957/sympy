@@ -1,4 +1,4 @@
-from sympy.geometry.synthetic.common import _inject_new_variables_and_eliminate, _compress
+from sympy.geometry.synthetic.common import _inject_new_variables_and_eliminate, _compress, _pp_sparse
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.matrices import Matrix
 
@@ -18,6 +18,9 @@ def _area_coordinates(O, U, V, domain, objective):
                  [Area(O, U, Y), Area(O, V, Y), 1]]
             ).det() / Area(O, U, V)
             eliminant = eliminant.doit()
+
+            if eliminant == G:
+                continue
 
             domain, objective = _inject_new_variables_and_eliminate(domain, objective, eliminant, G)
             domain, objective = _compress(domain, objective)

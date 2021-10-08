@@ -4,6 +4,7 @@ from sympy.geometry.synthetic.quantities import (
     SyntheticGeometryFrozenSignedRatio as FrozenRatio,
     SyntheticGeometryMainVariable as MainVariable
 )
+from sympy.core.relational import Eq
 from sympy.geometry.synthetic.constructions import (
     SyntheticGeometryLRatio as LRatio,
     SyntheticGeometryPRatio as PRatio,
@@ -12,15 +13,13 @@ from sympy.geometry.synthetic.constructions import (
     SyntheticGeometryPLine as PLine,
     SyntheticGeometryMidpoint as Midpoint
 )
-from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedRatio as Ratio
-from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
-from sympy.geometry.synthetic.predicates import SyntheticGeometryCollinear as Collinear
-from sympy.geometry.synthetic.predicates import SyntheticGeometryParallel as Parallel
 from sympy.geometry.synthetic.common import (
-    _substitution_rule,
     _quadrilateral_area,
     _uniformize_area,
     _uniformize_ratio,
+    _pp_sparse,
+    _coeff_sparse,
+    _compress
 )
 from sympy.geometry.synthetic.affine_area import (
     _eliminate_area_lratio,
@@ -29,6 +28,13 @@ from sympy.geometry.synthetic.affine_area import (
     _eliminate_area_inter_pline_line,
     _eliminate_area_inter_pline_pline,
 )
+from sympy.geometry.synthetic.affine_ratio import (
+    _eliminate_ratio_lratio,
+    _eliminate_ratio_pratio,
+    _eliminate_ratio_inter_line_line,
+    _eliminate_ratio_inter_pline_line,
+    _eliminate_ratio_inter_pline_pline,
+)
 from sympy.geometry.synthetic.area_coordinates import _area_coordinates
 from sympy.geometry.synthetic.options import (
     _auto_option_prove,
@@ -36,166 +42,27 @@ from sympy.geometry.synthetic.options import (
 )
 from sympy.geometry.synthetic.options_predicate import _normalize_predicate_affine
 from sympy.geometry.synthetic.degenerate import _degenerate_construction
-from sympy.geometry.synthetic.common import _geometric_quantities
-from sympy.geometry.synthetic.affine_match import (
-    _match_inter_line_line,
-    _match_pratio,
-    _match_lratio,
-    _match_inter_pline_line,
-    _match_inter_pline_pline
-)
-from sympy.geometry.synthetic.common import _apply_to_image, match_AYCD
 from sympy.polys.rings import sring
 
 
-def _ratio_lratio(Y, P, Q, l, constructions, objective):
-    subs = {}
-    for G in _geometric_quantities(objective):
-        if isinstance(G, Ratio) and Y in G.args:
-            reciprocal, A, Y, C, D = match_AYCD(G, Y)
-            assertion = area_method_affine(constructions, Collinear(A, P, Q))
-            if assertion is S.true:
-                subs[G] = (Ratio(A, P, P, Q) + l) / Ratio(C, D, P, Q)
-            else:
-                subs[G] = Area(A, P, Q) / Area(C, P, D, Q)
-            if reciprocal:
-                subs[G] = 1 / subs[G]
-    return subs
-
-
-def _ratio_pratio(Y, R, P, Q, l, constructions, objective):
-    subs = {}
-    for G in _geometric_quantities(objective):
-        if isinstance(G, Ratio) and Y in G.args:
-            reciprocal, A, Y, C, D = match_AYCD(G, Y)
-            assertion = area_method_affine(constructions, Collinear(A, R, Y))
-            if assertion is S.true:
-                subs[G] = (Ratio(A, R, P, Q) + l) / Ratio(C, D, P, Q)
-            else:
-                subs[G] = Area(A, P, R, Q) / Area(C, P, D, Q)
-            if reciprocal:
-                subs[G] = 1 / subs[G]
-    return subs
-
-
-def _ratio_inter_line_line(Y, P, Q, U, V, constructions, objective):
-    subs = {}
-    for G in _geometric_quantities(objective):
-        if isinstance(G, Ratio) and Y in G.args:
-            reciprocal, A, Y, C, D = match_AYCD(G, Y)
-            assertion = area_method_affine(constructions, Collinear(A, U, V))
-            if assertion is S.true:
-                subs[G] = Area(A, P, Q) / Area(C, P, D, Q)
-            else:
-                subs[G] = Area(A, U, V) / Area(C, U, D, V)
-            if reciprocal:
-                subs[G] = 1 / subs[G]
-    return subs
-
-
-def _ratio_inter_pline_line(Y, R, P, Q, U, V, constructions, objective):
-    subs = {}
-    for G in _geometric_quantities(objective):
-        if isinstance(G, Ratio) and Y in G.args:
-            reciprocal, A, Y, C, D = match_AYCD(G, Y)
-            assertion = area_method_affine(constructions, Collinear(A, U, V))
-            if assertion is S.true:
-                subs[G] = Area(A, P, R, Q) / Area(C, P, D, Q)
-            else:
-                subs[G] = Area(A, U, V) / Area(C, U, D, V)
-            if reciprocal:
-                subs[G] = 1 / subs[G]
-    return subs
-
-
-def _ratio_inter_pline_pline(Y, R, P, Q, W, U, V, constructions, objective):
-    subs = {}
-    for G in _geometric_quantities(objective):
-        if isinstance(G, Ratio) and Y in G.args:
-            reciprocal, A, Y, C, D = match_AYCD(G, Y)
-            assertion = area_method_affine(constructions, Parallel(A, Y, P, Q))
-            if assertion is S.true:
-                subs[G] = Area(A, U, W, V) / Area(C, U, D, V)
-            else:
-                subs[G] = Area(A, P, R, Q) / Area(C, P, D, Q)
-            if reciprocal:
-                subs[G] = 1 / subs[G]
-    return subs
-
-
-def _eliminate_ratio_lratio(C, constructions, objective):
-    match = _match_lratio(C)
-    if match is None:
-        return objective
-    Y, P, Q, r = match
-    subs = _ratio_lratio(Y, P, Q, r, constructions + (C,), objective)
-    subs = _apply_to_image(lambda X: _eliminate(C, constructions, X), subs)
-    objective = _substitution_rule(subs)(objective)
-    return objective
-
-
-def _eliminate_ratio_pratio(C, constructions, objective):
-    match = _match_pratio(C)
-    if match is None:
-        return objective
-    Y, R, P, Q, r = match
-    subs = _ratio_pratio(Y, R, P, Q, r, constructions + (C,), objective)
-    subs = _apply_to_image(lambda X: _eliminate(C, constructions, X), subs)
-    objective = _substitution_rule(subs)(objective)
-    return objective
-
-
-def _eliminate_ratio_inter_line_line(C, constructions, objective):
-    match = _match_inter_line_line(C)
-    if match is None:
-        return objective
-    Y, P, Q, U, V = match
-    subs = _ratio_inter_line_line(Y, P, Q, U, V, constructions + (C,), objective)
-    subs = _apply_to_image(lambda X: _eliminate(C, constructions, X), subs)
-    objective = _substitution_rule(subs)(objective)
-    return objective
-
-
-def _eliminate_ratio_inter_pline_line(C, constructions, objective):
-    match = _match_inter_pline_line(C)
-    if match is None:
-        return objective
-    Y, R, P, Q, U, V = match
-    subs = _ratio_inter_pline_line(Y, R, P, Q, U, V, constructions + (C,), objective)
-    subs = _apply_to_image(lambda X: _eliminate(C, constructions, X), subs)
-    objective = _substitution_rule(subs)(objective)
-    return objective
-
-
-def _eliminate_ratio_inter_pline_pline(C, constructions, objective):
-    match = _match_inter_pline_pline(C)
-    if match is None:
-        return objective
-    Y, R, P, Q, W, U, V = match
-    subs = _ratio_inter_pline_pline(Y, R, P, Q, W, U, V, constructions + (C,), objective)
-    subs = _apply_to_image(lambda X: _eliminate(C, constructions, X), subs)
-    objective = _substitution_rule(subs)(objective)
-    return objective
-
-
-def _rewrite_and_eliminate(C, constructions, objective):
+def _rewrite_and_eliminate(C, constructions, domain, objective, X):
     if isinstance(C, On):
         Y, L = C.args
         if isinstance(L, Line):
             P, Q = L.args
             C = LRatio(Y, Line(P, Q), FrozenRatio(P, Y, P, Q))
-            return _eliminate(C, constructions, objective)
+            return _eliminate(C, constructions, domain, objective, X)
         if isinstance(L, PLine):
             R, P, Q = L.args
             C = PRatio(Y, R, Line(P, Q), FrozenRatio(R, Y, P, Q))
-            return _eliminate(C, constructions, objective)
+            return _eliminate(C, constructions, domain, objective, X)
     if isinstance(C, Midpoint):
         Y, L = C.args
         if isinstance(L, Line):
             U, V = L.args
             C = LRatio(Y, Line(U, V), Rational(1, 2))
-            return _eliminate(C, constructions, objective)
-    return objective
+            return _eliminate(C, constructions, domain, objective, X)
+    return domain, objective
 
 
 def _eliminate(C, constructions, domain, objective, X):
@@ -212,13 +79,14 @@ def _eliminate(C, constructions, domain, objective, X):
         domain, objective = _eliminate_area_inter_pline_line(C, constructions, domain, objective)
         domain, objective = _eliminate_area_inter_pline_pline(C, constructions, domain, objective)
 
-        # objective = _eliminate_ratio_lratio(C, constructions, objective)
-        # objective = _eliminate_ratio_pratio(C, constructions, objective)
-        # objective = _eliminate_ratio_inter_line_line(C, constructions, objective)
-        # objective = _eliminate_ratio_inter_pline_line(C, constructions, objective)
-        # objective = _eliminate_ratio_inter_pline_pline(C, constructions, objective)
+        domain, objective = _eliminate_ratio_lratio(C, constructions, domain, objective, area_method_affine)
+        domain, objective = _eliminate_ratio_pratio(C, constructions, domain, objective, area_method_affine)
+        domain, objective = _eliminate_ratio_inter_line_line(C, constructions, domain, objective, area_method_affine)
+        domain, objective = _eliminate_ratio_inter_pline_line(C, constructions, domain, objective, area_method_affine)
+        domain, objective = _eliminate_ratio_inter_pline_pline(C, constructions, domain, objective, area_method_affine)
 
-        # objective = _rewrite_and_eliminate(C, constructions, objective)
+        domain, objective = _rewrite_and_eliminate(C, constructions, domain, objective, X)
+        domain, objective = _pp_sparse(domain, objective, X)
 
         new = objective
         if old == new:
@@ -226,7 +94,7 @@ def _eliminate(C, constructions, domain, objective, X):
     return domain, objective
 
 
-def _area_method_affine_thread(constructions, objective, *, O=None, U=None, V=None, prove=None):
+def _area_method_affine_thread(constructions, objective, *, O=None, U=None, V=None, prove=None, debug=False):
     X = MainVariable()
     objective = objective.doit()
     numer, denom = objective.as_numer_denom()
@@ -242,37 +110,48 @@ def _area_method_affine_thread(constructions, objective, *, O=None, U=None, V=No
 
         domain, objective = _eliminate(C, constructions[:i], domain, objective, X)
 
-        # Y = C.args[0]
-        # for G in _geometric_quantities(objective):
-        #     if G.has(Y):
-        #         raise NotImplementedError(f"The elimination step for {Y} in {C} is not properly implemented")
+        if debug:
+            from IPython.display import display, Latex
+            from sympy.printing.latex import latex
+            display(Latex(r'$\text{Eliminated points from : } %s$' % latex(C)))
+            display(objective)
 
-    _objective = domain.to_sympy(objective)
-    a = _objective.coeff(X, 1)
-    b = _objective.coeff(X, 0)
-
-    if prove:
-        if b is not S.Zero:
-            return S.false
-        return S.true
+    a = _coeff_sparse(domain, objective, X, 1)
+    b = _coeff_sparse(domain, objective, X, 0)
+    if b == 0:
+        if prove:
+            return S.true
+        return S.Zero
 
     domain, objective = _area_coordinates(O, U, V, domain, objective)
+    domain, objective = _pp_sparse(domain, objective, X)
+    domain, objective = _compress(domain, objective)
 
-    _objective = domain.to_sympy(objective)
-    a = _objective.coeff(X, 1)
-    b = _objective.coeff(X, 0)
+    if debug:
+        from IPython.display import display, Latex
+        from sympy.printing.latex import latex
+        display(Latex(r'$\text{Evaluating area coordinates : }$'))
+        display(objective)
 
+    a = _coeff_sparse(domain, objective, X, 1)
+    b = _coeff_sparse(domain, objective, X, 0)
     if prove:
-        if b is not S.Zero:
-            return S.false
-        return S.true
-    return -b / a
+        if b == 0:
+            return S.true
+        return S.false
+    return -domain.to_sympy(b) / domain.to_sympy(a)
 
 
-def area_method_affine(constructions, objective, *, O=None, U=None, V=None, prove=None):
+def area_method_affine(constructions, objective, *, O=None, U=None, V=None, prove=None, debug=False):
     constructions = tuple(constructions)
     prove = _auto_option_prove(objective, prove)
     objective = _normalize_predicate_affine(objective)
     O, U, V = _auto_coordinates_skew(objective, O, U, V)
 
-    return _area_method_affine_thread(constructions, objective, O=O, U=U, V=V, prove=prove)
+    if prove:
+        if isinstance(objective, Eq):
+            lhs, rhs = objective.args
+            objective = lhs - rhs
+            return _area_method_affine_thread(constructions, objective, O=O, U=U, V=V, prove=True, debug=debug)
+        raise NotImplementedError
+    return _area_method_affine_thread(constructions, objective, O=O, U=U, V=V, prove=False, debug=debug)

@@ -188,6 +188,8 @@ def _quadrilateral_area(domain, objective):
             if len(G.args) == 4:
                 A, B, C, D = G.args
                 eliminant = Area(A, B, C) + Area(A, C, D)
+                eliminant = eliminant.doit()
+
                 domain, objective = _inject_new_variables_and_eliminate(domain, objective, eliminant, G)
                 domain, objective = _compress(domain, objective)
     return domain, objective
@@ -209,6 +211,8 @@ def _quadrilateral_pythagoras(domain, objective):
             if len(G.args) == 4:
                 A, B, C, D = G.args
                 eliminant = Pythagoras(B, A, C) - Pythagoras(D, A, C)
+                eliminant = eliminant.doit()
+
                 domain, objective = _inject_new_variables_and_eliminate(domain, objective, eliminant, G)
                 domain, objective = _compress(domain, objective)
     return domain, objective
@@ -243,8 +247,11 @@ def _uniformize_area(domain, objective):
                 eliminant = Area(*args_sorted)
             else:
                 eliminant = -Area(*args_sorted)
+
+            eliminant = eliminant.doit()
             domain, objective = _inject_new_variables_and_eliminate(domain, objective, eliminant, G)
             domain, objective = _compress(domain, objective)
+
     return domain, objective
 
 
@@ -275,6 +282,8 @@ def _uniformize_pythagoras(domain, objective):
                 AA, CC = sorted([A, C], key=default_sort_key)
                 if (A, C) != (AA, CC):
                     eliminant = Pythagoras(AA, B, CC)
+
+            eliminant = eliminant.doit()
             domain, objective = _inject_new_variables_and_eliminate(domain, objective, eliminant, G)
             domain, objective = _compress(domain, objective)
     return domain, objective
@@ -286,12 +295,19 @@ def _uniformize_ratio(domain, objective):
             A, B, C, D = G.args
             AA, BB = sorted([A, B], key=default_sort_key)
             CC, DD = sorted([C, D], key=default_sort_key)
+
+            if A == AA and B == BB and C == CC and D == DD:
+                continue
+
             sign = 1
             if A == BB and B == AA:
                 sign *= -1
             if C == DD and D == CC:
                 sign *= -1
+
             eliminant = sign * Ratio(AA, BB, CC, DD)
+            eliminant = eliminant.doit()
+
             domain, objective = _inject_new_variables_and_eliminate(domain, objective, eliminant, G)
             domain, objective = _compress(domain, objective)
     return domain, objective
@@ -316,6 +332,7 @@ def _simplify_pythagoras(domain, objective):
                 eliminant = S.Zero
 
             if eliminant is not None:
+                eliminant = eliminant.doit()
                 domain, objective = _inject_new_variables_and_eliminate(domain, objective, eliminant, G)
                 domain, objective = _compress(domain, objective)
     return domain, objective
@@ -358,6 +375,18 @@ def _inject_new_variables_and_eliminate(domain, objective, eliminant, G):
     objective = prem_sparse(objective, remainder, g)
 
     return domain, objective
+
+
+def _pp_sparse(domain, objective, X):
+    from .sparse import primitive_sparse
+    _, primitive = primitive_sparse(objective, domain.symbols.index(X))
+    domain, objective = _compress(domain, objective)
+    return domain, objective
+
+
+def _coeff_sparse(domain, objective, X, n):
+    from .sparse import coeff_sparse
+    return coeff_sparse(objective, domain.symbols.index(X), n)
 
 
 def _apply_to_image(func, subs):

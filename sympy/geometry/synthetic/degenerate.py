@@ -82,7 +82,7 @@ def _degenerate_construction(C):
         Y, P, L = C.args
         return _degenerate_construction(L)
 
-    raise NotImplementedError(f"Degenerate condition is not properly implemented for {C}")
+    raise NotImplementedError("Degenerate condition is not properly implemented for {}".format(C))
 
 
 def _degenerate_line_pline_line_pline(L1, L2):
