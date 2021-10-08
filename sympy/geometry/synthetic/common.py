@@ -4,6 +4,8 @@ from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDiffe
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedRatio as Ratio
 from sympy.core.singleton import S
 from sympy.core.compatibility import default_sort_key
+from sympy.core.expr import Add, Mul, Pow
+from sympy.core.numbers import Integer
 
 
 def _match_ratio(G, Y):
@@ -170,7 +172,7 @@ def _substitution_rule(subs):
     return rule
 
 
-def _quadrilateral_area(objective):
+def _quadrilateral_area(domain, objective):
     r"""Return the substitution that expands the quadrilateral area
     as addition of two triangle areas.
 
@@ -181,16 +183,17 @@ def _quadrilateral_area(objective):
         \mathcal{S}_{A, B, C, D} =
         \mathcal{S}_{A, B, C} + \mathcal{S}_{A, C, D}
     """
-    subs = {}
-    for G in _geometric_quantities(objective):
+    for G in domain.symbols:
         if isinstance(G, Area):
             if len(G.args) == 4:
                 A, B, C, D = G.args
-                subs[G] = Area(A, B, C) + Area(A, C, D)
-    return subs
+                eliminant = Area(A, B, C) + Area(A, C, D)
+                domain, objective = _inject_new_variables_and_eliminate(domain, objective, eliminant, G)
+                domain, objective = _compress(domain, objective)
+    return domain, objective
 
 
-def _quadrilateral_pythagoras(objective):
+def _quadrilateral_pythagoras(domain, objective):
     r"""Return the substitution that expands the quadrilateral
     Pythagoras difference.
 
@@ -201,16 +204,17 @@ def _quadrilateral_pythagoras(objective):
         \mathcal{P}_{A, B, C, D} =
         \mathcal{P}_{B, A, C} - \mathcal{P}_{D, A, C}
     """
-    subs = {}
-    for G in _geometric_quantities(objective):
+    for G in domain.symbols:
         if isinstance(G, Pythagoras):
             if len(G.args) == 4:
                 A, B, C, D = G.args
-                subs[G] = Pythagoras(B, A, C) - Pythagoras(D, A, C)
-    return subs
+                eliminant = Pythagoras(B, A, C) - Pythagoras(D, A, C)
+                domain, objective = _inject_new_variables_and_eliminate(domain, objective, eliminant, G)
+                domain, objective = _compress(domain, objective)
+    return domain, objective
 
 
-def _uniformize_area(objective):
+def _uniformize_area(domain, objective):
     r"""Return the substitution that normalizes the ordering of the
     points of the signed areas from the given geometric quantities.
 
@@ -226,8 +230,7 @@ def _uniformize_area(objective):
     - $\mathcal{S}_{C, A, B} = \mathcal{S}_{A, B, C}$
     - $\mathcal{S}_{C, B, A} = -\mathcal{S}_{A, B, C}$
     """
-    subs = {}
-    for G in _geometric_quantities(objective):
+    for G in domain.symbols:
         if isinstance(G, Area) and len(G.args) == 3:
             args = G.args
             args_sorted = tuple(sorted(args, key=default_sort_key))
@@ -237,13 +240,15 @@ def _uniformize_area(objective):
             permutation = [args_sorted.index(arg) for arg in args]
             parity = _af_parity(permutation)
             if parity == 0:
-                subs[G] = Area(*args_sorted)
+                eliminant = Area(*args_sorted)
             else:
-                subs[G] = -Area(*args_sorted)
-    return subs
+                eliminant = -Area(*args_sorted)
+            domain, objective = _inject_new_variables_and_eliminate(domain, objective, eliminant, G)
+            domain, objective = _compress(domain, objective)
+    return domain, objective
 
 
-def _uniformize_pythagoras(objective):
+def _uniformize_pythagoras(domain, objective):
     r"""Return the substitution that normalizes the ordering of the
     points of the Pythagoras difference from the given geometric
     quantities.
@@ -259,23 +264,24 @@ def _uniformize_pythagoras(objective):
     the pythagoras difference should reordered as
     $\mathcal{P}_{C, B, A} = \mathcal{P}_{A, B, C}$
     """
-    subs = {}
-    for G in _geometric_quantities(objective):
+    for G in domain.symbols:
         if isinstance(G, Pythagoras) and len(G.args) == 3:
             A, B, C = G.args
             if A == C:
                 AA, BB = sorted([A, B], key=default_sort_key)
                 if (A, B) != (AA, BB):
-                    subs[G] = Pythagoras(AA, BB, AA)
+                    eliminant = Pythagoras(AA, BB, AA)
             else:
                 AA, CC = sorted([A, C], key=default_sort_key)
                 if (A, C) != (AA, CC):
-                    subs[G] = Pythagoras(AA, B, CC)
-    return subs
+                    eliminant = Pythagoras(AA, B, CC)
+            domain, objective = _inject_new_variables_and_eliminate(domain, objective, eliminant, G)
+            domain, objective = _compress(domain, objective)
+    return domain, objective
 
 
-def _uniformize_ratio(objective):
-    for G in _geometric_quantities(objective):
+def _uniformize_ratio(domain, objective):
+    for G in domain.symbols:
         if isinstance(G, Ratio) and len(G.args) == 4:
             A, B, C, D = G.args
             AA, BB = sorted([A, B], key=default_sort_key)
@@ -285,53 +291,13 @@ def _uniformize_ratio(objective):
                 sign *= -1
             if C == DD and D == CC:
                 sign *= -1
-            objective = objective.xreplace({G: sign * Ratio(AA, BB, CC, DD)})
-    return objective
+            eliminant = sign * Ratio(AA, BB, CC, DD)
+            domain, objective = _inject_new_variables_and_eliminate(domain, objective, eliminant, G)
+            domain, objective = _compress(domain, objective)
+    return domain, objective
 
 
-def _simplify_area(objective):
-    r"""Return the substitution that evaluates trivial areas.
-
-    Explanation
-    ===========
-
-    - $\mathcal{S}_{A, A, A} = 0$
-    - $\mathcal{S}_{A, A, B} = 0$
-    - $\mathcal{S}_{A, B, A} = 0$
-    - $\mathcal{S}_{B, A, A} = 0$
-    """
-    subs = {}
-    for G in _geometric_quantities(objective):
-        if isinstance(G, Area):
-            if len(G.args) == 3 and len(set(G.args)) != 3:
-                subs[G] = S.Zero
-    return subs
-
-
-def _simplify_ratio(objective):
-    r"""Return the substitution that evaluates trivial ratios of segments.
-
-    Explanation
-    ===========
-
-    - $\frac{\overline{A, A}}{\overline{C, D}} = 0$
-    - $\frac{\overline{A, B}}{\overline{A, B}} = 1$
-    - $\frac{\overline{A, B}}{\overline{B, A}} = -1$
-    """
-    subs = {}
-    for G in _geometric_quantities(objective):
-        if isinstance(G, Ratio) and len(G.args) == 4:
-            A, B, C, D = G.args
-            if A == B:
-                subs[G] = S.Zero
-            if A == C and B == D:
-                subs[G] = S.One
-            if A == D and B == C:
-                subs[G] = S.NegativeOne
-    return subs
-
-
-def _simplify_pythagoras(objective):
+def _simplify_pythagoras(domain, objective):
     r"""Return the substitution that evaluates trivial pythagoras difference.
 
     Explanation
@@ -340,15 +306,58 @@ def _simplify_pythagoras(objective):
     - $\mathcal{P}_{A, A, B} = 0$
     - $\mathcal{P}_{A, B, B} = 0$
     """
-    subs = {}
-    for G in _geometric_quantities(objective):
+    for G in domain.symbols:
         if isinstance(G, Pythagoras) and len(G.args) == 3:
             A, B, C = G.args
+            eliminant = None
             if A == B:
-                subs[G] = S.Zero
+                eliminant = S.Zero
             elif B == C:
-                subs[G] = S.Zero
-    return subs
+                eliminant = S.Zero
+
+            if eliminant is not None:
+                domain, objective = _inject_new_variables_and_eliminate(domain, objective, eliminant, G)
+                domain, objective = _compress(domain, objective)
+    return domain, objective
+
+
+def _get_variables(expr):
+    if isinstance(expr, Integer):
+        return set()
+    if isinstance(expr, (Add, Mul)):
+        return set.union(*(_get_variables(arg) for arg in expr.args))
+    if isinstance(expr, Pow):
+        return _get_variables(expr.args[0])
+    return {expr}
+
+
+def _compress(domain, objective):
+    nonzeros = (1,) * len(domain.gens)
+    for key in objective.keys():
+        nonzeros = tuple(i | j for i, j in zip(nonzeros, key))
+
+    zero_gens = tuple(domain.gens[i] for i, x in enumerate(nonzeros) if x == 0)
+    for x in reversed(zero_gens):
+        objective = objective.drop(x)
+    domain = objective.ring.to_domain()
+    return domain, objective
+
+
+def _inject_new_variables_and_eliminate(domain, objective, eliminant, G):
+    numer, denom = eliminant.as_numer_denom()
+
+    new_variables = _get_variables(numer).union(_get_variables(denom))
+    new_variables = new_variables - set(domain.symbols)
+    domain = domain.inject(*new_variables)
+
+    objective = domain.convert(objective)
+    remainder = domain.from_sympy(denom * G - numer)
+
+    from .sparse import prem_sparse
+    g = domain.symbols.index(G)
+    objective = prem_sparse(objective, remainder, g)
+
+    return domain, objective
 
 
 def _apply_to_image(func, subs):

@@ -25,10 +25,7 @@ from sympy.geometry.synthetic.common import _substitution_rule
 from sympy.geometry.synthetic.common import _quadrilateral_area
 from sympy.geometry.synthetic.common import _quadrilateral_pythagoras
 from sympy.geometry.synthetic.common import _geometric_quantities
-from sympy.geometry.synthetic.common import _simplify_area
-from sympy.geometry.synthetic.common import _simplify_ratio
 from sympy.geometry.synthetic.common import _simplify_pythagoras
-from sympy.geometry.synthetic.common import _uniformize_area
 from sympy.geometry.synthetic.common import _uniformize_pythagoras
 from sympy.geometry.synthetic.plane_linear import _linear_pratio
 from sympy.geometry.synthetic.plane_linear import _linear_inter_line_line

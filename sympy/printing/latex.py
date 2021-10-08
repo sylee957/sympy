@@ -2739,6 +2739,9 @@ class LatexPrinter(Printer):
         args_latex = ', '.join([self._print(a) for a in args])
         return '%s(%s)' % (pred_latex, args_latex)
 
+    def _print_SyntheticGeometryMainVariable(self, expr):
+        return r'\mathfrak{C}'
+
     def _print_SyntheticGeometryParallel(self, expr):
         A, B, C, D = expr.args
         A, B, C, D = self._print(A), self._print(B), self._print(C), self._print(D)

@@ -3,10 +3,7 @@ from sympy.core.symbol import symbols
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDifference as Pythagoras
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedRatio as Ratio
-from sympy.geometry.synthetic.common import _uniformize_area
 from sympy.geometry.synthetic.common import _uniformize_pythagoras
-from sympy.geometry.synthetic.common import _simplify_area
-from sympy.geometry.synthetic.common import _simplify_ratio
 from sympy.geometry.synthetic.common import _simplify_pythagoras
 
 

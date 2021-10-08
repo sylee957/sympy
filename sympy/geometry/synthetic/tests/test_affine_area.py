@@ -1,17 +1,12 @@
 from sympy.core.symbol import symbols, Symbol
 from sympy.core.singleton import S
 from sympy.core.numbers import Integer, Rational
-from sympy.geometry.synthetic.affine_area import (
-    _area_lratio,
-    _area_pratio,
-    _area_inter_line_line,
-    _area_inter_pline_line,
-    _area_inter_pline_pline
-)
 from sympy.geometry.synthetic.constructions import (
     SyntheticGeometryLRatio as LRatio,
+    SyntheticGeometryPRatio as PRatio,
     SyntheticGeometryIntersection as Intersection,
     SyntheticGeometryLine as Line,
+    SyntheticGeometryPLine as PLine,
 )
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.geometry.synthetic.affine import area_method_affine
@@ -22,19 +17,10 @@ def test_area_lratio():
     A, B, Y = symbols('A B Y')
     l = Symbol('lambda')
 
+    constructions = [LRatio(Y, Line(P, Q), l)]
     objective = Area(A, B, Y)
     desired = l*Area(A, B, Q) + (S.One - l) * Area(A, B, P)
-    assert _area_lratio(Y, P, Q, l, objective) == {objective: desired}
-
-
-def test_area_inter_line_line():
-    P, Q = symbols('P Q')
-    U, V = symbols('U V')
-    A, B, Y = symbols('A B Y')
-
-    objective = Area(A, B, Y)
-    desired = (Area(P, U, V) * Area(A, B, Q) + Area(Q, V, U) * Area(A, B, P)) / Area(P, U, Q, V)
-    assert _area_inter_line_line(Y, P, Q, U, V, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
 
 
 def test_area_pratio():
@@ -42,9 +28,26 @@ def test_area_pratio():
     A, B, Y = symbols('A B Y')
     l = Symbol('lambda')
 
+    constructions = [PRatio(Y, R, Line(P, Q), l)]
     objective = Area(A, B, Y)
     desired = Area(A, B, R) + l * Area(A, P, B, Q)
-    assert _area_pratio(Y, R, P, Q, l, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
+
+
+def test_area_inter_line_line():
+    P, Q = symbols('P Q')
+    U, V = symbols('U V')
+    A, B, Y = symbols('A B Y')
+
+    constructions = [Intersection(Y, Line(U, V), Line(P, Q))]
+    objective = Area(A, B, Y)
+    desired = (Area(P, U, V) * Area(A, B, Q) + Area(Q, V, U) * Area(A, B, P)) / Area(P, U, Q, V)
+    assert area_method_affine(constructions, objective - desired) == 0
+
+    constructions = [Intersection(Y, Line(P, Q), Line(U, V))]
+    objective = Area(A, B, Y)
+    desired = (Area(P, U, V) * Area(A, B, Q) + Area(Q, V, U) * Area(A, B, P)) / Area(P, U, Q, V)
+    assert area_method_affine(constructions, objective - desired) == 0
 
 
 def test_area_inter_pline_line():
@@ -52,9 +55,10 @@ def test_area_inter_pline_line():
     U, V = symbols('U V')
     A, B, Y = symbols('A B Y')
 
+    constructions = [Intersection(Y, PLine(R, P, Q), Line(U, V))]
     objective = Area(A, B, Y)
     desired = (Area(P, U, Q, R) * Area(A, B, V) - Area(P, V, Q, R) * Area(A, B, U)) / Area(P, U, Q, V)
-    assert _area_inter_pline_line(Y, R, P, Q, U, V, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
 
 
 def test_area_inter_pline_pline():
@@ -62,9 +66,10 @@ def test_area_inter_pline_pline():
     U, V, W = symbols('U V W')
     A, B, Y = symbols('A B Y')
 
+    constructions = [Intersection(Y, PLine(R, P, Q), PLine(W, U, V))]
     objective = Area(A, B, Y)
     desired = Area(P, W, Q, R) / Area(P, U, Q, V) * Area(A, U, B, V) + Area(A, B, W)
-    assert _area_inter_pline_pline(Y, R, P, Q, W, U, V, objective) == {objective: desired}
+    assert area_method_affine(constructions, objective - desired) == 0
 
 
 def test_eliminate_area_pratio_consistency():
