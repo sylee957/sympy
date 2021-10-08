@@ -140,7 +140,7 @@ def test_triangle_midpoint():
         Intersection(M, Line(A, B), Line(P, Q))
     ]
     objective = Ratio(A, M, B, M)
-    assert area_method(construction, objective) == Integer(-1)
+    assert area_method(construction, objective).cancel() == Integer(-1)
 
 
 def test_pappus():
@@ -156,8 +156,8 @@ def test_pappus():
         Intersection(S, Line(B1, C), Line(B, C1)),
         Intersection(T, Line(B1, C), Line(P, Q)),
     ]
-    objective = Ratio(B1, S, C, S) / Ratio(B1, T, C, T)
-    assert area_method(construction, objective) == Integer(1)
+    objective = Ratio(B1, S, C, S) - Ratio(B1, T, C, T)
+    assert area_method(construction, objective).cancel() == Integer(1)
 
 
 def test_descargues():

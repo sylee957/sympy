@@ -1,5 +1,7 @@
 from sympy.core.expr import Expr
 from sympy.core.sympify import _sympify
+from sympy.combinatorics.permutations import _af_parity
+from sympy.core.compatibility import default_sort_key
 from sympy.core.singleton import S
 
 
@@ -31,7 +33,7 @@ class SyntheticGeometrySignedArea(Expr):
         return True
 
     def doit(self):
-        r"""Evaluate trivial areas
+        r"""Evaluate trivial areas and sort the argument of areas.
 
         Explanation
         ===========
@@ -40,9 +42,30 @@ class SyntheticGeometrySignedArea(Expr):
         - $\mathcal{S}_{A, A, B} = 0$
         - $\mathcal{S}_{A, B, A} = 0$
         - $\mathcal{S}_{B, A, A} = 0$
+
+        If $A, B, C$ is the canonical ordering of the points,
+        the signed area should reordered as:
+
+        - $\mathcal{S}_{A, C, B} = -\mathcal{S}_{A, B, C}$
+        - $\mathcal{S}_{B, A, C} = -\mathcal{S}_{A, B, C}$
+        - $\mathcal{S}_{B, C, A} = \mathcal{S}_{A, B, C}$
+        - $\mathcal{S}_{C, A, B} = \mathcal{S}_{A, B, C}$
+        - $\mathcal{S}_{C, B, A} = -\mathcal{S}_{A, B, C}$
         """
         if len(self.args) == 3 and len(set(self.args)) != 3:
             return S.Zero
+
+        if len(self.args) == 3:
+            args = self.args
+            args_sorted = tuple(sorted(args, key=default_sort_key))
+            if args == args_sorted:
+                return self
+
+            permutation = [args_sorted.index(arg) for arg in args]
+            parity = _af_parity(permutation)
+            if parity == 0:
+                return self.func(*args_sorted)
+            return -self.func(*args_sorted)
         return self
 
 
@@ -80,6 +103,20 @@ class SyntheticGeometrySignedRatio(Expr):
                 return S.One
             if A == D and B == C:
                 return S.NegativeOne
+
+            AA, BB = sorted([A, B], key=default_sort_key)
+            CC, DD = sorted([C, D], key=default_sort_key)
+
+            if A == AA and B == BB and C == CC and D == DD:
+                return self
+
+            sign = 1
+            if A == BB and B == AA:
+                sign *= -1
+            if C == DD and D == CC:
+                sign *= -1
+
+            return sign * self.func(AA, BB, CC, DD)
         return self
 
 

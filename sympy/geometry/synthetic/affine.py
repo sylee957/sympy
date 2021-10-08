@@ -69,8 +69,8 @@ def _eliminate(C, constructions, domain, objective, X):
     while True:
         old = objective
 
-        domain, objective = _uniformize_area(domain, objective)
-        domain, objective = _uniformize_ratio(domain, objective)
+        # domain, objective = _uniformize_area(domain, objective)
+        # domain, objective = _uniformize_ratio(domain, objective)
         domain, objective = _quadrilateral_area(domain, objective)
 
         domain, objective = _eliminate_area_lratio(C, constructions, domain, objective)
@@ -142,6 +142,13 @@ def _area_method_affine_thread(constructions, objective, *, O=None, U=None, V=No
     return -domain.to_sympy(b) / domain.to_sympy(a)
 
 
+from sympy.core.cache import cacheit
+
+
+# TODO We use cache to resolve the problems of automatically proving
+# same objectives over and over again.
+# This should be more sophisticated
+@cacheit
 def area_method_affine(constructions, objective, *, O=None, U=None, V=None, prove=None, debug=False):
     constructions = tuple(constructions)
     prove = _auto_option_prove(objective, prove)

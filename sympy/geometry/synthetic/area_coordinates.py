@@ -1,4 +1,4 @@
-from sympy.geometry.synthetic.common import _inject_new_variables_and_eliminate, _compress, _pp_sparse
+from sympy.geometry.synthetic.common import _inject_new_variables_and_eliminate, _compress
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
 from sympy.matrices import Matrix
 
