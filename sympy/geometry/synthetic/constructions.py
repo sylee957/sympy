@@ -18,10 +18,6 @@ class SyntheticGeometryOn(SyntheticGeometryConstruction):
     def __new__(cls, Y, obj):
         return super().__new__(cls, Y, obj)
 
-    def __str__(self):
-        Y, line = self.args
-        return f"Take a point {Y} on {line}"
-
 
 class SyntheticGeometryLine(SyntheticGeometryPrimitive):
     r"""A line passing through two points $U$ and $V$.
@@ -31,10 +27,6 @@ class SyntheticGeometryLine(SyntheticGeometryPrimitive):
         U = _sympify(U)
         V = _sympify(V)
         return super().__new__(cls, U, V)
-
-    def __str__(self):
-        A, B = self.args
-        return f"line {A}{B}"
 
 
 class SyntheticGeometryPLine(SyntheticGeometryConstruction):
@@ -46,10 +38,6 @@ class SyntheticGeometryPLine(SyntheticGeometryConstruction):
         U = _sympify(U)
         V = _sympify(V)
         return super().__new__(cls, W, U, V)
-
-    def __str__(self):
-        A, B, C = self.args
-        return f"line passing through {A} and parallel to {B}{C}"
 
 
 class SyntheticGeometryTLine(SyntheticGeometryConstruction):
@@ -166,6 +154,15 @@ class SyntheticGeometryIntersection(SyntheticGeometryConstruction):
 
 class SyntheticGeometryMidpoint(SyntheticGeometryConstruction):
     r"""$Midpoint(Y, U, V)$"""
+    def __new__(cls, Y, U, V):
+        Y = _sympify(Y)
+        U = _sympify(U)
+        V = _sympify(V)
+        return super().__new__(cls, Y, U, V)
+
+
+class SyntheticGeometrySymmetry(SyntheticGeometryConstruction):
+    r"""$Symmetry(Y, U, V)$"""
     def __new__(cls, Y, U, V):
         Y = _sympify(Y)
         U = _sympify(U)

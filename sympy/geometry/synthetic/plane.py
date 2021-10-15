@@ -41,7 +41,7 @@ from sympy.geometry.synthetic.plane_inter_line_circle import _ratio_ECS8
 from sympy.geometry.synthetic.plane_aratio import _linear_ARatio
 from sympy.geometry.synthetic.plane_aratio import _quadratic_ARatio
 from sympy.geometry.synthetic.plane_aratio import _ratio_ARatio
-from sympy.geometry.synthetic.plane_ecs import _constructions_to_ecs
+from sympy.geometry.synthetic.plane_ecs import _PlaneECSConverter
 from sympy.geometry.synthetic.plane_degenerate import _degenerate
 from sympy.geometry.synthetic.simplify import _cancel
 from sympy.geometry.synthetic.auxiliary import SyntheticGeometryAuxiliaryAreaCoordinateO as AreaCoordinateO
@@ -256,7 +256,10 @@ def _area_method_plane_evaluate(constructions, objective, algebraic=(), debug=Fa
 
 
 def area_method_plane(constructions, objective, *, algebraic=(), prove=None, debug=False):
-    constructions = _constructions_to_ecs(constructions, _area_method_plane_prove)
+    converter = _PlaneECSConverter(_area_method_plane_prove)
+    for C in constructions:
+        converter.append(C)
+    constructions = tuple(converter.constructions)
     prove = _auto_option_prove(objective, prove)
 
     # Preprocess minimal polynomials as substitutions
