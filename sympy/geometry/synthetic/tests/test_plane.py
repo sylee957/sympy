@@ -14,6 +14,8 @@ from sympy.geometry.synthetic.predicates import SyntheticGeometryParallel as Par
 from sympy.geometry.synthetic.predicates import SyntheticGeometryHarmonic as Harmonic
 from sympy.geometry.synthetic.predicates import SyntheticGeometryEqangle as Eqangle
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedRatio as Ratio
+from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
+from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDifference as Pythagoras
 from sympy.geometry.synthetic.quantities import tan
 from sympy.core.symbol import symbols, Symbol
 from sympy.polys.polytools import cancel
@@ -170,3 +172,27 @@ def test_example_3_52():
     AOB = area_method_plane(constructions, objective)
 
     assert cancel(AOB - 2 * ACB / (1 - ACB**2)) == 0
+
+
+def test_example_3_65():
+    Y, P = symbols('Y P')
+    O1, O2 = symbols('O1 O2')
+
+    constructions = [
+        Intersection(Y, Circle(O1, P), Circle(O2, P))
+    ]
+
+    lhs = Area(Y, O1, O2) / Area(P, O1, O2)
+    rhs = -1
+    objective = lhs - rhs
+    assert area_method_plane(constructions, objective) == 0
+
+    lhs = Area(Y, O2, P) / Area(P, O1, O2)
+    rhs = 2 * Pythagoras(P, O2, O1) / Pythagoras(O1, O2, O1)
+    objective = lhs - rhs
+    assert area_method_plane(constructions, objective) == 0
+
+    lhs = Area(Y, P, O1) / Area(P, O1, O2)
+    rhs = 2 * Pythagoras(P, O1, O2) / Pythagoras(O1, O2, O1)
+    objective = lhs - rhs
+    assert area_method_plane(constructions, objective) == 0

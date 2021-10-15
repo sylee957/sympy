@@ -194,7 +194,7 @@ class _PlaneECSConverter:
                 P = P1
                 N = AuxiliaryPoint(P, O1, O2)
                 self.append_Foot(N, P, O1, O2)
-                return self.append_PRatio(Y, N, N, U, -Integer(1))
+                return self.append_PRatio(Y, N, N, P, -Integer(1))
 
         if isinstance(L1, Circle):
             return self.append_Intersection(Y, L2, L1)
