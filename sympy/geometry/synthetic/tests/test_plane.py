@@ -10,7 +10,10 @@ from sympy.geometry.synthetic.constructions import SyntheticGeometryOn as On
 from sympy.geometry.synthetic.constructions import SyntheticGeometryIntersection as Intersection
 from sympy.geometry.synthetic.constructions import SyntheticGeometryMidpoint as Midpoint
 from sympy.geometry.synthetic.constructions import SyntheticGeometryInversion as Inversion
+from sympy.geometry.synthetic.constructions import SyntheticGeometryCentroid as Centroid
 from sympy.geometry.synthetic.constructions import SyntheticGeometryCircumcenter as Circumcenter
+from sympy.geometry.synthetic.constructions import SyntheticGeometryOrthocenter as Orthocenter
+from sympy.geometry.synthetic.constructions import SyntheticGeometryIncenter as Incenter
 from sympy.geometry.synthetic.predicates import SyntheticGeometryPerpendicular as Perpendicular
 from sympy.geometry.synthetic.predicates import SyntheticGeometryParallel as Parallel
 from sympy.geometry.synthetic.predicates import SyntheticGeometryHarmonic as Harmonic
@@ -232,3 +235,64 @@ def test_example_3_67():
     rhs = Area(P, Q, A) / 2 + Area(P, Q, B) / 2
     objective = lhs - rhs
     assert area_method_plane(constructions, objective) == 0
+
+
+def test_example_3_68():
+    A, B, C = symbols('A B C')
+    H = Symbol('H')
+    O = Symbol('O')
+    A1, B1, C1 = symbols('A1 B1 C1')
+
+    constructions = [
+        Orthocenter(H, A, B, C),
+        Circumcenter(O, A, B, C),
+        Circumcenter(A1, B, C, H),
+        Circumcenter(B1, A, C, H),
+        Circumcenter(C1, A, B, H),
+    ]
+
+    objective = Parallel(B1, C1, B, C)
+    assert area_method_plane(constructions, objective) == True
+
+
+def test_example_3_69():
+    A, B, C, X = symbols('A B C X')
+    D, E, F, G = symbols('D E F G')
+
+    constructions = [
+        Centroid(G, A, B, C),
+        Foot(D, A, G, X),
+        Foot(E, B, G, X),
+        Foot(F, C, G, X),
+    ]
+
+    objective = Ratio(E, B, D, A) + Ratio(F, C, D, A) + 1
+    assert area_method_plane(constructions, objective) == 0
+
+
+def test_example_3_70():
+    B, C, I = symbols('B C I')
+    A, D, IA = symbols('A D I_A')
+
+    constructions = [
+        Incenter(A, I, C, B),
+        Intersection(D, Line(A, I), Line(B, C)),
+        Intersection(IA, Line(A, I), TLine(B, B, I)),
+    ]
+
+    objective = Harmonic(A, D, I, IA)
+    assert area_method_plane(constructions, objective) == True
+
+
+def test_example_3_71():
+    A, B, C = symbols('A B C')
+    O, M, H = symbols('O M H')
+
+    constructions = [
+        Circumcenter(O, A, B, C),
+        Centroid(M, A, B, C),
+        LRatio(H, M, O, -Integer(2))
+    ]
+
+    objective = Perpendicular(A, H, B, C)
+    assert area_method_plane(constructions, objective) == True

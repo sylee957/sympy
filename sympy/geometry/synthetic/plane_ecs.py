@@ -299,6 +299,6 @@ class _PlaneECSConverter:
             r_I = -2*Pythagoras(I, A, B)*Pythagoras(I, B, A) / (Pythagoras(A, I, B)*Pythagoras(A, B, A))
             r_A = Pythagoras(I, A, B)*Pythagoras(I, B, I) / (Pythagoras(A, I, B)*Pythagoras(A, B, A))
             r_B = Pythagoras(I, B, A)*Pythagoras(I, A, I) / (Pythagoras(A, I, B)*Pythagoras(A, B, A))
-            return self.append_ARatio(Y, I, A, B, r_I, r_A, r_B)
+            return self.append_ARatio(C, I, A, B, r_I, r_A, r_B)
 
         raise NotImplementedError(f"Unknown construction: {C}")
