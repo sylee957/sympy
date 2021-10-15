@@ -1,4 +1,5 @@
 from sympy.geometry.synthetic.constructions import SyntheticGeometryLine as Line
+from sympy.geometry.synthetic.constructions import SyntheticGeometryTLine as TLine
 from sympy.geometry.synthetic.constructions import SyntheticGeometryBLine as BLine
 from sympy.geometry.synthetic.constructions import SyntheticGeometryCircle as Circle
 from sympy.geometry.synthetic.constructions import SyntheticGeometryFoot as Foot
@@ -9,6 +10,7 @@ from sympy.geometry.synthetic.constructions import SyntheticGeometryOn as On
 from sympy.geometry.synthetic.constructions import SyntheticGeometryIntersection as Intersection
 from sympy.geometry.synthetic.constructions import SyntheticGeometryMidpoint as Midpoint
 from sympy.geometry.synthetic.constructions import SyntheticGeometryInversion as Inversion
+from sympy.geometry.synthetic.constructions import SyntheticGeometryCircumcenter as Circumcenter
 from sympy.geometry.synthetic.predicates import SyntheticGeometryPerpendicular as Perpendicular
 from sympy.geometry.synthetic.predicates import SyntheticGeometryParallel as Parallel
 from sympy.geometry.synthetic.predicates import SyntheticGeometryHarmonic as Harmonic
@@ -194,5 +196,39 @@ def test_example_3_65():
 
     lhs = Area(Y, P, O1) / Area(P, O1, O2)
     rhs = 2 * Pythagoras(P, O1, O2) / Pythagoras(O1, O2, O1)
+    objective = lhs - rhs
+    assert area_method_plane(constructions, objective) == 0
+
+
+def test_example_3_67():
+    O, A, B, C = symbols('O A B C')
+    P, Q = symbols('P Q')
+
+    constructions = [
+        Circumcenter(O, A, B, C)
+    ]
+
+    lhs = Pythagoras(O, A, O)
+    rhs = Pythagoras(A, B, A) * Pythagoras(A, C, A) * Pythagoras(B, C, B) / (64 * Area(A, B, C)**2)
+    objective = lhs - rhs
+    assert area_method_plane(constructions, objective) == 0
+
+    lhs = Pythagoras(A, B, O)
+    rhs = Pythagoras(A, B, A) / 2
+    objective = lhs - rhs
+    assert area_method_plane(constructions, objective) == 0
+
+    lhs = Pythagoras(A, O, B)
+    rhs = Pythagoras(A, B, A) * (Pythagoras(A, C, A) * Pythagoras(B, C, B) - 32 * Area(A, B, C)**2) / (64 * Area(A, B, C)**2)
+    objective = lhs - rhs
+    assert area_method_plane(constructions, objective) == 0
+
+    constructions = [
+        On(Q, TLine(P, A, B)),
+        Circumcenter(O, A, B, C)
+    ]
+
+    lhs = Area(P, Q, O)
+    rhs = Area(P, Q, A) / 2 + Area(P, Q, B) / 2
     objective = lhs - rhs
     assert area_method_plane(constructions, objective) == 0
