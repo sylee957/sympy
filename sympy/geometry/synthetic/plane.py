@@ -4,6 +4,8 @@ from sympy.geometry.synthetic.options import _auto_option_prove
 from sympy.core.singleton import S
 from IPython.display import display, Latex
 from sympy.printing.latex import latex
+from sympy.geometry.synthetic.area_coordinates import SyntheticGeometryPlanarConfiguration as PlanarConfiguration
+from sympy.geometry.synthetic.area_coordinates import SyntheticGeometryCircularConfiguration as CircularConfiguration
 from sympy.geometry.synthetic.ecs import PlaneECS1 as ECS1
 from sympy.geometry.synthetic.ecs import PlaneECS5 as ECS5
 from sympy.geometry.synthetic.ecs import PlaneECS6 as ECS6
@@ -44,9 +46,6 @@ from sympy.geometry.synthetic.plane_aratio import _ratio_ARatio
 from sympy.geometry.synthetic.plane_ecs import _PlaneECSConverter
 from sympy.geometry.synthetic.plane_degenerate import _degenerate
 from sympy.geometry.synthetic.simplify import _cancel
-from sympy.geometry.synthetic.auxiliary import SyntheticGeometryAuxiliaryAreaCoordinateO as AreaCoordinateO
-from sympy.geometry.synthetic.auxiliary import SyntheticGeometryAuxiliaryAreaCoordinateU as AreaCoordinateU
-from sympy.geometry.synthetic.auxiliary import SyntheticGeometryAuxiliaryAreaCoordinateV as AreaCoordinateV
 from sympy.geometry.synthetic.common import _geometric_quantities
 from sympy.geometry.synthetic.common import _cascade
 from sympy.geometry.synthetic.common import _quadrilateral_area
@@ -169,10 +168,6 @@ def _eliminate(C, constructions, objective, algebraic=(), debug=False):
 
 
 def _apply_area_coordinates(objective, debug=False):
-    O = AreaCoordinateO()
-    U = AreaCoordinateU()
-    V = AreaCoordinateV()
-
     subs = _quadrilateral_area(objective)
     objective = objective.xreplace(subs)
     subs = _quadrilateral_pythagoras(objective)
@@ -219,7 +214,7 @@ def _apply_area_coordinates(objective, debug=False):
 
 
 @cacheit
-def _area_method_plane_prove(constructions, objective, algebraic=(), debug=False):
+def _area_method_plane_prove(constructions, objective, algebraic=(), area_coordinates=None, debug=False):
     objective = _normalize_predicate_plane(objective)
     objective = objective.doit()
 
@@ -234,13 +229,15 @@ def _area_method_plane_prove(constructions, objective, algebraic=(), debug=False
         objective = _eliminate(
             C, constructions[:i], objective, algebraic=algebraic, debug=debug)
 
-    objective = _apply_area_coordinates(objective, debug=debug)
+    if isinstance(area_coordinates, PlanarConfiguration):
+        objective = _apply_area_coordinates(objective, debug=debug)
+
     if objective is not S.true:
         return S.false
     return S.true
 
 
-def _area_method_plane_evaluate(constructions, objective, algebraic=(), debug=False):
+def _area_method_plane_evaluate(constructions, objective, algebraic=(), area_coordinates=None, debug=False):
     objective = objective.doit()
 
     if debug:
@@ -251,20 +248,16 @@ def _area_method_plane_evaluate(constructions, objective, algebraic=(), debug=Fa
         objective = _eliminate(
             C, constructions[:i], objective, algebraic=algebraic, debug=debug)
 
-    objective = _apply_area_coordinates(objective, debug=debug)
+    if isinstance(area_coordinates, PlanarConfiguration):
+        objective = _apply_area_coordinates(objective, debug=debug)
+
     return objective
 
 
-def area_method_plane(constructions, objective, *, algebraic=(), prove=None, debug=False):
-    converter = _PlaneECSConverter(_area_method_plane_prove)
-    for C in constructions:
-        converter.append(C)
-    constructions = tuple(converter.constructions)
-    prove = _auto_option_prove(objective, prove)
-
+def _option_algebraic(minpolys):
     # Preprocess minimal polynomials as substitutions
     _algebraic = []
-    for minpoly in algebraic:
+    for minpoly in minpolys:
         minpoly = Poly(minpoly)
         if not minpoly.is_univariate:
             raise NotImplementedError
@@ -275,8 +268,38 @@ def area_method_plane(constructions, objective, *, algebraic=(), prove=None, deb
         origin = x**minpoly.degree()
         dest = -Poly(coeffs[1:], x).as_expr() / coeffs[0]
         _algebraic.append((origin, dest))
-    algebraic = _algebraic
+    return tuple(_algebraic)
+
+
+def _option_area_coordinates(area_coordinates):
+    if area_coordinates is None:
+        return PlanarConfiguration()
+    return area_coordinates
+
+
+def area_method_plane(constructions, objective, *, algebraic=(), area_coordinates=None, prove=None, debug=False):
+    converter = _PlaneECSConverter(_area_method_plane_prove)
+    for C in constructions:
+        converter.append(C)
+    constructions = tuple(converter.constructions)
+    prove = _auto_option_prove(objective, prove)
+
+    # Preprocess minimal polynomials as substitutions
+    algebraic = _option_algebraic(algebraic)
+    area_coordinates = _option_area_coordinates(area_coordinates)
 
     if prove:
-        return _area_method_plane_prove(constructions, objective, algebraic=algebraic, debug=debug)
-    return _area_method_plane_evaluate(constructions, objective, algebraic=algebraic, debug=debug)
+        return _area_method_plane_prove(
+            constructions,
+            objective,
+            algebraic=algebraic,
+            area_coordinates=area_coordinates,
+            debug=debug
+        )
+    return _area_method_plane_evaluate(
+        constructions,
+        objective,
+        algebraic=algebraic,
+        area_coordinates=area_coordinates,
+        debug=debug
+    )
