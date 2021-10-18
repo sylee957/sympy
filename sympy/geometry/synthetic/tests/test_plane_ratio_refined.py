@@ -1,14 +1,9 @@
-from sympy.core.symbol import symbols, Symbol
+from sympy.core.symbol import symbols
 from sympy.geometry.synthetic.constructions import SyntheticGeometryIntersection as Intersection
 from sympy.geometry.synthetic.constructions import SyntheticGeometryOn as On
 from sympy.geometry.synthetic.constructions import SyntheticGeometryLine as Line
-from sympy.geometry.synthetic.constructions import SyntheticGeometryPLine as PLine
-from sympy.geometry.synthetic.constructions import SyntheticGeometryPRatio as PRatio
-from sympy.geometry.synthetic.constructions import SyntheticGeometryTRatio as TRatio
-from sympy.geometry.synthetic.constructions import SyntheticGeometryFoot as Foot
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedRatio as Ratio
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedArea as Area
-from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDifference as Pythagoras
 from sympy.geometry.synthetic.plane import area_method_plane
 
 
