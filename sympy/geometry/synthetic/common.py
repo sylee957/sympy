@@ -21,6 +21,21 @@ def _match_ratio(G, Y):
             return True, A, Y, C, D
 
 
+def _match_ratio_both(G, Y):
+    if isinstance(G, Ratio):
+        A, B, C, D = G.args
+        if Y == B:
+            if Y == D:
+                return 1, A, C, Y
+            elif Y == C:
+                return -1, A, D, Y
+        if Y == A:
+            if Y == D:
+                return -1, B, C, Y
+            elif Y == C:
+                return 1, B, D, Y
+
+
 def match_ABY(G, Y):
     if Y == G.args[0]:
         Y, A, B = G.args
