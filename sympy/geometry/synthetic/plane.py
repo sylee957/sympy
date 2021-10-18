@@ -55,7 +55,9 @@ from sympy.geometry.synthetic.area_coordinates_plane import _auto_coordinates
 from sympy.geometry.synthetic.area_coordinates_plane import _area_coordinates_area
 from sympy.geometry.synthetic.area_coordinates_plane import _area_coordinates_pythagoras
 from sympy.geometry.synthetic.area_coordinates_plane import _area_coordinates_herron
+from sympy.geometry.synthetic.area_coordinates_cyclic import _auto_cyclic_coordinates
 from sympy.geometry.synthetic.area_coordinates_cyclic import _cyclic_coordinates
+from sympy.geometry.synthetic.area_coordinates_cyclic import _cyclic_coordinates_sin_cos
 from sympy.geometry.synthetic.area_coordinates_cyclic import _cylcic_coordinates_pythagoras
 from sympy.polys.polytools import Poly
 
@@ -172,7 +174,7 @@ def _eliminate(C, constructions, objective, algebraic=(), area_coordinates=None,
             raise NotImplementedError(f"{Y} from {C} is not properly eliminated")
 
     if debug:
-        tex = r"$\displaystyle \text{Elimination} =^{%s} %s$" % (latex(C.args[0]), latex(objective))
+        tex = r"$\displaystyle \text{Elimination} :=^{%s} %s$" % (latex(C.args[0]), latex(objective))
         display(Latex(tex))
 
     return objective
@@ -218,7 +220,7 @@ def _apply_area_coordinates(objective, debug=False):
 
     objective = _cancel(objective)
     if debug:
-        tex = r"$\displaystyle \text{Area Coordinates} =^{%s, %s, %s} %s$" % (latex(O), latex(U), latex(V), latex(objective))
+        tex = r"$\displaystyle \text{Area Coordinates} :=^{%s, %s, %s} %s$" % (latex(O), latex(U), latex(V), latex(objective))
         display(Latex(tex))
 
     return objective
@@ -231,12 +233,24 @@ def _apply_cyclic_coordinates(objective, debug=True):
     objective = objective.xreplace(subs)
     objective = objective.doit()
 
+    J = _auto_cyclic_coordinates(objective)
+    if J is None:
+        return objective
+
     if debug:
         for k, v in subs.items():
             tex = r"$\displaystyle %s = %s$" % (latex(k), latex(v))
             display(Latex(tex))
 
     subs = _cyclic_coordinates(objective)
+    objective = objective.xreplace(subs)
+
+    if debug:
+        for k, v in subs.items():
+            tex = r"$\displaystyle %s = %s$" % (latex(k), latex(v))
+            display(Latex(tex))
+
+    subs = _cyclic_coordinates_sin_cos(J, objective)
     objective = objective.xreplace(subs)
 
     if debug:
@@ -256,7 +270,7 @@ def _apply_cyclic_coordinates(objective, debug=True):
 
     objective = _cancel(objective)
     if debug:
-        tex = r"$\displaystyle \text{Cyclic Coordinates} = %s$" % latex(objective)
+        tex = r"$\displaystyle \text{Cyclic Coordinates} :=^{%s} %s$" % (latex(J), latex(objective))
         display(Latex(tex))
 
     return objective

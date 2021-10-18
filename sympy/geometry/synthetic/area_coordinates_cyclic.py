@@ -4,6 +4,23 @@ from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDiffe
 from sympy.geometry.synthetic.quantities import SyntheticGeometryDiameter as Diameter
 from sympy.geometry.synthetic.quantities import SyntheticGeometryChord as Chord
 from sympy.geometry.synthetic.quantities import SyntheticGeometryCochord as Cochord
+from collections import Counter
+
+
+def _auto_cyclic_coordinates(objective):
+    def _get_points_quantity(expr):
+        all_points = Counter()
+        for G in _geometric_quantities(expr):
+            all_points += Counter(G.args)
+        return all_points
+
+    free_points = _get_points_quantity(objective)
+    free_points = free_points.most_common(1)
+
+    if len(free_points) < 1:
+        return None
+    J = free_points[0][0]
+    return J
 
 
 def _cyclic_coordinates(objective):
@@ -19,6 +36,24 @@ def _cyclic_coordinates(objective):
         elif isinstance(G, Pythagoras) and len(G.args) == 3:
             A, B, C = G.args
             subs[G] = Chord(A, B) * Chord(C, B) * Cochord(C, A) / Diameter() * 2
+            subs[G] = subs[G].doit()
+    return subs
+
+
+def _cyclic_coordinates_sin_cos(J, objective):
+    subs = {}
+    for G in _geometric_quantities(objective, (Chord, Cochord)):
+        if isinstance(G, Chord):
+            A, B = G.args
+            if J in (A, B):
+                continue
+            subs[G] = (Chord(J, B) * Cochord(J, A) - Chord(J, A) * Cochord(J, B)) / Diameter()
+            subs[G] = subs[G].doit()
+        elif isinstance(G, Cochord):
+            A, B = G.args
+            if J in (A, B):
+                continue
+            subs[G] = (Chord(J, A) * Chord(J, B) + Cochord(J, A) * Cochord(J, B)) / Diameter()
             subs[G] = subs[G].doit()
     return subs
 
