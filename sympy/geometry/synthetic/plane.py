@@ -55,6 +55,8 @@ from sympy.geometry.synthetic.area_coordinates_plane import _auto_coordinates
 from sympy.geometry.synthetic.area_coordinates_plane import _area_coordinates_area
 from sympy.geometry.synthetic.area_coordinates_plane import _area_coordinates_pythagoras
 from sympy.geometry.synthetic.area_coordinates_plane import _area_coordinates_herron
+from sympy.geometry.synthetic.area_coordinates_cyclic import _cyclic_coordinates
+from sympy.geometry.synthetic.area_coordinates_cyclic import _cylcic_coordinates_pythagoras
 from sympy.polys.polytools import Poly
 
 
@@ -84,14 +86,23 @@ def _eliminate_with_side_condition(C, objective, eliminate, prove, func, debug=F
     return objective.xreplace(subs)
 
 
-def _eliminate(C, constructions, objective, algebraic=(), debug=False):
+def _eliminate(C, constructions, objective, algebraic=(), area_coordinates=None, debug=False):
     def prove(objective):
         return _area_method_plane_prove(
-            constructions + (C,), objective, algebraic=algebraic)
+            constructions + (C,),
+            objective,
+            algebraic=algebraic,
+            area_coordinates=area_coordinates
+        )
 
     def eliminate(objective):
         return _eliminate(
-            C, constructions, objective, algebraic=algebraic)
+            C,
+            constructions,
+            objective,
+            algebraic=algebraic,
+            area_coordinates=area_coordinates
+        )
 
     Y = C.args[0]
 
@@ -213,6 +224,44 @@ def _apply_area_coordinates(objective, debug=False):
     return objective
 
 
+def _apply_cyclic_coordinates(objective, debug=True):
+    subs = _quadrilateral_area(objective)
+    objective = objective.xreplace(subs)
+    subs = _quadrilateral_pythagoras(objective)
+    objective = objective.xreplace(subs)
+    objective = objective.doit()
+
+    if debug:
+        for k, v in subs.items():
+            tex = r"$\displaystyle %s = %s$" % (latex(k), latex(v))
+            display(Latex(tex))
+
+    subs = _cyclic_coordinates(objective)
+    objective = objective.xreplace(subs)
+
+    if debug:
+        for k, v in subs.items():
+            tex = r"$\displaystyle %s = %s$" % (latex(k), latex(v))
+            display(Latex(tex))
+
+    objective = _cancel(objective)
+    subs = _cylcic_coordinates_pythagoras(objective)
+    for k, v in subs.items():
+        objective = _algsubs(objective, k, v)
+
+    if debug:
+        for k, v in subs.items():
+            tex = r"$\displaystyle %s = %s$" % (latex(k), latex(v))
+            display(Latex(tex))
+
+    objective = _cancel(objective)
+    if debug:
+        tex = r"$\displaystyle \text{Cyclic Coordinates} = %s$" % latex(objective)
+        display(Latex(tex))
+
+    return objective
+
+
 @cacheit
 def _area_method_plane_prove(constructions, objective, algebraic=(), area_coordinates=None, debug=False):
     objective = _normalize_predicate_plane(objective)
@@ -224,13 +273,17 @@ def _area_method_plane_prove(constructions, objective, algebraic=(), area_coordi
     for i in reversed(range(len(constructions))):
         C = constructions[i]
         degenerate = _degenerate(C)
-        if _area_method_plane_prove(constructions[:i], degenerate, algebraic=algebraic):
+        if _area_method_plane_prove(constructions[:i], degenerate, area_coordinates=area_coordinates, algebraic=algebraic):
             return S.true
         objective = _eliminate(
-            C, constructions[:i], objective, algebraic=algebraic, debug=debug)
+            C, constructions[:i], objective,
+            algebraic=algebraic, area_coordinates=area_coordinates,
+            debug=debug)
 
     if isinstance(area_coordinates, PlanarConfiguration):
         objective = _apply_area_coordinates(objective, debug=debug)
+    elif isinstance(area_coordinates, CyclicConfiguration):
+        objective = _apply_cyclic_coordinates(objective, debug=debug)
 
     if objective is not S.true:
         return S.false
@@ -246,10 +299,14 @@ def _area_method_plane_evaluate(constructions, objective, algebraic=(), area_coo
     for i in reversed(range(len(constructions))):
         C = constructions[i]
         objective = _eliminate(
-            C, constructions[:i], objective, algebraic=algebraic, debug=debug)
+            C, constructions[:i], objective,
+            algebraic=algebraic, area_coordinates=area_coordinates,
+            debug=debug)
 
     if isinstance(area_coordinates, PlanarConfiguration):
         objective = _apply_area_coordinates(objective, debug=debug)
+    elif isinstance(area_coordinates, CyclicConfiguration):
+        objective = _apply_cyclic_coordinates(objective, debug=debug)
 
     return objective
 
@@ -278,15 +335,17 @@ def _option_area_coordinates(area_coordinates):
 
 
 def area_method_plane(constructions, objective, *, algebraic=(), area_coordinates=None, prove=None, debug=False):
+    algebraic = _option_algebraic(algebraic)
+    area_coordinates = _option_area_coordinates(area_coordinates)
+
+    def prover(constructions, objective):
+        return _area_method_plane_prove(constructions, objective, area_coordinates=area_coordinates, algebraic=algebraic)
+
     converter = _PlaneECSConverter(_area_method_plane_prove)
     for C in constructions:
         converter.append(C)
     constructions = tuple(converter.constructions)
     prove = _auto_option_prove(objective, prove)
-
-    # Preprocess minimal polynomials as substitutions
-    algebraic = _option_algebraic(algebraic)
-    area_coordinates = _option_area_coordinates(area_coordinates)
 
     if prove:
         return _area_method_plane_prove(

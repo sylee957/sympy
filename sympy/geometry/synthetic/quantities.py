@@ -276,6 +276,64 @@ class SyntheticGeometryAreaCoordinateY(Expr):
         return self
 
 
+class SyntheticGeometryChord(Expr):
+    r"""
+    .. math::
+        \widetilde{A, B}
+    """
+    def __new__(cls, A, B):
+        A = _sympify(A)
+        B = _sympify(B)
+        return super().__new__(cls, A, B)
+
+    def _eval_is_real(self):
+        return True
+
+    def doit(self):
+        A, B = self.args
+        if A == B:
+            return S.Zero
+
+        AA, BB = sorted([A, B], key=default_sort_key)
+        if A == BB and B == AA:
+            return -self.func(AA, BB)
+
+        return self
+
+
+class SyntheticGeometryCochord(Expr):
+    r"""
+    .. math::
+        \widehat{A, B}
+    """
+    def __new__(cls, A, B):
+        A = _sympify(A)
+        B = _sympify(B)
+        return super().__new__(cls, A, B)
+
+    def _eval_is_real(self):
+        return True
+
+    def doit(self):
+        A, B = self.args
+        if A == B:
+            return SyntheticGeometryDiameter()
+
+        AA, BB = sorted([A, B], key=default_sort_key)
+        if A == BB and B == AA:
+            return self.func(AA, BB)
+
+        return self
+
+
+class SyntheticGeometryDiameter(Expr):
+    def __new__(cls):
+        return super().__new__(cls)
+
+    def _eval_is_real(self):
+        return True
+
+
 def tan(*args):
     if len(args) == 3:
         A, B, C = args

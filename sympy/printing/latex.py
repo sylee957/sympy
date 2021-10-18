@@ -2816,6 +2816,21 @@ class LatexPrinter(Printer):
         arg = self._print(expr.args[-1])
         return r"\mathcal{Y}_{%s}" % arg
 
+    def _print_SyntheticGeometryChord(self, expr):
+        A, B = expr.args
+        A = self._print(A)
+        B = self._print(B)
+        return r"\widetilde{%s, %s}" % (A, B)
+
+    def _print_SyntheticGeometryCochord(self, expr):
+        A, B = expr.args
+        A = self._print(A)
+        B = self._print(B)
+        return r"\widehat{%s, %s}" % (A, B)
+
+    def _print_SyntheticGeometryDiameter(self, expr):
+        return r"\delta"
+
     def emptyPrinter(self, expr):
         # default to just printing as monospace, like would normally be shown
         s = super().emptyPrinter(expr)
