@@ -5,7 +5,7 @@ from sympy.core.singleton import S
 from IPython.display import display, Latex
 from sympy.printing.latex import latex
 from sympy.geometry.synthetic.area_coordinates import SyntheticGeometryPlanarConfiguration as PlanarConfiguration
-from sympy.geometry.synthetic.area_coordinates import SyntheticGeometryCircularConfiguration as CircularConfiguration
+from sympy.geometry.synthetic.area_coordinates import SyntheticGeometryCyclicConfiguration as CyclicConfiguration
 from sympy.geometry.synthetic.ecs import PlaneECS1 as ECS1
 from sympy.geometry.synthetic.ecs import PlaneECS5 as ECS5
 from sympy.geometry.synthetic.ecs import PlaneECS6 as ECS6
@@ -50,11 +50,11 @@ from sympy.geometry.synthetic.common import _geometric_quantities
 from sympy.geometry.synthetic.common import _cascade
 from sympy.geometry.synthetic.common import _quadrilateral_area
 from sympy.geometry.synthetic.common import _quadrilateral_pythagoras
-from sympy.geometry.synthetic.plane_area_coordinates import _auto_coordinates
-from sympy.geometry.synthetic.plane_area_coordinates import _area_coordinates_area
-from sympy.geometry.synthetic.plane_area_coordinates import _area_coordinates_pythagoras
-from sympy.geometry.synthetic.plane_area_coordinates import _area_coordinates_herron
-from sympy.geometry.synthetic.plane_area_coordinates import _algsubs
+from sympy.geometry.synthetic.common import _algsubs
+from sympy.geometry.synthetic.area_coordinates_plane import _auto_coordinates
+from sympy.geometry.synthetic.area_coordinates_plane import _area_coordinates_area
+from sympy.geometry.synthetic.area_coordinates_plane import _area_coordinates_pythagoras
+from sympy.geometry.synthetic.area_coordinates_plane import _area_coordinates_herron
 from sympy.polys.polytools import Poly
 
 

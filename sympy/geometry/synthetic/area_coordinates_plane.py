@@ -4,8 +4,6 @@ from sympy.geometry.synthetic.quantities import SyntheticGeometryPythagorasDiffe
 from sympy.geometry.synthetic.quantities import SyntheticGeometrySignedLength as Length
 from sympy.geometry.synthetic.quantities import SyntheticGeometryAreaCoordinateX as AreaCoordinateX
 from sympy.geometry.synthetic.quantities import SyntheticGeometryAreaCoordinateY as AreaCoordinateY
-from sympy.core.basic import Atom
-from sympy.core.expr import Pow
 from sympy.matrices import Matrix
 from collections import Counter
 
@@ -77,21 +75,6 @@ def _area_coordinates_pythagoras(O, U, V, objective):
             subs[G] = func(A, B) + func(B, C) - func(C, A)
             subs[G] = subs[G].doit()
     return subs
-
-
-def _algsubs(expr, origin, dest):
-    if expr == origin:
-        return dest
-    if isinstance(origin, Pow) and isinstance(expr, Pow):
-        b1, n1 = expr.args
-        b2, n2 = origin.args
-        if n1.is_Integer and n2.is_Integer and b1 == b2:
-            n1 = n1.p
-            n2 = n2.p
-            return dest**(n1 // n2) * b1**(n1 % n2)
-    if isinstance(expr, Atom):
-        return expr
-    return expr.func(*(_algsubs(arg, origin, dest) for arg in expr.args))
 
 
 def _area_coordinates_herron(O, U, V, objective):
