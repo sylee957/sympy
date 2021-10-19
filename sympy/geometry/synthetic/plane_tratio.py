@@ -62,7 +62,7 @@ def _area_ECS4(C, objective):
 
 def _pythagoras_ECS4(C, objective):
     r"""Eliminate the point $Y$ from the construction
-    $TRatio(Y, P, Q, \lambda)$.
+    $TRatio(Y, P, Q, r)$.
 
     Explanation
     ===========
@@ -70,12 +70,12 @@ def _pythagoras_ECS4(C, objective):
     .. math::
         \mathcal{P}_{A, B, Y} =
         \mathcal{P}_{A, B, P} -
-        4 \lambda \mathcal{S}_{P, A, Q, B}
+        4r \mathcal{S}_{P, A, Q, B}
 
     .. math::
         \mathcal{P}_{A, B, C, Y} =
         \mathcal{P}_{A, B, C, P} -
-        4 \lambda \mathcal{S}_{P, A, Q, C}
+        4r \mathcal{S}_{P, A, Q, C}
 
     References
     ==========
