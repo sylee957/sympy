@@ -122,7 +122,7 @@ def _quadratic_ECS4(C, objective):
         \mathcal{P}_{A, Y, B} =
         \mathcal{P}_{A, P, B} +
         r^2 \mathcal{P}_{P, Q, P} -
-        4 \lambda (\mathcal{S}_{A, P, Q} + \mathcal{S}_{B, P, Q})
+        4r (\mathcal{S}_{A, P, Q} + \mathcal{S}_{B, P, Q})
 
     References
     ==========
