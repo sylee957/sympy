@@ -26,14 +26,14 @@ This module defines basic kinds for core objects. Other kinds such as
 """
 
 from collections import defaultdict
-
+from sympy.core.pep604 import PEP604Meta
 from .cache import cacheit
 from sympy.multipledispatch.dispatcher import (Dispatcher,
     ambiguity_warn, ambiguity_register_error_ignore_dup,
     str_signature, RaiseNotImplementedError)
 
 
-class KindMeta(type):
+class KindMeta(PEP604Meta):
     """
     Metaclass for ``Kind``.
 

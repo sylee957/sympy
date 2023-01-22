@@ -1,10 +1,10 @@
+from __future__ import annotations
 from sympy.core.relational import Eq
 from sympy.core.expr import Expr
 from sympy.core.numbers import Integer
 from sympy.logic.boolalg import Boolean, And
 from sympy.matrices.expressions.matexpr import MatrixExpr
 from sympy.matrices.common import ShapeError
-from typing import Union
 
 
 def is_matadd_valid(*args: MatrixExpr) -> Boolean:
@@ -36,7 +36,7 @@ def is_matadd_valid(*args: MatrixExpr) -> Boolean:
     )
 
 
-def is_matmul_valid(*args: Union[MatrixExpr, Expr]) -> Boolean:
+def is_matmul_valid(*args: MatrixExpr | Expr) -> Boolean:
     """Return the symbolic condition how ``MatMul`` makes sense
 
     Parameters

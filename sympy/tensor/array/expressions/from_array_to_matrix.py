@@ -1,6 +1,7 @@
+from __future__ import annotations
 import itertools
 from collections import defaultdict
-from typing import Tuple as tTuple, Union as tUnion, FrozenSet, Dict as tDict, List, Optional
+from typing import Tuple as tTuple, FrozenSet, Dict as tDict, List, Optional
 from functools import singledispatch
 from itertools import accumulate
 
@@ -741,7 +742,7 @@ def _a2m_transpose(arg):
         return Transpose(arg).doit()
 
 
-def identify_hadamard_products(expr: tUnion[ArrayContraction, ArrayDiagonal]):
+def identify_hadamard_products(expr: ArrayContraction | ArrayDiagonal):
 
     editor: _EditArrayContraction = _EditArrayContraction(expr)
 

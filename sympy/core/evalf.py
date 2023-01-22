@@ -3,7 +3,7 @@ Adaptive numerical evaluation of SymPy expressions, using mpmath
 for mathematical functions.
 """
 from __future__ import annotations
-from typing import Tuple as tTuple, Optional, Union as tUnion, Callable, List, Dict as tDict, Type, TYPE_CHECKING, \
+from typing import Tuple as tTuple, Optional, Callable, List, Dict as tDict, Type, TYPE_CHECKING, \
     Any, overload
 
 import math
@@ -100,9 +100,7 @@ if the corresponding complex part is None.
 
 """
 TMP_RES = Any  # temporary result, should be some variant of
-# tUnion[tTuple[Optional[MPF_TUP], Optional[MPF_TUP],
-#               Optional[int], Optional[int]],
-#        'ComplexInfinity']
+# tTuple[Optional[MPF_TUP], Optional[MPF_TUP], Optional[int], Optional[int]] | 'ComplexInfinity'
 # but mypy reports error because it doesn't know as we know
 # 1. re and re_acc are either both None or both MPF_TUP
 # 2. sometimes the result can't be zoo
@@ -111,7 +109,7 @@ TMP_RES = Any  # temporary result, should be some variant of
 OPT_DICT = tDict[str, Any]
 
 
-def fastlog(x: Optional[MPF_TUP]) -> tUnion[int, Any]:
+def fastlog(x: Optional[MPF_TUP]) -> int | Any:
     """Fast approximation of log2(x) for an mpf value tuple x.
 
     Explanation
@@ -187,8 +185,9 @@ def scaled_zero(mag: SCALED_ZERO_TUP, sign=1) -> MPF_TUP:
 @overload
 def scaled_zero(mag: int, sign=1) -> tTuple[SCALED_ZERO_TUP, int]:
     ...
-def scaled_zero(mag: tUnion[SCALED_ZERO_TUP, int], sign=1) -> \
-        tUnion[MPF_TUP, tTuple[SCALED_ZERO_TUP, int]]:
+def scaled_zero(
+    mag: SCALED_ZERO_TUP | int, sign=1
+) -> MPF_TUP | tTuple[SCALED_ZERO_TUP, int]:
     """Return an mpf representing a power of two with magnitude ``mag``
     and -1 for precision. Or, if ``mag`` is a scaled_zero tuple, then just
     remove the sign from within the list that it was initially wrapped
@@ -226,13 +225,13 @@ def scaled_zero(mag: tUnion[SCALED_ZERO_TUP, int], sign=1) -> \
         raise ValueError('scaled zero expects int or scaled_zero tuple.')
 
 
-def iszero(mpf: tUnion[MPF_TUP, SCALED_ZERO_TUP, None], scaled=False) -> Optional[bool]:
+def iszero(mpf: MPF_TUP | SCALED_ZERO_TUP | None, scaled=False) -> Optional[bool]:
     if not scaled:
         return not mpf or not mpf[1] and not mpf[-1]
     return mpf and isinstance(mpf[0], list) and mpf[1] == mpf[-1] == 1
 
 
-def complex_accuracy(result: TMP_RES) -> tUnion[int, Any]:
+def complex_accuracy(result: TMP_RES) -> int | Any:
     """
     Returns relative accuracy of a complex number with given accuracies
     for the real and imaginary parts. The relative accuracy is defined
@@ -360,8 +359,9 @@ def check_target(expr: 'Expr', result: TMP_RES, prec: int):
             "a higher maxn for evalf" % (expr))
 
 
-def get_integer_part(expr: 'Expr', no: int, options: OPT_DICT, return_ints=False) -> \
-        tUnion[TMP_RES, tTuple[int, int]]:
+def get_integer_part(
+    expr: 'Expr', no: int, options: OPT_DICT, return_ints=False
+) -> TMP_RES | tTuple[int, int]:
     """
     With no = 1, computes ceiling(expr)
     With no = -1, computes floor(expr)
@@ -496,8 +496,9 @@ def evalf_integer(expr: 'Integer', prec: int, options: OPT_DICT) -> TMP_RES:
 #----------------------------------------------------------------------------#
 
 
-def add_terms(terms: list, prec: int, target_prec: int) -> \
-        tTuple[tUnion[MPF_TUP, SCALED_ZERO_TUP, None], Optional[int]]:
+def add_terms(
+    terms: list, prec: int, target_prec: int
+) -> tTuple[MPF_TUP | SCALED_ZERO_TUP | None, Optional[int]]:
     """
     Helper for evalf_add. Adds a list of (mpfval, accuracy) terms.
 
@@ -1054,7 +1055,7 @@ def evalf_alg_num(a: 'AlgebraicNumber', prec: int, options: OPT_DICT) -> TMP_RES
 #----------------------------------------------------------------------------#
 
 
-def as_mpmath(x: Any, prec: int, options: OPT_DICT) -> tUnion[mpc, mpf]:
+def as_mpmath(x: Any, prec: int, options: OPT_DICT) -> mpc | mpf:
     from .numbers import Infinity, NegativeInfinity, Zero
     x = sympify(x)
     if isinstance(x, Zero) or x == 0:
@@ -1100,10 +1101,10 @@ def do_integral(expr: 'Integral', prec: int, options: OPT_DICT) -> TMP_RES:
         from .symbol import Wild
 
         have_part = [False, False]
-        max_real_term: tUnion[float, int] = MINUS_INF
-        max_imag_term: tUnion[float, int] = MINUS_INF
+        max_real_term: float | int = MINUS_INF
+        max_imag_term: float | int = MINUS_INF
 
-        def f(t: 'Expr') -> tUnion[mpc, mpf]:
+        def f(t: 'Expr') -> mpc | mpf:
             nonlocal max_real_term, max_imag_term
             re, im, re_acc, im_acc = evalf(func, mp.prec, {'subs': {x: t}})
 

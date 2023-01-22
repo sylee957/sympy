@@ -1,6 +1,7 @@
+from __future__ import annotations
 import random
 import itertools
-from typing import (Sequence as tSequence, Union as tUnion, List as tList,
+from typing import (Sequence as tSequence, List as tList,
         Tuple as tTuple, Set as tSet)
 from sympy.concrete.summations import Sum
 from sympy.core.add import Add
@@ -100,12 +101,12 @@ def _set_converter(itr):
         raise TypeError("%s is not an instance of list/tuple/set."%(itr))
     return itr
 
-def _state_converter(itr: tSequence) -> tUnion[Tuple, Range]:
+def _state_converter(itr: tSequence) -> Tuple | Range:
     """
     Helper function for converting list/tuple/set/Range/Tuple/FiniteSet
     to tuple/Range.
     """
-    itr_ret: tUnion[Tuple, Range]
+    itr_ret: Tuple | Range
 
     if isinstance(itr, (Tuple, set, FiniteSet)):
         itr_ret = Tuple(*(sympify(i) if isinstance(i, str) else i for i in itr))
@@ -191,7 +192,7 @@ class StochasticProcess(Basic):
         return self.args[0]
 
     @property
-    def state_space(self) -> tUnion[FiniteSet, Range]:
+    def state_space(self) -> FiniteSet | Range:
         if not isinstance(self.args[1], (FiniteSet, Range)):
             assert isinstance(self.args[1], Tuple)
             return FiniteSet(*self.args[1])
@@ -375,7 +376,7 @@ class MarkovProcess(StochasticProcess):
     """
 
     @property
-    def number_of_states(self) -> tUnion[Integer, Symbol]:
+    def number_of_states(self) -> Integer | Symbol:
         """
         The number of states in the Markov Chain.
         """
@@ -1172,7 +1173,9 @@ class DiscreteMarkovChain(DiscreteTimeStochasticProcess, MarkovProcess):
         r = A.shape[0]
         return And(r > 0, A == Identity(r).as_explicit())
 
-    def stationary_distribution(self, condition_set=False) -> tUnion[ImmutableMatrix, ConditionSet, Lambda]:
+    def stationary_distribution(
+        self, condition_set=False
+    ) -> ImmutableMatrix | ConditionSet | Lambda:
         r"""
         The stationary distribution is any row vector, p, that solves p = pP,
         is row stochastic and each element in p must be nonnegative.

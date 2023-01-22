@@ -1,3 +1,4 @@
+from __future__ import annotations
 import collections.abc
 import operator
 from collections import defaultdict, Counter
@@ -1636,8 +1637,10 @@ class _EditArrayContraction:
     by calling the ``.to_array_contraction()`` method.
     """
 
-    def __init__(self, base_array: typing.Union[ArrayContraction, ArrayDiagonal, ArrayTensorProduct]):
-
+    def __init__(
+        self,
+        base_array: ArrayContraction | ArrayDiagonal | ArrayTensorProduct
+    ):
         expr: Basic
         diagonalized: tTuple[tTuple[int, ...], ...]
         contraction_indices: List[tTuple[int]]

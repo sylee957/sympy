@@ -1,5 +1,5 @@
 """Transform a string with Python-like source code into SymPy expression. """
-
+from __future__ import annotations
 from tokenize import (generate_tokens, untokenize, TokenError,
     NUMBER, STRING, NAME, OP, ENDMARKER, ERRORTOKEN, NEWLINE)
 
@@ -11,7 +11,7 @@ from io import StringIO
 import builtins
 import types
 from typing import Tuple as tTuple, Dict as tDict, Any, Callable, \
-    List, Optional, Union as tUnion
+    List, Optional
 
 from sympy.assumptions.ask import AssumptionKeys
 from sympy.core.basic import Basic
@@ -115,7 +115,7 @@ class AppliedFunction:
                                                 self.exponent)
 
 
-def _flatten(result: List[tUnion[TOKEN, AppliedFunction]]):
+def _flatten(result: List[TOKEN | AppliedFunction]):
     result2: List[TOKEN] = []
     for tok in result:
         if isinstance(tok, AppliedFunction):
@@ -132,7 +132,7 @@ def _group_parentheses(recursor: TRANS):
         Also processes those tokens recursively.
 
         """
-        result: List[tUnion[TOKEN, ParenthesisGroup]] = []
+        result: List[TOKEN | ParenthesisGroup] = []
         stacks: List[ParenthesisGroup] = []
         stacklevel = 0
         for token in tokens:
@@ -169,14 +169,14 @@ def _group_parentheses(recursor: TRANS):
     return _inner
 
 
-def _apply_functions(tokens: List[tUnion[TOKEN, ParenthesisGroup]], local_dict: DICT, global_dict: DICT):
+def _apply_functions(tokens: List[TOKEN | ParenthesisGroup], local_dict: DICT, global_dict: DICT):
     """Convert a NAME token + ParenthesisGroup into an AppliedFunction.
 
     Note that ParenthesisGroups, if not applied to any function, are
     converted back into lists of tokens.
 
     """
-    result: List[tUnion[TOKEN, AppliedFunction]] = []
+    result: List[TOKEN | AppliedFunction] = []
     symbol = None
     for tok in tokens:
         if isinstance(tok, ParenthesisGroup):
@@ -194,7 +194,11 @@ def _apply_functions(tokens: List[tUnion[TOKEN, ParenthesisGroup]], local_dict: 
     return result
 
 
-def _implicit_multiplication(tokens: List[tUnion[TOKEN, AppliedFunction]], local_dict: DICT, global_dict: DICT):
+def _implicit_multiplication(
+    tokens: List[TOKEN | AppliedFunction],
+    local_dict: DICT,
+    global_dict: DICT
+):
     """Implicitly adds '*' tokens.
 
     Cases:
@@ -210,7 +214,7 @@ def _implicit_multiplication(tokens: List[tUnion[TOKEN, AppliedFunction]], local
     - AppliedFunction next to an implicitly applied function ("sin(x)cos x")
 
     """
-    result: List[tUnion[TOKEN, AppliedFunction]] = []
+    result: List[TOKEN | AppliedFunction] = []
     skip = False
     for tok, nextTok in zip(tokens, tokens[1:]):
         result.append(tok)
@@ -259,9 +263,13 @@ def _implicit_multiplication(tokens: List[tUnion[TOKEN, AppliedFunction]], local
     return result
 
 
-def _implicit_application(tokens: List[tUnion[TOKEN, AppliedFunction]], local_dict: DICT, global_dict: DICT):
+def _implicit_application(
+    tokens: List[TOKEN | AppliedFunction],
+    local_dict: DICT,
+    global_dict: DICT
+):
     """Adds parentheses as needed after functions."""
-    result: List[tUnion[TOKEN, AppliedFunction]] = []
+    result: List[TOKEN | AppliedFunction] = []
     appendParen = 0  # number of closing parentheses to add
     skip = 0  # number of tokens to delay before adding a ')' (to
               # capture **, ^, etc.)
@@ -908,10 +916,13 @@ def eval_expr(code, local_dict: DICT, global_dict: DICT):
     return expr
 
 
-def parse_expr(s: str, local_dict: Optional[DICT] = None,
-               transformations: tUnion[tTuple[TRANS, ...], str] \
-                   = standard_transformations,
-               global_dict: Optional[DICT] = None, evaluate=True):
+def parse_expr(
+    s: str,
+    local_dict: Optional[DICT] = None,
+    transformations: tTuple[TRANS, ...] | str = standard_transformations,
+    global_dict: Optional[DICT] = None,
+    evaluate=True
+):
     """Converts the string ``s`` to a SymPy expression, in ``local_dict``
 
     Parameters

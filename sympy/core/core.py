@@ -1,4 +1,5 @@
 """ The core's core. """
+from sympy.core.pep604 import PEP604Meta
 
 # used for canonical ordering of symbolic sequences
 # via __cmp__ method:
@@ -64,7 +65,7 @@ class Registry:
 all_classes = set()
 
 
-class BasicMeta(type):
+class BasicMeta(PEP604Meta):
 
     def __init__(cls, *args, **kws):
         all_classes.add(cls)

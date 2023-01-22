@@ -1,3 +1,4 @@
+from __future__ import annotations
 import typing
 
 import sympy
@@ -89,7 +90,7 @@ class SMTLibPrinter(Printer):
         if s[0].isnumeric(): return False
         return all(_.isalnum() or _ == '_' for _ in s)
 
-    def _s_expr(self, op: str, args: typing.Union[list, tuple]) -> str:
+    def _s_expr(self, op: str, args: list | tuple) -> str:
         args_str = ' '.join(
             a if isinstance(a, str)
             else self._print(a)
@@ -127,7 +128,7 @@ class SMTLibPrinter(Printer):
             return self._s_expr(not_op, [self._s_expr(eq_op, e.args)])
 
     def _print_Piecewise(self, e: Piecewise):
-        def _print_Piecewise_recursive(args: typing.Union[list, tuple]):
+        def _print_Piecewise_recursive(args: list | tuple):
             e, c = args[0]
             if len(args) == 1:
                 assert (c is True) or isinstance(c, BooleanTrue)
@@ -394,7 +395,11 @@ def smtlib_code(
     ])
 
 
-def _auto_declare_smtlib(sym: typing.Union[Symbol, Function], p: SMTLibPrinter, log_warn: typing.Callable[[str], None]):
+def _auto_declare_smtlib(
+    sym: Symbol | Function,
+    p: SMTLibPrinter,
+    log_warn: typing.Callable[[str], None]
+):
     if sym.is_Symbol:
         type_signature = p.symbol_table[sym]
         assert isinstance(type_signature, type)

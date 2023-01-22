@@ -1,0 +1,6 @@
+from __future__ import annotations
+
+
+class PEP604Meta(type):
+    def __or__(cls, other, /): ...
+    def __ror__(cls, other, /): ...

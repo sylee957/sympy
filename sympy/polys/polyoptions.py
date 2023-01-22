@@ -5,6 +5,7 @@ from __future__ import annotations
 __all__ = ["Options"]
 
 from sympy.core import Basic, sympify
+from sympy.core.pep604 import PEP604Meta
 from sympy.polys.polyerrors import GeneratorsError, OptionError, FlagError
 from sympy.utilities import numbered_symbols, topological_sort, public
 from sympy.utilities.iterables import has_dups, is_sequence
@@ -56,7 +57,7 @@ class BooleanOption(Option):
             raise OptionError("'%s' must have a boolean value assigned, got %s" % (cls.option, value))
 
 
-class OptionType(type):
+class OptionType(PEP604Meta):
     """Base type for all options that does registers options. """
 
     def __init__(cls, *args, **kwargs):
